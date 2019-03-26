@@ -18,6 +18,17 @@ body {
   background-color: white;
 }
 
+textarea {
+  width: 18rem;
+  height: 25rem;
+  border: 0 none;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+
 h1 {
   margin: 3rem 0 1rem 0;
   font-size: 1.75rem;
@@ -75,7 +86,7 @@ img.card {
   position: fixed;
   top: 0;
   left: 0;
-  width: 18rem;
+  width: 25rem;
   height: 100vh;
   padding: 3rem 1rem 6rem 1rem;
   border: 0 none;
@@ -100,6 +111,61 @@ img.card {
   padding: 1em;
 }
 
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  background-color: #f1f1f1;
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+  height: 30rem;
+}
+
+/* Fade in tabs */
+@-webkit-keyframes fadeEffect {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeEffect {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @media print {
   .print-hide {
     display: none;
@@ -107,7 +173,7 @@ img.card {
 }
 @media screen {
   body {
-    margin: 0 1rem 4.4cm 20rem;
+    margin: 0 1rem 4.4cm 27rem;
     overflow-y: scroll;
     cursor: default;
   }

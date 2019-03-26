@@ -15,58 +15,29 @@
         <p>
           Print Netrunner Proxy cards! Enter your card names into the sidebar, one card per line, and click print. <br />
         </p>
-        <p>
-          <a class="btn" href="javascript:window.print();" title="Print">Print Cards</a>
-        </p>
-
         <div id="side-bar" >
             <div class="tab">
-                <button class="tablinks" onclick="openCity(event, 'Desklist')" id="defaultOpen">Desklist</button>
-                <button class="tablinks" onclick="openCity(event, 'Set')">Set</button>
-                <button class="tablinks" onclick="openCity(event, 'Card List')">Card List</button>
+                <button class="tablinks" onclick="selectTab(event, 'Desklist')">Desklist</button>
+                <button class="tablinks" onclick="selectTab(event, 'Set')">Set</button>
+                <button class="tablinks" onclick="selectTab(event, 'Card List')" id="defaultOpen">Card List</button>
             </div>
-            
             <div id="Desklist" class="tabcontent">
               <h3>Desklist</h3>
               <p>Enter URL or deck id</p>
             </div>
-            
             <div id="Set" class="tabcontent">
               <h3>Set</h3>
               <p>Dropdown of sets, defaulted to SC19</p> 
             </div>
-            
             <div id="Card List" class="tabcontent">
               <h3>Card List</h3>
-              <textarea id="UserInput" name="UserInput" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus>
-MKUltra
-Paperclip
-Black Orchestra
-              </textarea>
+              <textarea id="UserInput" name="UserInput" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
             </div>
-            
-            <script>
-            function openCity(evt, cityName) {
-              var i, tabcontent, tablinks;
-              tabcontent = document.getElementsByClassName("tabcontent");
-              for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-              }
-              tablinks = document.getElementsByClassName("tablinks");
-              for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-              }
-              document.getElementById(cityName).style.display = "block";
-              evt.currentTarget.className += " active";
-            }
-            
-            // Get the element with id="defaultOpen" and click on it
-            document.getElementById("defaultOpen").click();
-            </script>
+            <p>
+              <a class="btn" href="javascript:window.print();" title="Print">Print Cards</a>
+            </p>
         </div>
-        
       </div>
-
       <div id="Cards"></div>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
       <script src="js/index.js"></script>
