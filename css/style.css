@@ -1,0 +1,167 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+html,
+html * {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #222;
+}
+
+body {
+  margin: 0;
+  background-color: white;
+}
+
+h1 {
+  margin: 3rem 0 1rem 0;
+  font-size: 1.75rem;
+}
+
+P {
+  margin: 1rem 0;
+}
+
+strong, b {
+  font-weight: 600;
+}
+
+a {
+  color: #0A539D;
+  font-weight: 400;
+  text-decoration: underline;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.8em 1.4em;
+  border: 0 solid transparent;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  background-color: #0A539D;
+  color: white;
+  line-height: 1;
+  text-decoration: none !important;
+  cursor: pointer;
+  background-position: center;
+  transition: background 0.125s;
+}
+.btn:hover {
+  background: #B93A2F radial-gradient(circle, transparent 1%, #B93A2F 1%) center/15000%;
+}
+.btn:active {
+  background-color: #0A539D;
+  background-size: 100%;
+  transition: background 0s;
+}
+
+img.card {
+  width: 6.15cm;
+  height: 8.8cm;
+  vertical-align: top;
+}
+
+#Cards,
+#Cards > * {
+  line-height: 0;
+}
+
+#side-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 18rem;
+  height: 100vh;
+  padding: 3rem 1rem 6rem 1rem;
+  border: 0 none;
+  box-shadow: inset 0.4rem 0 0 #a13229;
+  background-color: #B93A2F;
+  color: white;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+
+.text-muted {
+  color: #9e9e9e;
+}
+
+[data-loading] {
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 1em;
+}
+
+@media print {
+  .print-hide {
+    display: none;
+  }
+}
+@media screen {
+  body {
+    margin: 0 1rem 4.4cm 20rem;
+    overflow-y: scroll;
+    cursor: default;
+  }
+
+  #Cards {
+    margin-top: 3rem;
+  }
+  #Cards > * {
+    display: inline-block;
+    margin: 0;
+    vertical-align: top;
+    position: relative;
+    z-index: 10;
+    width: 6.15cm;
+    height: 8.8cm;
+    background: #f6f7f7 linear-gradient(-54deg, rgba(0, 0, 0, 0.06) 50%, rgba(0, 0, 0, 0.02) 50%);
+    transform: scale(1);
+    transition: transform 0.125s, filter 0.1s ease-in-out;
+  }
+  #Cards > * > img {
+    background-image: none;
+  }
+  #Cards > * > img:after {
+    content: "card";
+    padding: 1.621em 1rem;
+    line-height: 1.5;
+  }
+  #Cards > * > .label {
+    visibility: hidden;
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    padding: 0.5em 1em;
+    border-radius: 0 0 0.1cm 0.1cm;
+    font-size: 12px;
+    line-height: 1.2;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  #Cards > p {
+    padding: 1.621em 1rem;
+    line-height: 1.5;
+  }
+  #Cards > a:hover {
+    transform: scale(1.1);
+    z-index: 20;
+  }
+  #Cards > a:hover > .label {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+/*# sourceMappingURL=style.css.map */
