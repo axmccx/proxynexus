@@ -1,4 +1,3 @@
 .vscode
-1/*
-images/*
-/test
+static/images/*
+node_modules/*

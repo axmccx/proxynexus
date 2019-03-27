@@ -1,4 +1,6 @@
-# Ultimate Netrunner Proxy Generator
+# Proxy Nexus
+
+[https://proxynexus.net](https://proxynexus.net)
 
 Make high quality Netrunner proxies. Generates ready to print PDFs from a NetrunnerDB deck list, a retail set, or a custom card list. 
 

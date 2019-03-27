@@ -1,0 +1,23 @@
+{
+  "name": "proxynexus",
+  "version": "1.0.0",
+  "description": "Make high quality Netrunner proxies. Generates ready to print PDFs from a NetrunnerDB deck list, a retail set, or a custom card list.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/axmccx/proxynexus.git"
+  },
+  "keywords": [],
+  "author": "Alex McCulloch",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/axmccx/proxynexus/issues"
+  },
+  "homepage": "https://github.com/axmccx/proxynexus#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
