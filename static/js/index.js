@@ -45,7 +45,7 @@ function fetchAllCards() {
     _cardDB = {};
 
     $.each(response.data, function(key, item) {
-        var image = 'images/' + item.code + '.jpg';
+        var image = 'https://proxynexus.z27.web.core.windows.net/images/' + item.code + '.jpg';
 
         console.log(item);
 
