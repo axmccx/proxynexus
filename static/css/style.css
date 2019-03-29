@@ -18,9 +18,19 @@ body {
   background-color: white;
 }
 
-textarea {
+#UserInput {
   width: 18rem;
-  height: 25rem;
+  height: 28rem;
+  border: 0 none;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+
+#DeckId {
+  width: 18rem;
   border: 0 none;
   font-family: "Courier New", monospace;
   font-size: 14px;
@@ -72,8 +82,8 @@ a {
 }
 
 img.card {
-  width: 6.15cm;
-  height: 8.8cm;
+  width: 6.0325cm;
+  height: 8.36cm;
   vertical-align: top;
 }
 
@@ -187,8 +197,8 @@ img.card {
     vertical-align: top;
     position: relative;
     z-index: 10;
-    width: 6.15cm;
-    height: 8.8cm;
+    width: 6.0325cm;
+    height: 8.36cm;
     background: #f6f7f7 linear-gradient(-54deg, rgba(0, 0, 0, 0.06) 50%, rgba(0, 0, 0, 0.02) 50%);
     transform: scale(1);
     transition: transform 0.125s, filter 0.1s ease-in-out;

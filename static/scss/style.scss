@@ -1,7 +1,7 @@
 // card
-$card-width:            6.15cm;
+$card-width:            6.35cm;
 $card-height:           8.80cm;
-$card-scale:            1;
+$card-scale:            0.95;
 
 // ui
 $font-family-default:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -31,12 +31,30 @@ body {
   background-color: white;
 }
 
-textarea { 
+#UserInput { 
   // position: fixed;
   // top: 0;
   // left: 0;
   width: 18rem;
-  height: 25rem;
+  height: 28rem;
+  // padding: 3rem 1rem 6rem 1rem;
+  border: 0 none;
+  // box-shadow: inset 0.4rem 0 0 darken($color-runner, 6%);
+  // background-color: $color-runner;
+  // color: white;
+  font-family: $font-family-mono;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+
+#DeckId {
+  // position: fixed;
+  // top: 0;
+  // left: 0;
+  width: 18rem;
+  // height: 5rem;
   // padding: 3rem 1rem 6rem 1rem;
   border: 0 none;
   // box-shadow: inset 0.4rem 0 0 darken($color-runner, 6%);

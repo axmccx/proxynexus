@@ -13,7 +13,7 @@
           Proxy Nexus
         </h1>
         <p>
-          Print Netrunner Proxy cards! Enter your card names into the sidebar, one card per line, and click print. <br />
+          Print Netrunner Proxy cards. Enter a card list, a NetrunnerDB link or select a set. <br />
         </p>
         <div id="side-bar" >
             <div class="tab">
@@ -22,15 +22,13 @@
                 <button class="tablinks" onclick="selectTab(event, 'Card List')" id="defaultOpen">Card List</button>
             </div>
             <div id="Desklist" class="tabcontent">
-              <h3>Desklist</h3>
-              <p>Enter URL or deck id</p>
+              <p>Enter a decklist from Netrunner DB (of the form "https://netrunnerdb.com/en/decklist/xxxxx/text-name") or enter the deck ID</p>
+              <textarea id="DeckId" name="DeckId" placeholder="Deck URL or ID" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
             </div>
             <div id="Set" class="tabcontent">
-              <h3>Set</h3>
               <p>Dropdown of sets, defaulted to SC19</p> 
             </div>
             <div id="Card List" class="tabcontent">
-              <h3>Card List</h3>
               <textarea id="UserInput" name="UserInput" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
             </div>
             <p>
@@ -39,6 +37,26 @@
         </div>
       </div>
       <div id="Cards"></div>
+      <div class="print-hide">
+        <p>
+          Based on <a href="https://codepen.io/Theavon/pen/YQmgBG">https://codepen.io/Theavon/pen/YQmgBG</a> 
+          and <a href="https://gparmer.github.io/anrproxy/">https://gparmer.github.io/anrproxy/</a>
+        </p>
+        <p>
+          Uses scans from <a href="https://www.reddit.com/r/Netrunner/comments/8pgfbj/android_netrunner_cards_up_to_kitara_600dpi/">"Android: Netrunner Cards up to Kitara @600dpi"</a>
+          Special thanks to <a href="https://www.reddit.com/user/LepcisMagna">/u/LepcisMagna/</a>. Nisei cards are also included and unchanged from the print-and-play PDFs.  
+        </p>
+        <p>
+          The scan have been despeckled using <a href="https://gist.github.com/ankitjaininfo/86e7e07a8df12e246ce49ec0a7168716">batch-despeckle.scm</a>
+          and enhanced using the tool mogrify with options "-modulate 105,105" from the <a href="https://www.imagemagick.org/">Image Magick Suite</a>
+        </p>
+        <p>
+          Uses the <a href="https://netrunnerdb.com/api/2.0/doc">NetrunnerDB API</a> to query card IDs from names and deck URLs.
+        </p>
+        <p>
+          Built by Alex McCulloch (<a href="https://www.reddit.com/user/axmccx">/u/axmccx</a>). Source published on <a href="https://github.com/axmccx/proxynexus">github</a>. 
+        </p>
+      </div>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
       <script src="js/index.js"></script>
    </body>
