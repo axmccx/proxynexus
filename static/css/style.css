@@ -159,6 +159,27 @@ img.card {
   height: 30rem;
 }
 
+.playset-tab {
+  overflow: hidden;
+  padding-top: 10px;
+}
+
+.playset-tab button {
+  background-color: inherit;
+  border: 1px solid #ccc;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.playset-tab button:hover {
+  background-color: #ddd;
+}
+
+.playset-tab button.active {
+  background-color: #ccc;
+}
+
 /* Fade in tabs */
 @-webkit-keyframes fadeEffect {
   from {

@@ -3,9 +3,9 @@ var _cardDB_keyID     = {}; //same as _cardDB, but keyed by card code instead of
 var _userInputElem    = $('#UserInput');
 var _deckID           = $('#DeckId');
 var _SetSelection     = $('#SetSelection');
+var _PlaysetSelection = "";
 var _cardListElem     = $('#Cards');
 var _cardListHtml     = '';
-
 
 function selectTab(evt, tabLabel) {
   var i, tabcontent, tablinks;
@@ -31,6 +31,17 @@ function selectTab(evt, tabLabel) {
       buildFromCardList();
       break;
   }
+}
+
+function selectPlayset(evt, tabLabel) {
+  var i, tabsets;
+  tabsets = document.getElementsByClassName("tabsets");
+  for (i = 0; i < tabsets.length; i++) {
+    tabsets[i].className = tabsets[i].className.replace(" active", "");
+  }
+  evt.currentTarget.className += " active";
+  _PlaysetSelection = tabLabel;
+  buildFromSet();
 }
 
 function loadCards() {
@@ -175,14 +186,28 @@ function buildFromDeckID() {
 function buildFromSet() {
   var html = '';
   var selectedSet = _SetSelection.val();
+  const coreSets = ["core", "core2", "sc19"];
 
-  if (!_cardDB_keyID) {
+  if (!_cardDB_keyID || !selectedSet) {
     return false;
   }
 
+  var playsetDisplay = document.getElementById("PlaysetDisplay");
+  if (coreSets.indexOf(selectedSet) > -1) {
+    playsetDisplay.style.display = "block";
+  } else {
+    playsetDisplay.style.display = "none";
+  }
+  
   $.getJSON( "json/pack/" + selectedSet + ".json", function(response) {
     response.forEach(function(card) {
-      for (var i = 0; i < card.quantity; i++) {
+      var quantity = card.quantity;
+
+      if (coreSets.indexOf(selectedSet) > -1 && _PlaysetSelection == "Full") {
+        quantity = 3;
+      }
+
+      for (var i = 0; i < quantity; i++) {
         var image = 'https://proxynexus.z27.web.core.windows.net/images/' + card.code + '.jpg';
         var newCard = '';
         newCard += '<a href="https://netrunnerdb.com/en/card/' + card.code + '" title="" target="NetrunnerCard">';
@@ -216,6 +241,7 @@ function assignEvents() {
 
 $(function() {
   document.getElementById("defaultOpen").click();
+  document.getElementById("defaultSetTab").click()
   _userInputElem.text("MKUltra\nParagon\nHayley Kaplan: Universal Scholar");
   assignEvents();
   loadCards();

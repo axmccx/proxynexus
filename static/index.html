@@ -17,9 +17,9 @@
         </p>
         <div id="side-bar" >
             <div class="tab">
-                <button class="tablinks" onclick="selectTab(event, 'Desklist')">Desklist</button>
-                <button class="tablinks" onclick="selectTab(event, 'Set')">Set</button>
-                <button class="tablinks" onclick="selectTab(event, 'Card List')" id="defaultOpen">Card List</button>
+              <button class="tablinks" onclick="selectTab(event, 'Desklist')">Desklist</button>
+              <button class="tablinks" onclick="selectTab(event, 'Set')">Set</button>
+              <button class="tablinks" onclick="selectTab(event, 'Card List')" id="defaultOpen">Card List</button>
             </div>
             <div id="Desklist" class="tabcontent">
               <p>
@@ -33,10 +33,15 @@
               </p>
               <select id="SetSelection">
               </select>
-              <div id="playset-select">
+              <div id="PlaysetDisplay"> 
+                <div class="playset-tab">
+                  <button class="tabsets" onclick="selectPlayset(event, 'Single')" id="defaultSetTab">Single Set</button>
+                  <button class="tabsets" onclick="selectPlayset(event, 'Full')">Playset</button>
+                </div>
+                Playsets are three copies of each card.
               </div>
               <p>
-                Sets that have been already released as PDF are ommited here. 
+                Sets that have been already released as PDF are ommited. 
                 To print the Magnum Opus cards, you can download the official PDFs from here: <br />
                 <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf">Champion Cards</a> <br />
                 <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf">Community Cards</a> <br />
