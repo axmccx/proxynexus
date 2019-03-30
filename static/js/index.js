@@ -6,6 +6,7 @@ var _SetSelection     = $('#SetSelection');
 var _PlaysetSelection = "";
 var _cardListElem     = $('#Cards');
 var _cardListHtml     = '';
+var _cardList         = [];
 
 function selectTab(evt, tabLabel) {
   var i, tabcontent, tablinks;
@@ -125,12 +126,7 @@ function buildFromCardList() {
     
     if (cardname in _cardDB) {
       var card = _cardDB[cardname];
-      var newCard = '';
-      newCard += '<a href="https://netrunnerdb.com/en/card/' + card.code + '" title="" target="NetrunnerCard">';
-      newCard += '<img class="card" src="' + card.image + '" alt="' + card.code + '" />';
-      newCard += '<span class="label print-hide">' + card.code + ' ' + cardname.replace(/__/g, ' ') + '</span>'; 
-      newCard += '</a>'; 
-      html += newCard;
+      html += buildCardHTML(card.code, card.image, cardname.replace(/__/g, ' '));
     } else {
       unfound++;
     }
@@ -165,12 +161,7 @@ function buildFromDeckID() {
       if (keys[i] in _cardDB_keyID) {
         var card = _cardDB_keyID[keys[i]];
         for (var j = 0; j < input[keys[i]]; j++) {
-          var newCard = '';
-          newCard += '<a href="https://netrunnerdb.com/en/card/' + card.code + '" title="" target="NetrunnerCard">';
-          newCard += '<img class="card" src="' + card.image + '" alt="' + card.code + '" />';
-          newCard += '<span class="label print-hide">' + card.code + ' ' + card.title.replace(/__/g, ' ') + '</span>'; 
-          newCard += '</a>'; 
-          html += newCard;
+          html += buildCardHTML(card.code, card.image, card.title.replace(/__/g, ' '));
         }
       }
     }
@@ -209,12 +200,7 @@ function buildFromSet() {
 
       for (var i = 0; i < quantity; i++) {
         var image = 'https://proxynexus.z27.web.core.windows.net/images/' + card.code + '.jpg';
-        var newCard = '';
-        newCard += '<a href="https://netrunnerdb.com/en/card/' + card.code + '" title="" target="NetrunnerCard">';
-        newCard += '<img class="card" src="' + image + '" alt="' + card.code + '" />';
-        newCard += '<span class="label print-hide">' + card.code + ' ' + card.title + '</span>'; 
-        newCard += '</a>'; 
-        html += newCard;
+        html += buildCardHTML(card.code, image, card.title);
       }
     });
 
@@ -223,6 +209,31 @@ function buildFromSet() {
       _cardListElem.html(_cardListHtml);
     }
   });
+}
+
+function buildCardHTML(code, image, title) {
+  var newCard = '';
+  newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+  newCard += '<img class="card" src="' + image + '" alt="' + code + '" />';
+  newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
+  newCard += '</a>';
+  if (code == "08012") {
+    const extras = ["08012-a", "08012", "08012-b", "08012", "08012-c"];
+    extras.forEach(function(extra) {
+      const img = "https://proxynexus.z27.web.core.windows.net/images/" + extra + ".jpg";
+      newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+      newCard += '<img class="card" src="' + img + '" alt="' + code + '" />';
+      newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
+      newCard += '</a>';
+    });
+  } else if (code == "09001") {
+    const syncBack = "https://proxynexus.z27.web.core.windows.net/images/09001-a.jpg";
+    newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+    newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
+    newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
+    newCard += '</a>';
+  }
+  return newCard;
 }
 
 function assignEvents() {
