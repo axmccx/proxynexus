@@ -32,16 +32,9 @@ body {
 }
 
 #UserInput { 
-  // position: fixed;
-  // top: 0;
-  // left: 0;
   width: 18rem;
   height: 28rem;
-  // padding: 3rem 1rem 6rem 1rem;
   border: 0 none;
-  // box-shadow: inset 0.4rem 0 0 darken($color-runner, 6%);
-  // background-color: $color-runner;
-  // color: white;
   font-family: $font-family-mono;
   font-size: 14px;
   outline: none;
@@ -49,22 +42,22 @@ body {
   overflow-y: auto;
 }
 
-#DeckId {
-  // position: fixed;
-  // top: 0;
-  // left: 0;
+#DeckId, #DeckView {
   width: 18rem;
-  // height: 5rem;
-  // padding: 3rem 1rem 6rem 1rem;
   border: 0 none;
-  // box-shadow: inset 0.4rem 0 0 darken($color-runner, 6%);
-  // background-color: $color-runner;
-  // color: white;
   font-family: $font-family-mono;
   font-size: 14px;
+  font-weight: bold;
+  color:  #000;
   outline: none;
   resize: none;
   overflow-y: auto;
+}
+
+#DeckId::placeholder, #DeckView::placeholder {
+  font-family: $font-family-mono;
+  font-size: 14px;
+  color:  #aaa;
 }
 
 h1 {

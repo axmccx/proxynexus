@@ -2,6 +2,7 @@ var _cardDB           = {};
 var _cardDB_keyID     = {}; //same as _cardDB, but keyed by card code instead of name
 var _userInputElem    = $('#UserInput');
 var _deckID           = $('#DeckId');
+var _deckView         = $('#DeckView');
 var _SetSelection     = $('#SetSelection');
 var _PlaysetSelection = "";
 var _cardListElem     = $('#Cards');
@@ -23,7 +24,12 @@ function selectTab(evt, tabLabel) {
 
   switch(tabLabel) {
     case "Desklist":
-      buildFromDeckID();      
+      if (_deckID.val() != "") {
+        buildFromDeckID(true); 
+      }
+      if (_deckView.val() != "") {
+        buildFromDeckID(false); 
+      }
       break;
     case "Set":
       buildFromSet();
@@ -142,36 +148,56 @@ function buildFromCardList() {
   } 
 }
 
-function buildFromDeckID() {
-  var html = '';
-  var deckInput = _deckID.val().toLowerCase();
-  var deckidregex = /\d\d\d\d\d/;
+function buildFromDeckID(published) {
   if (!_cardDB_keyID) {
     return false;
+  }
+
+  if (published) {
+    var deckInput = _deckID.val().toLowerCase();
+    var deckidregex = /(?<=\/en\/decklist\/).[0-9]+/;
+  } else {
+    var deckInput = _deckView.val().toLowerCase();
+    var deckidregex = /(?<=deck\/view\/).[0-9]+/;
   }
 
   var match = deckidregex.exec(deckInput);
   if (match == null) return;
 
   var deckid = match[0];
-  $.getJSON("https://netrunnerdb.com/api/2.0/public/decklist/" + deckid, function(response) {
-    var input = response.data[0].cards;
-    var keys = Object.keys(input);
-    for (var i = 0; i < keys.length; i++) {
-      if (keys[i] in _cardDB_keyID) {
-        var card = _cardDB_keyID[keys[i]];
-        for (var j = 0; j < input[keys[i]]; j++) {
-          html += buildCardHTML(card.code, card.image, card.title.replace(/__/g, ' '));
-        }
+
+  if (published) {
+    $.getJSON("https://netrunnerdb.com/api/2.0/public/decklist/" + deckid, function(response) {
+      makeCardHTML(response);
+    });
+    _deckView.val("");
+    // _deckID.val(deckid);  
+  } else {
+    $.getJSON("https://netrunnerdb.com/api/2.0/public/deck/" + deckid, function(response) {
+      makeCardHTML(response);
+    });
+    _deckID.val("");
+    // _deckView.val(deckid);  
+  }
+}
+
+function makeCardHTML(response) {
+  var html = '';
+  var input = response.data[0].cards;
+  var keys = Object.keys(input);
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i] in _cardDB_keyID) {
+      var card = _cardDB_keyID[keys[i]];
+      for (var j = 0; j < input[keys[i]]; j++) {
+        html += buildCardHTML(card.code, card.image, card.title.replace(/__/g, ' '));
       }
     }
+  }
 
-    if (_cardListHtml != html) {
-      _cardListHtml = html;
-      _cardListElem.html(_cardListHtml);
-    }
-  });
-  _deckID.val(deckid);
+  if (_cardListHtml != html) {
+    _cardListHtml = html;
+    _cardListElem.html(_cardListHtml);
+  }
 }
 
 function buildFromSet() {
@@ -242,7 +268,11 @@ function assignEvents() {
   });
 
   _deckID.on('input',function(e){
-    buildFromDeckID();
+    buildFromDeckID(true);
+  });
+
+  _deckView.on('input',function(e){
+    buildFromDeckID(false);
   });
 
   _SetSelection.on('input',function(e){

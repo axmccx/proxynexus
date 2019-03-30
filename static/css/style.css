@@ -29,14 +29,22 @@ body {
   overflow-y: auto;
 }
 
-#DeckId {
+#DeckId, #DeckView {
   width: 18rem;
   border: 0 none;
   font-family: "Courier New", monospace;
   font-size: 14px;
+  font-weight: bold;
+  color: #000;
   outline: none;
   resize: none;
   overflow-y: auto;
+}
+
+#DeckId::placeholder, #DeckView::placeholder {
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  color: #aaa;
 }
 
 h1 {
