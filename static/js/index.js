@@ -2,6 +2,7 @@ var _cardDB           = {};
 var _cardDB_keyID     = {}; //same as _cardDB, but keyed by card code instead of name
 var _userInputElem    = $('#UserInput');
 var _deckID           = $('#DeckId');
+var _SetSelection     = $('#SetSelection');
 var _cardListElem     = $('#Cards');
 var _cardListHtml     = '';
 
@@ -19,12 +20,12 @@ function selectTab(evt, tabLabel) {
   document.getElementById(tabLabel).style.display = "block";
   evt.currentTarget.className += " active";
 
-  console.log(tabLabel);
   switch(tabLabel) {
     case "Desklist":
       buildFromDeckID();      
       break;
     case "Set":
+      buildFromSet();
       break;
     case "Card List":
       buildFromCardList();
@@ -56,7 +57,8 @@ function reset() {
 }
 
 function fetchAllCards() {
-  localStorage.removeItem('cards');
+  localStorage.removeItem('cardsDB');
+  localStorage.removeItem('cardDB_keyID');
   _cardListElem.html('<span class="text-muted" data-loading>loading cards ...</span>');
 
   $.getJSON( "https://netrunnerdb.com/api/2.0/public/cards", function(response) {
@@ -80,6 +82,17 @@ function fetchAllCards() {
     
     saveCards();
     buildFromCardList();
+  });
+}
+
+function fetchSetList() {
+  $.getJSON( "json/packs.json", function(response) {
+    $.each(response.data, function(key, item) {
+      _SetSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
+      if (item.code === "sc19") {
+        _SetSelection.val(item.code);
+      }
+    });
   });
 }
 
@@ -159,6 +172,34 @@ function buildFromDeckID() {
   _deckID.val(deckid);
 }
 
+function buildFromSet() {
+  var html = '';
+  var selectedSet = _SetSelection.val();
+
+  if (!_cardDB_keyID) {
+    return false;
+  }
+
+  $.getJSON( "json/pack/" + selectedSet + ".json", function(response) {
+    response.forEach(function(card) {
+      for (var i = 0; i < card.quantity; i++) {
+        var image = 'https://proxynexus.z27.web.core.windows.net/images/' + card.code + '.jpg';
+        var newCard = '';
+        newCard += '<a href="https://netrunnerdb.com/en/card/' + card.code + '" title="" target="NetrunnerCard">';
+        newCard += '<img class="card" src="' + image + '" alt="' + card.code + '" />';
+        newCard += '<span class="label print-hide">' + card.code + ' ' + card.title + '</span>'; 
+        newCard += '</a>'; 
+        html += newCard;
+      }
+    });
+
+    if (_cardListHtml != html) {
+      _cardListHtml = html;
+      _cardListElem.html(_cardListHtml);
+    }
+  });
+}
+
 function assignEvents() {
   _userInputElem.on('input',function(e){
     buildFromCardList();
@@ -167,6 +208,10 @@ function assignEvents() {
   _deckID.on('input',function(e){
     buildFromDeckID();
   });
+
+  _SetSelection.on('input',function(e){
+    buildFromSet();
+  });
 }
 
 $(function() {
@@ -174,4 +219,5 @@ $(function() {
   _userInputElem.text("MKUltra\nParagon\nHayley Kaplan: Universal Scholar");
   assignEvents();
   loadCards();
+  fetchSetList();
 });
