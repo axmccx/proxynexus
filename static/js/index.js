@@ -247,7 +247,7 @@ function buildCardHTML(code, image, title) {
   newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
   newCard += '</a>';
   if (code == "08012") {
-    const extras = ["08012-a", "08012", "08012-b", "08012", "08012-c"];
+    const extras = ["08012a", "08012", "08012b", "08012", "08012c"];
     extras.forEach(function(extra) {
       const img = "https://proxynexus.z27.web.core.windows.net/images/" + extra + ".jpg";
       newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
@@ -256,7 +256,7 @@ function buildCardHTML(code, image, title) {
       newCard += '</a>';
     });
   } else if (code == "09001") {
-    const syncBack = "https://proxynexus.z27.web.core.windows.net/images/09001-a.jpg";
+    const syncBack = "https://proxynexus.z27.web.core.windows.net/images/09001a.jpg";
     newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
     newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
     newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
