@@ -23,7 +23,7 @@ function selectTab(evt, tabLabel) {
   evt.currentTarget.className += " active";
 
   switch(tabLabel) {
-    case "Desklist":
+    case "Decklist":
       if (_deckID.val() != "") {
         buildFromDeckID(true); 
       }
