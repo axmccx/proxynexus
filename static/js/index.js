@@ -88,6 +88,7 @@ function fetchAllCards() {
 
         _cardDB[item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__')] = {
           code: item.code,
+          title: item.title,
           image: image
         }
 
@@ -132,7 +133,7 @@ function buildFromCardList() {
     
     if (cardname in _cardDB) {
       var card = _cardDB[cardname];
-      html += buildCardHTML(card.code, card.image, cardname.replace(/__/g, ' '));
+      html += buildCardHTML(card.code, card.image, card.title);
     } else {
       unfound++;
     }
@@ -170,17 +171,17 @@ function buildFromDeckID(published) {
     $.getJSON("https://netrunnerdb.com/api/2.0/public/decklist/" + deckid, function(response) {
       makeCardHTML(response);
     });
-    _deckView.val("");
-    // _deckID.val(deckid);  
+    _deckView.val(""); 
   } else {
     $.getJSON("https://netrunnerdb.com/api/2.0/public/deck/" + deckid, function(response) {
       makeCardHTML(response);
     });
-    _deckID.val("");
-    // _deckView.val(deckid);  
+    _deckID.val(""); 
   }
 }
 
+// Used by buildFromDeckID for DRY, 
+// need to re-work it so buildFromCardList and buildFromSet uses it too
 function makeCardHTML(response) {
   var html = '';
   var input = response.data[0].cards;
@@ -189,7 +190,7 @@ function makeCardHTML(response) {
     if (keys[i] in _cardDB_keyID) {
       var card = _cardDB_keyID[keys[i]];
       for (var j = 0; j < input[keys[i]]; j++) {
-        html += buildCardHTML(card.code, card.image, card.title.replace(/__/g, ' '));
+        html += buildCardHTML(card.code, card.image, card.title);
       }
     }
   }
