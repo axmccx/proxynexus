@@ -155,16 +155,16 @@ function buildFromDeckID(published) {
 
   if (published) {
     var deckInput = _deckID.val().toLowerCase();
-    var deckidregex = /(?<=\/en\/decklist\/).[0-9]+/;
+    var deckidregex = /(\/en\/decklist\/)(\d+)/;
   } else {
     var deckInput = _deckView.val().toLowerCase();
-    var deckidregex = /(?<=deck\/view\/).[0-9]+/;
+    var deckidregex = /(\/deck\/view\/)(\d+)/;
   }
 
   var match = deckidregex.exec(deckInput);
   if (match == null) return;
 
-  var deckid = match[0];
+  var deckid = match[2];
 
   if (published) {
     $.getJSON("https://netrunnerdb.com/api/2.0/public/decklist/" + deckid, function(response) {
