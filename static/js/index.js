@@ -60,6 +60,8 @@ function loadCards() {
   
   if (!_cardDB) {
     fetchAllCards();
+  } else if (!('title' in _cardDB)) {
+    fetchAllCards();
   } else {
     buildFromCardList();
   }
