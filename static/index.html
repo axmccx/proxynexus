@@ -21,7 +21,11 @@
           Proxy Nexus
         </h1>
         <p>
-          Print Netrunner Proxy cards. Enter a card list, a NetrunnerDB link or select a set. <br />
+          Print Netrunner Proxy cards. Enter a card list, a NetrunnerDB link or select a set.
+        </p>
+        <p id="notice">
+          Only tested with Chrome. <br />In order to fit 9 images per page, select more settings, set Margins to Custom, and drag the top and bottom margins to 0.25".
+          <a href="https://i.imgur.com/QlzlyX0.png" target="_blank" rel="noopener">Refer to this example</a>
         </p>
         <div id="side-bar" >
             <div class="tab">
@@ -55,13 +59,13 @@
               <p>
                 Sets that have been already released as PDF are ommited. 
                 To print the Magnum Opus cards, you can download the official PDFs from here: <br />
-                <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf">Champion Cards</a> <br />
-                <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf">Community Cards</a> <br />
-                <a href="https://images-cdn.fantasyflightgames.com/filer_public/2a/9e/2a9e3c68-0dd7-4b22-bf0d-25e55e1d8f11/adn_napdmultiplayeridentity.pdf">NAPD Multiplayer Identity</a> <br />
+                <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf" target="_blank" rel="noopener">Champion Cards</a> <br />
+                <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf" target="_blank" rel="noopener">Community Cards</a> <br />
+                <a href="https://images-cdn.fantasyflightgames.com/filer_public/2a/9e/2a9e3c68-0dd7-4b22-bf0d-25e55e1d8f11/adn_napdmultiplayeridentity.pdf" target="_blank" rel="noopener">NAPD Multiplayer Identity</a> <br />
               </p>
               <p>
-                <a href="http://nisei.net">Nisei</a> has also provided great print-and-play PDFs, which are found here: <br />
-                <a href="http://nisei.net/products/Downfall">Downfall</a>
+                <a href="http://nisei.net" target="_blank" rel="noopener">Nisei</a> has also provided great print-and-play PDFs, which are found here: <br />
+                <a href="http://nisei.net/products/Downfall" target="_blank" rel="noopener">Downfall</a>
               </p>
               <p>
                 Consider supporting Nisei by buying their cards from one of their purchase options.
@@ -78,22 +82,23 @@
       <div id="Cards"></div>
       <div class="print-hide">
         <p>
-          Based on <a href="https://codepen.io/Theavon/pen/YQmgBG">https://codepen.io/Theavon/pen/YQmgBG</a> 
-          and <a href="https://gparmer.github.io/anrproxy/">https://gparmer.github.io/anrproxy/</a>
+          Based on <a href="https://codepen.io/Theavon/pen/YQmgBG" target="_blank" rel="noopener">https://codepen.io/Theavon/pen/YQmgBG</a> 
+          and <a href="https://gparmer.github.io/anrproxy/" target="_blank" rel="noopener">https://gparmer.github.io/anrproxy/</a>
         </p>
         <p>
-          Uses scans from <a href="https://www.reddit.com/r/Netrunner/comments/8pgfbj/android_netrunner_cards_up_to_kitara_600dpi/">"Android: Netrunner Cards up to Kitara @600dpi"</a>
-          Special thanks to <a href="https://www.reddit.com/user/LepcisMagna">/u/LepcisMagna/</a>. Nisei cards are also included and unchanged from the print-and-play PDFs.  
+          Uses scans from <a href="https://www.reddit.com/r/Netrunner/comments/8pgfbj/android_netrunner_cards_up_to_kitara_600dpi/" target="_blank" rel="noopener">"Android: Netrunner Cards up to Kitara @600dpi"</a>
+          Special thanks to <a href="https://www.reddit.com/user/LepcisMagna" target="_blank" rel="noopener">/u/LepcisMagna/</a>. Nisei cards are also included and unchanged from the print-and-play PDFs.  
         </p>
         <p>
-          The scan have been despeckled using <a href="https://gist.github.com/ankitjaininfo/86e7e07a8df12e246ce49ec0a7168716">batch-despeckle.scm</a>
-          and enhanced using the tool mogrify with options "-modulate 105,105" from the <a href="https://www.imagemagick.org/">Image Magick Suite</a>
+          The scan have been despeckled using <a href="https://gist.github.com/ankitjaininfo/86e7e07a8df12e246ce49ec0a7168716" target="_blank" rel="noopener">batch-despeckle.scm</a>
+          and enhanced using the tool mogrify with options "-modulate 105,105" from the <a href="https://www.imagemagick.org/" target="_blank" rel="noopener">Image Magick Suite</a>
         </p>
         <p>
-          Uses the <a href="https://netrunnerdb.com/api/2.0/doc">NetrunnerDB API</a> to query card IDs from names and deck URLs.
+          Uses the <a href="https://netrunnerdb.com/api/2.0/doc" target="_blank" rel="noopener">NetrunnerDB API</a> to query card IDs from names and deck URLs.
         </p>
         <p>
-          Built by Alex McCulloch (<a href="https://www.reddit.com/user/axmccx">/u/axmccx</a>). Source published on <a href="https://github.com/axmccx/proxynexus">github</a>. 
+          Built by Alex McCulloch (<a href="https://www.reddit.com/user/axmccx" target="_blank" rel="noopener">/u/axmccx</a>). 
+          Source published on <a href="https://github.com/axmccx/proxynexus" target="_blank" rel="noopener">github</a>. 
         </p>
       </div>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>

@@ -60,6 +60,11 @@ body {
   color:  #aaa;
 }
 
+#notice {
+  color:  #8B0000;
+  font-weight: bold;
+}
+
 h1 {
   margin: 3rem 0 1rem 0;
   font-size: 1.75rem;
@@ -110,8 +115,6 @@ img.card {
   width: $card-width * $card-scale;
   height: $card-height * $card-scale;
   vertical-align: top;
-  // border: 0.075cm solid black;
-  // background-color: black;
 }
 
 #Cards,
@@ -237,7 +240,7 @@ img.card {
   }
   
   #Cards {
-    margin-top: 3rem;
+    margin-top: 1rem;
 
     > * {
       display: inline-block;
@@ -249,13 +252,11 @@ img.card {
       height: $card-height * $card-scale;
       background: #f6f7f7 linear-gradient(-54deg, rgba(black, 0.06) 50%, rgba(black, 0.02) 50%);
       transform: scale(1);
-      // filter: blur(0);
       transition: 
         transform 0.125s, 
         filter 0.1s ease-in-out;
 
       > img {
-        // border-radius: 0.1cm;
         background-image: none;
       }
       
@@ -264,11 +265,6 @@ img.card {
         padding: 1.621em 1rem;
         line-height: 1.5;
       }
-      
-      // > img:after,
-      // > *:not(img) {
-        
-      // }
       
       > .label {
         visibility: hidden;
@@ -296,19 +292,10 @@ img.card {
       transform: scale(1.1);
       z-index: 20;
       
-      > img {
-        
-      }
-      
       > .label {
         visibility: visible;
         opacity: 1;
       }
-    }
-    
-    
-    &:hover > a:not(:hover) img {
-      // filter: blur(0.5px) grayscale(0.5);
     }
   }
 }

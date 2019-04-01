@@ -47,6 +47,11 @@ body {
   color: #aaa;
 }
 
+#notice {
+  color: #8B0000;
+  font-weight: bold;
+}
+
 h1 {
   margin: 3rem 0 1rem 0;
   font-size: 1.75rem;
@@ -218,7 +223,7 @@ img.card {
   }
 
   #Cards {
-    margin-top: 3rem;
+    margin-top: 1rem;
   }
   #Cards > * {
     display: inline-block;
