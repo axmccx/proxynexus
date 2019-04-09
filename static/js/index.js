@@ -127,16 +127,14 @@ function buildFromCardList() {
   }
   
   for (var i=0; i<input.length; i++) {
-    var cardInputRegex = /(\d*)x?(.*)/;
+    var cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
     var match = cardInputRegex.exec(input[i]);
 
-    var count = match[1];
+    var count = $.trim(match[1]).replace(/x/g, '');
     var cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');	
 
     if (cardname == '') {		       
       continue;		
-    } else if (cardname == 'anadu') {  // hard coding only card that starts with x, b/c regex lacking
-      cardname = 'xanadu';
     }
 
     if (cardname in _cardDB) {
