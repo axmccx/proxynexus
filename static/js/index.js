@@ -127,15 +127,30 @@ function buildFromCardList() {
   }
   
   for (var i=0; i<input.length; i++) {
-    var cardname = $.trim(input[i]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');	
-    
+    var cardInputRegex = /(\d*)x?(.*)/;
+    var match = cardInputRegex.exec(input[i]);
+
+    var count = match[1];
+    var cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');	
+
     if (cardname == '') {		       
       continue;		
+    } else if (cardname == 'anadu') {  // hard coding only card that starts with x, b/c regex lacking
+      cardname = 'xanadu';
     }
-    
+
     if (cardname in _cardDB) {
       var card = _cardDB[cardname];
-      html += buildCardHTML(card.code, card.image, card.title);
+      if (count >= 3) {
+        html += buildCardHTML(card.code, card.image, card.title);
+        html += buildCardHTML(card.code, card.image, card.title);
+        html += buildCardHTML(card.code, card.image, card.title);
+      } else if (count == 2) {
+        html += buildCardHTML(card.code, card.image, card.title);
+        html += buildCardHTML(card.code, card.image, card.title);
+      } else {
+        html += buildCardHTML(card.code, card.image, card.title);
+      }
     } else {
       unfound++;
     }
@@ -286,8 +301,19 @@ function assignEvents() {
 $(function() {
   document.getElementById("defaultOpen").click();
   document.getElementById("defaultSetTab").click()
-  _userInputElem.text("MKUltra\nParagon\nHayley Kaplan: Universal Scholar");
   assignEvents();
   loadCards();
   fetchSetList();
+
+  // pick 3 random cards for home page
+  var chosenCards = [];
+  for (var i=0; i<3; i++) {
+    const rand_index = Math.floor(Math.random() * Object.keys(_cardDB).length);
+    const cards = Object.values(_cardDB);
+    const card = cards[rand_index];
+    chosenCards[i] = card.title;
+  }
+  _userInputElem.text(chosenCards[0] + "\n" +
+                      chosenCards[1] + "\n" + 
+                      chosenCards[2] + "\n");
 });
