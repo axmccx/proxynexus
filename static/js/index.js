@@ -312,17 +312,21 @@ $(function() {
   loadCards();
   fetchSetList();
 
-  // pick 3 random cards for home page
-  var chosenCards = [];
-  for (var i=0; i<3; i++) {
-    const rand_index = Math.floor(Math.random() * Object.keys(_cardDB).length);
-    const cards = Object.values(_cardDB);
-    const card = cards[rand_index];
-    chosenCards[i] = card.title;
+  if (!_cardDB) {
+    _userInputElem.text("MKUltra\nParagon\nHayley Kaplan: Universal Scholar");
+  } else {
+    // if cardDB has been loaded, pick 3 random cards for home page
+    var chosenCards = [];
+    for (var i=0; i<3; i++) {
+      const rand_index = Math.floor(Math.random() * Object.keys(_cardDB).length);
+      const cards = Object.values(_cardDB);
+      const card = cards[rand_index];
+      chosenCards[i] = card.title;
+    }
+    _userInputElem.text(chosenCards[0] + "\n" +
+                        chosenCards[1] + "\n" + 
+                        chosenCards[2] + "\n");
   }
-  _userInputElem.text(chosenCards[0] + "\n" +
-                      chosenCards[1] + "\n" + 
-                      chosenCards[2] + "\n");
 
   if(isMobileBrowser()){ alert("Welcome to Proxy Nexus!\n\nThis website isn't designed for mobile.\nFor the best experience, use Google Chrome on a computer :)"); }
 });
