@@ -139,14 +139,12 @@ function buildFromCardList() {
 
     if (cardname in _cardDB) {
       var card = _cardDB[cardname];
-      if (count >= 3) {
-        html += buildCardHTML(card.code, card.image, card.title);
-        html += buildCardHTML(card.code, card.image, card.title);
-        html += buildCardHTML(card.code, card.image, card.title);
-      } else if (count == 2) {
-        html += buildCardHTML(card.code, card.image, card.title);
-        html += buildCardHTML(card.code, card.image, card.title);
-      } else {
+      if (count > 6) {
+        count = 6;
+      } else if (count < 1) {
+        count = 1;
+      }
+      for (var j=0; j<count; j++) {
         html += buildCardHTML(card.code, card.image, card.title);
       }
     } else {
