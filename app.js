@@ -22,6 +22,9 @@ const cardheight = 8.80;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
 
+const leftMargin = 36;
+const topMargin = 21;
+
 app.post('/api/makePDF', function (req, res) {
 
 	const pageType = req.body.pageType;
@@ -47,10 +50,9 @@ app.post('/api/makePDF', function (req, res) {
 
 	var rowCount = 0;
 	var colCount = 0;
-	const leftMargin = 32;
-	const topMargin = 18;
 
 	doc.addPage();
+	drawCutLines(doc);
 	requestedImages.forEach(code => {
 		const path = IMAGE_SOURCE + imageDir + code + ".jpg";
 		const x = rowCount*cardwidthPt + leftMargin;
@@ -66,6 +68,7 @@ app.post('/api/makePDF', function (req, res) {
 		if (colCount > 2) {
 			colCount = 0;
 			doc.addPage();
+			drawCutLines(doc);
 		}
 	});
 
@@ -75,6 +78,58 @@ app.post('/api/makePDF', function (req, res) {
 	result.success = true;
 	res.json(result);
 });
+
+function drawCutLines(doc) {
+	doc.lineWidth(0.5);
+
+	// draw top lines
+	var x = cardwidthPt + leftMargin;
+	var y = topMargin;
+	doc.moveTo(x, y)
+	   .lineTo(x, y-10)
+	   .stroke();
+
+	x += cardwidthPt;
+	doc.moveTo(x, y)
+	   .lineTo(x, y-10)
+	   .stroke();
+
+	// draw lines between row 1 and 2
+	x = leftMargin;
+	y += cardheightPt;
+	doc.moveTo(x, y)
+	   .lineTo(x-18, y)
+	   .stroke();
+
+	x += 3*cardwidthPt;
+	doc.moveTo(x, y)
+	   .lineTo(x+18, y)
+	   .stroke();
+
+	// draw lines between row 2 and 3
+	x = leftMargin;
+	y += cardheightPt;
+	doc.moveTo(x, y)
+	   .lineTo(x-18, y)
+	   .stroke();
+
+	x += 3*cardwidthPt;
+	doc.moveTo(x, y)
+	   .lineTo(x+18, y)
+	   .stroke();
+
+	// draw bottom lines
+	x = cardwidthPt + leftMargin;
+	y += cardheightPt;
+	doc.moveTo(x, y)
+	   .lineTo(x, y+10)
+	   .stroke();
+
+	x += cardwidthPt;
+	doc.moveTo(x, y)
+	   .lineTo(x, y+10)
+	   .stroke();
+}
 
 app.listen(port, () => {
 	console.log('listening on port ' + port);
