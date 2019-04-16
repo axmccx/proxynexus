@@ -10,14 +10,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const {
 	Aborter,
-	BlobURL,
 	BlockBlobURL,
 	ContainerURL,
 	ServiceURL,
 	StorageURL,
 	SharedKeyCredential,
-	AnonymousCredential,
-	TokenCredential,
 	downloadBlobToBuffer
   } = require("@azure/storage-blob");
 
@@ -30,8 +27,6 @@ const ACCOUNT_ACCESS_KEY = process.env.AZURE_STORAGE_ACCOUNT_ACCESS_KEY;
 const ONE_MINUTE = 60 * 1000;
 
 const PDFDocument = require('pdfkit');
-
-const IMAGE_SOURCE = 'static/';
 
 function cmToPt (cm) {
 	return cm * 28.3465;
@@ -47,12 +42,12 @@ app.post('/api/makePDF', function (req, res) {
 
 	const paperSize = req.body.paperSize;
 	const quality = req.body.quality;
-	const imageDir = ((q) => {
+	const container = ((q) => {
 		switch(q) {
 			case 'high':
-				return 'images/';
-			case 'medium'	:
-				return 'medImages/';
+				return 'images';
+			case 'low':
+				return 'low-images';
 		}
 	})(quality);
 	const requestedImages = req.body.requestedImages;
@@ -84,7 +79,6 @@ app.post('/api/makePDF', function (req, res) {
 
 	const doc = new PDFDocument({
 		size: paperSize,
-		autoFirstPage: false,
 		margins: {
 			top: topMargin,
 			bottom: topMargin,
@@ -93,94 +87,87 @@ app.post('/api/makePDF', function (req, res) {
 		  }
 	});
 
-	doc.pipe(fs.createWriteStream('output.pdf'));
-
-	var rowCount = 0;
-	var colCount = 0;
-
-
-
-	// console.log("Containers:");
-    // await showContainerNames(aborter, serviceURL);
-
-	// doc.addPage();
-	// makeFrontPage(doc);
+  res.setHeader('Content-type', 'application/pdf');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Content-disposition', 'attachment; filename=ProxyNexus.pdf');
+	
+	doc.pipe(res);
+	makeFrontPage(doc);
 	doc.addPage();
 	drawCutLines(doc, leftMargin, topMargin);
 
-	
-	addImage(doc);
-
-
-
-	// requestedImages.forEach(code => {
-	// 	const path = IMAGE_SOURCE + imageDir + code + ".jpg";
-	// 	const x = rowCount*cardwidthPt + leftMargin;
-	// 	const y = colCount*cardheightPt + topMargin;
-
-	// 	// TODO check that code is valid, i.e. image exists. 
-	// 	doc.image(path, x, y, {width: cardwidthPt, height: cardheightPt});
-	// 	rowCount++;
-
-	// 	if (rowCount > 2) {
-	// 		rowCount = 0;
-	// 		colCount++;
-	// 	}
-	// 	if (colCount > 2) {
-	// 		colCount = 0;
-	// 		doc.addPage();
-	// 		drawCutLines(doc, leftMargin, topMargin);
-	// 	}
-	// });
-
-	doc.end();
-	res.status(200);
-	var result = {}
-	result.success = true;
-	res.json(result);
+	fetchImages(requestedImages, container)
+		.then(imgBufferList => {
+			addImages(imgBufferList, doc, leftMargin, topMargin);
+			doc.end();
+		})
+		.catch(err => {
+			doc.end();
+			res.status(200);
+			var result = {}
+			result.success = false;
+			result.error = err;
+			res.json(result);
+		})
 });
 
-async function addImage(doc) {
+function addImages(lst, doc, leftMargin, topMargin) {
+	var rowCount = 0;
+	var colCount = 0;
 
-	const containerName = "demo";
-	const blobName = "01001.jpg";
-	
+	lst.forEach(buffer => {
+		const x = rowCount*cardwidthPt + leftMargin;
+		const y = colCount*cardheightPt + topMargin;
+
+		doc.image(buffer, x, y, {width: cardwidthPt, height: cardheightPt});
+		rowCount++;
+
+		if (rowCount > 2) {
+			rowCount = 0;
+			colCount++;
+		}
+		if (colCount > 2) {
+			colCount = 0;
+			doc.addPage();
+			drawCutLines(doc, leftMargin, topMargin);
+		}
+	});
+}
+
+async function fetchImages(requestedImages, container) {
+	// TODO check that code is valid, i.e. image exists. 	
 	const credentials = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, ACCOUNT_ACCESS_KEY);
   const pipeline = StorageURL.newPipeline(credentials);
 	const serviceURL = new ServiceURL(`https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, pipeline);
 	
-	const containerURL = ContainerURL.fromServiceURL(serviceURL, containerName);
-	const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blobName);
-	
+	const containerURL = ContainerURL.fromServiceURL(serviceURL, container);
 	const aborter = Aborter.timeout(30 * ONE_MINUTE);
 
-	console.log(`Blobs in "${containerName}" container:`);
-	await showBlobNames(aborter, containerURL);
+	const imgPromiseList = requestedImages.map(async code => {
+		const blobName = code + '.jpg';
+		const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blobName);
+		const downloadResponse = await blockBlobURL.download(aborter, 0);
 
-	// const downloadResponse = await blockBlobURL.download(aborter, 0);
-	// const downloadedContent = downloadResponse.readableStreamBody.read(downloadResponse.contentLength);
-	// console.log(`Downloaded blob content: "${downloadedContent}"`);
-
-
-	// const downloadResponse = await blockBlobURL.download(aborter, 0);
-	// const downloadedContent = downloadResponse.readableStreamBody.read(5000).toString();
-	// console.log(`Downloaded blob content: "${downloadedContent}"`);
-	// const body = await streamToString(response.readableStreamBody);
-	// doc.image(downloadedContent, 0, 0, {width: cardwidthPt, height: cardheightPt});
-}
-
-async function showBlobNames(aborter, containerURL) {
-
-	let response;
-	let marker;
-
-	do {
-			response = await containerURL.listBlobFlatSegment(aborter);
-			marker = response.marker;
-			for(let blob of response.segment.blobItems) {
-					console.log(` - ${ blob.name }`);
+		const fileSize = downloadResponse.contentLength;
+		const buffer = Buffer.alloc(fileSize);
+		await downloadBlobToBuffer(
+			aborter,
+			buffer,
+			blockBlobURL,
+			0,
+			undefined,
+			{
+				blockSize: 4 * 1024 * 1024, // 4MB block size
+				parallelism: 20, // 20 concurrency
+				progress: ev => console.log(ev)
 			}
-	} while (marker);
+		);
+		return buffer;
+	});
+
+	const imgBufferList = await Promise.all(imgPromiseList);
+
+	return imgBufferList;
 }
 
 function drawCutLines(doc, leftMargin, topMargin) {
