@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Proxy Nexus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/new-style.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style></style>
+</head>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <nav id="myNavbar" class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+
+            <div class="navbar-header ">
+                <a class="navbar-brand" href="#">
+                    <img class="home-button" src="logo2.jpg">
+                        Proxy Nexus
+                </a>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#" target="_blank">Blog</a></li>
+                    <li><a href="#" target="_blank">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="demo-content">.col-sm-4</div>
+            </div>
+            <div class="col-sm-8">
+                <ul class="nav nav-tabs nav-fill">
+                    <li class="nav-link active"><a data-toggle="tab" href="#cardlist">Card List</a></li>
+                    <li><a class="nav-link" data-toggle="tab" href="#set">Set</a></li>
+                    <li><a class="nav-link" data-toggle="tab" href="#decklist">Decklist</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="cardlist" class="tab-pane fade in active">
+                        <h4>Enter card names below.</h4>
+                        <p>To add multiple copies, include a number preceeding the name. Max 6. Eg. 2x Corroder, or 2 Corroder.</p>
+                        <div class="form-group">
+                            <textarea class="form-control" rows="5" id="UserInput" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+                        </div>
+                        <button class="btn btn-danger navbar-btn">Download</button>
+                    </div>
+                    <div id="set" class="tab-pane fade">
+                        <h4>Select a set from the dropdown</h4>
+                        <select id="SetSelection">
+                        </select>
+                        <div id="PlaysetDisplay"> 
+                            <div class="playset-tab">
+                            <button class="tabsets" onclick="selectPlayset(event, 'Single')" id="defaultSetTab">Single Set</button>
+                            <button class="tabsets" onclick="selectPlayset(event, 'Full')">Playset</button>
+                            </div>
+                            Playsets are three copies of each card.
+                        </div>
+                        <p>
+                            Sets that have been already released as PDF are ommited. 
+                            To print the Magnum Opus cards, you can download the official PDFs from here: <br />
+                            <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf" target="_blank" rel="noopener">Champion Cards</a> <br />
+                            <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf" target="_blank" rel="noopener">Community Cards</a> <br />
+                            <a href="https://images-cdn.fantasyflightgames.com/filer_public/2a/9e/2a9e3c68-0dd7-4b22-bf0d-25e55e1d8f11/adn_napdmultiplayeridentity.pdf" target="_blank" rel="noopener">NAPD Multiplayer Identity</a> <br />
+                        </p>
+                        <p>
+                            <a href="http://nisei.net" target="_blank" rel="noopener">Nisei</a> has also provided great print-and-play PDFs, which are found here: <br />
+                            <a href="http://nisei.net/products/Downfall" target="_blank" rel="noopener">Downfall</a>
+                        </p>
+                        <p>
+                            Consider supporting Nisei by buying their cards from one of their purchase options.
+                        </p>
+                        <button class="btn btn-danger navbar-btn">Download</button>
+                    </div>
+                    <div id="decklist" class="tab-pane fade">
+                        <h4>
+                        Enter the URL of a published decklist from Netrunner DB.<br />
+                        </h4>
+                        <textarea id="DeckId" name="DeckId" placeholder="https://netrunnerdb.com/en/decklist/xxxxx/deck-name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+                        <h4>
+                            Enter the URL of an unpublished decklist from Netrunner DB, from a user who has "Share your decks" enabled.<br />
+                        </h4>
+                        <textarea id="DeckView" name="DeckView" placeholder="https://netrunnerdb.com/en/deck/view/xxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+                        <br/>
+                        <button class="btn btn-danger navbar-btn">Download</button>
+                    </div>                   
+                </div>
+        </div>
+    </div>
+</body>
+</html>
