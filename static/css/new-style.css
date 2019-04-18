@@ -61,29 +61,46 @@
   color: #ffffff;
 }
 
-.demo-content{
-    padding: 15px;
-    /* font-size: 18px; */
-    /* min-height: 300px; */
-    background: #dbdfe5;
-    /* margin-bottom: 10px; */
-}
 .demo-content.bg-alt{
+    padding: 15px;
     background: #abb1b8;
 }
 .home-button{
-    max-height:40px;
-    margin-top: -8px; 
-    float:left; 
-    padding: 2px;
+    max-height:30px;
+    padding: 1px;
 }
 body{
   padding-top: 70px;
 }
 
+/* .container{
+  height: 100%
+}
 
+.col-md-6 {
+  min-height: 80vh;
+}  */
 
+.playset-tab {
+  overflow: hidden;
+  padding-top: 10px;
+}
 
+.playset-tab button {
+  background-color: inherit;
+  border: 1px solid #ccc;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.playset-tab button:hover {
+  background-color: #ddd;
+}
+
+.playset-tab button.active {
+  background-color: #ccc;
+}
   
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {

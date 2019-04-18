@@ -4,102 +4,141 @@
     <meta charset="utf-8">
     <title>Proxy Nexus</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="css/new-style.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <style></style>
 </head>
 <body>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>    <link rel="stylesheet" href="css/new-style.css">
 
-    <nav id="myNavbar" class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container">
-
-            <div class="navbar-header ">
-                <a class="navbar-brand" href="#">
-                    <img class="home-button" src="logo2.jpg">
-                        Proxy Nexus
-                </a>
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-            </div>
-
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#" target="_blank">Blog</a></li>
-                    <li><a href="#" target="_blank">About</a></li>
-                </ul>
-            </div>
+    <nav class="navbar navbar-default navbar-expand-md navbar-dark fixed-top">
+        <a class="navbar-brand" href="#">
+            <img class="home-button" src="logo2.jpg">
+            Proxy Nexus
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggler">
+            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Blog</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+            </ul>
         </div>
     </nav>
-
     <div class="container">
         <div class="row">
-            <div class="col-sm-4">
-                <div class="demo-content">.col-sm-4</div>
-            </div>
-            <div class="col-sm-8">
-                <ul class="nav nav-tabs nav-fill">
-                    <li class="nav-link active"><a data-toggle="tab" href="#cardlist">Card List</a></li>
-                    <li><a class="nav-link" data-toggle="tab" href="#set">Set</a></li>
-                    <li><a class="nav-link" data-toggle="tab" href="#decklist">Decklist</a></li>
-                </ul>
-
-                <div class="tab-content">
-                    <div id="cardlist" class="tab-pane fade in active">
-                        <h4>Enter card names below.</h4>
-                        <p>To add multiple copies, include a number preceeding the name. Max 6. Eg. 2x Corroder, or 2 Corroder.</p>
-                        <div class="form-group">
-                            <textarea class="form-control" rows="5" id="UserInput" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
-                        </div>
-                        <button class="btn btn-danger navbar-btn">Download</button>
-                    </div>
-                    <div id="set" class="tab-pane fade">
-                        <h4>Select a set from the dropdown</h4>
-                        <select id="SetSelection">
-                        </select>
-                        <div id="PlaysetDisplay"> 
-                            <div class="playset-tab">
-                            <button class="tabsets" onclick="selectPlayset(event, 'Single')" id="defaultSetTab">Single Set</button>
-                            <button class="tabsets" onclick="selectPlayset(event, 'Full')">Playset</button>
-                            </div>
-                            Playsets are three copies of each card.
-                        </div>
-                        <p>
-                            Sets that have been already released as PDF are ommited. 
-                            To print the Magnum Opus cards, you can download the official PDFs from here: <br />
-                            <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf" target="_blank" rel="noopener">Champion Cards</a> <br />
-                            <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf" target="_blank" rel="noopener">Community Cards</a> <br />
-                            <a href="https://images-cdn.fantasyflightgames.com/filer_public/2a/9e/2a9e3c68-0dd7-4b22-bf0d-25e55e1d8f11/adn_napdmultiplayeridentity.pdf" target="_blank" rel="noopener">NAPD Multiplayer Identity</a> <br />
-                        </p>
-                        <p>
-                            <a href="http://nisei.net" target="_blank" rel="noopener">Nisei</a> has also provided great print-and-play PDFs, which are found here: <br />
-                            <a href="http://nisei.net/products/Downfall" target="_blank" rel="noopener">Downfall</a>
-                        </p>
-                        <p>
-                            Consider supporting Nisei by buying their cards from one of their purchase options.
-                        </p>
-                        <button class="btn btn-danger navbar-btn">Download</button>
-                    </div>
-                    <div id="decklist" class="tab-pane fade">
-                        <h4>
-                        Enter the URL of a published decklist from Netrunner DB.<br />
-                        </h4>
-                        <textarea id="DeckId" name="DeckId" placeholder="https://netrunnerdb.com/en/decklist/xxxxx/deck-name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
-                        <h4>
-                            Enter the URL of an unpublished decklist from Netrunner DB, from a user who has "Share your decks" enabled.<br />
-                        </h4>
-                        <textarea id="DeckView" name="DeckView" placeholder="https://netrunnerdb.com/en/deck/view/xxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
-                        <br/>
-                        <button class="btn btn-danger navbar-btn">Download</button>
-                    </div>                   
+            <div class="col-md-6 order-2">
+                <div class="demo-content">
+                    CARD PREVIEW
                 </div>
+            </div>
+            <div class="col-md-6 order-1 order-md-12">
+                <nav>
+                    <div class="nav nav-pills nav-fill" id="nav-tab" role="tablist">
+                        <a class="nav-item nav-link active" id="nav-cardlist-tab" data-toggle="tab" href="#nav-cardlist" role="tab" aria-controls="nav-cardlist" aria-selected="true">Card List</a>
+                        <a class="nav-item nav-link" id="nav-set-tab" data-toggle="tab" href="#nav-set" role="tab" aria-controls="nav-set" aria-selected="false">Set</a>
+                        <a class="nav-item nav-link" id="nav-ndrb-tab" data-toggle="tab" href="#nav-ndrb" role="tab" aria-controls="nav-ndrb" aria-selected="false">NetrunnerDB</a>
+                    </div>
+                </nav>
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-cardlist" role="tabpanel" aria-labelledby="nav-cardlist-tab">
+                        <form>
+                            <div class="form-group mt-3">
+                                <label for="cardListTextArea">Enter card names below</label>
+                                <textarea id="cardListTextArea" rows="5" class="form-control" aria-describedby="cardListHelpBlock" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+                                <small id="cardListHelpBlock" class="form-text text-muted">
+                                    To add multiple copies, include a number preceeding the name. Max 6. Eg. 2x Corroder, or 2 Corroder.
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="nav-set" role="tabpanel" aria-labelledby="nav-set-tab">
+                        <form>
+                            <div class="form-group mt-3">
+                                <label for="setSelection">Select a set</label>
+                                <select class="form-control" id="setSelection">
+                                </select>
+                                <div id="PlaysetDisplay" aria-describedby="playsetHelper"> 
+                                        <div class="playset-tab">
+                                            <button class="tabsets" onclick="selectPlayset(event, 'Single')" id="defaultSetTab">Single Set</button>
+                                            <button class="tabsets" onclick="selectPlayset(event, 'Full')">Playset</button>
+                                        </div>
+                                </div>
+                                <small id="playsetHelper" class="form-text text-muted">
+                                    Playsets are three copies of each card.
+                                </small>
+                                <br/>
+                                <p>
+                                    Sets that have already been released as PDF are ommited. 
+                                    To print the Magnum Opus cards, you can download the official PDFs from here: <br />
+                                    <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf" target="_blank" rel="noopener">Champion Cards</a> <br />
+                                    <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf" target="_blank" rel="noopener">Community Cards</a> <br />
+                                    <a href="https://images-cdn.fantasyflightgames.com/filer_public/2a/9e/2a9e3c68-0dd7-4b22-bf0d-25e55e1d8f11/adn_napdmultiplayeridentity.pdf" target="_blank" rel="noopener">NAPD Multiplayer Identity</a> <br />
+                                </p>
+                                <p>
+                                    <a href="http://nisei.net" target="_blank" rel="noopener">Nisei</a> has also provided great print-and-play PDFs, which are found here: <br />
+                                    <a href="http://nisei.net/products/Downfall" target="_blank" rel="noopener">Downfall</a>
+                                </p>
+                                <p>
+                                    Consider supporting Nisei by buying their cards from one of their purchase options.
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="nav-ndrb" role="tabpanel" aria-labelledby="nav-ndrb-tab">
+                        <form>
+                            <div class="form-group mt-3">
+                                <label for="deckURLText">Enter the URL of a published decklist from Netrunner DB</label>
+                                <input type="text" id="deckURLText" class="form-control" aria-describedby="deckURLHelper" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+                                <small id="deckURLHelper" class="form-text text-muted">
+                                    Published and unpublished decklist are supported.
+                                    eg.
+                                    https://netrunnerdb.com/en/decklist/xxxxx/deck-name
+                                    https://netrunnerdb.com/en/deck/view/xxxxxxx
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <form>
+                    <div class="form-row align-items-center">
+                        <div class="col-auto my-1">
+                            <select class="form-control" id="paperSizeSelection">
+                                <option>- Paper Size -</option>
+                                <option>Letter</option>
+                                <option>A4</option>
+                            </select>
+                        </div>
+                        <div class="col-auto my-1">
+                            <select class="form-control" id="imageQualitySelection" aria-describedby="cardListHelpBlock">
+                                <option>- Image Quality -</option>
+                                <option>High</option>
+                                <option>Medium</option>
+                            </select>
+                        </div>
+                        <div class="col-auto my-1">
+                            <button class="btn btn-primary btn-danger">Download</button>
+                        </div>
+                        <small id="cardListHelpBlock" class="form-text text-muted">
+                            Medium quality reduces PDF size, with little sacrifice to quality.
+                            Some printers can't handle PDFs greater than 80MB.
+                        </small> 
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </body>
