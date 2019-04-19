@@ -94,6 +94,10 @@ img.card{
   height: 7.92cm;
   vertical-align: top;
 }
+
+#downloadSpinner{
+  display: none
+}
   
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {

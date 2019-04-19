@@ -6,7 +6,9 @@ var _setSelection;
 var _cardImgBox;
 var _playsetSelection = "Single Set";
 var _cardListHtml     = '';
-var _cardList         = [];
+var _cardList;
+var _paperSize;
+var _imageQuality;
 
 const IMAGE_BASE_DIR = "https://proxynexus.blob.core.windows.net/";
 const NRDB_API_DIR = "https://netrunnerdb.com/api/2.0/public/";
@@ -108,6 +110,7 @@ function buildFromCardList() {
   var html = '';
   var input = _cardListTextArea.val().toLowerCase().split(/\n/);
   var unfound = 0;
+  _cardList = [];
   
   if (!_cardDB) {
     return false;
@@ -133,6 +136,7 @@ function buildFromCardList() {
       }
       for (var j=0; j<count; j++) {
         html += buildCardHTML(card.code, card.image, card.title);
+        _cardList.push(card.code);
       }
     } else {
       unfound++;
@@ -184,11 +188,13 @@ function makeCardHTML(response) {
   var html = '';
   var input = response.data[0].cards;
   var keys = Object.keys(input);
+  _cardList = [];
   for (var i = 0; i < keys.length; i++) {
     if (keys[i] in _cardDB_keyID) {
       var card = _cardDB_keyID[keys[i]];
       for (var j = 0; j < input[keys[i]]; j++) {
         html += buildCardHTML(card.code, card.image, card.title);
+        _cardList.push(card.code);
       }
     }
   }
@@ -203,6 +209,7 @@ function buildFromSet() {
   var html = '';
   var selectedSet = _setSelection.val();
   const coreSets = ["core", "core2", "sc19"];
+  _cardList = [];
 
   if (!_cardDB_keyID || !selectedSet) {
     return false;
@@ -226,6 +233,7 @@ function buildFromSet() {
       for (var i = 0; i < quantity; i++) {
         var image = IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code + '.jpg';
         html += buildCardHTML(card.code, image, card.title);
+        _cardList.push(card.code);
       }
     });
 
@@ -261,14 +269,60 @@ function buildCardHTML(code, image, title) {
   return newCard;
 }
 
+function downloadPDF() {
+  if (_paperSize != null && _imageQuality != null) {
+    var paperSize = _paperSize;
+    var imageQuality = _imageQuality;
+
+    const downloadOptions = {
+      "paperSize": paperSize,
+      "quality": imageQuality,
+      "requestedImages": _cardList
+    };
+
+    $('#downloadSpinner').show();
+
+    $.ajax({
+      method: "POST",
+      url: "/api/makePDF",
+      contentType: "application/json; charset=utf-8",
+      dataType: "binary",
+      data: JSON.stringify(downloadOptions)
+    }).done(function(data) {
+      var link = document.createElement('a');
+      link.href = window.URL.createObjectURL(data);
+      link.download = "ProxyNexus.pdf";
+      link.click();
+      $('#downloadSpinner').hide();
+    }).fail(function(xhr, textStatus, errorThrown) {
+      $('#downloadSpinner').show();
+      console.log(xhr);
+      console.log(textStatus);
+      console.log(errorThrown);
+    });
+  }
+}
+
 function assignEvents() {
   $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-    var currentTab = $(e.target).text(); // get current tab
+    var currentTab = $(e.target).text();
     selectTab(currentTab);
   });
 
-  $(".playset-btn").click(function(event) {
-    selectPlayset(event.target.value);
+  $(".playset-btn").click(function(e) {
+    selectPlayset(e.target.value);
+  })
+
+  $('#paperSizeSelection').change(function () {
+    _paperSize = $(this).find("option:selected").text();
+  });
+
+  $('#imageQualitySelection').change(function () {
+    _imageQuality = $(this).find("option:selected").text();
+  });
+
+  $("#PDFdownloadBtn").click(function(e) {
+    downloadPDF();
   })
 
   _cardListTextArea.on('input',function(e){

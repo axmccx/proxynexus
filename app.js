@@ -44,10 +44,10 @@ app.post('/api/makePDF', function (req, res) {
 	const quality = req.body.quality;
 	const container = ((q) => {
 		switch(q) {
-			case 'high':
+			case 'High':
 				return 'images';
-			case 'low':
-				return 'low-images';
+			case 'Medium':
+				return 'med-images';
 		}
 	})(quality);
 	const requestedImages = req.body.requestedImages;
@@ -65,7 +65,7 @@ app.post('/api/makePDF', function (req, res) {
 		var leftMargin = 30;
 		var topMargin = 46;
 	}
-	if (paperSize === 'letter') {
+	else if (paperSize === 'Letter') {
 		var leftMargin = 36;
 		var topMargin = 21;
 	} else {
@@ -100,6 +100,7 @@ app.post('/api/makePDF', function (req, res) {
 		.then(imgBufferList => {
 			addImages(imgBufferList, doc, leftMargin, topMargin);
 			doc.end();
+			console.log(Date() + " DOWNLOAD; Papersize: " + paperSize + ", Quality: " + quality);
 		})
 		.catch(err => {
 			doc.end();
@@ -159,7 +160,7 @@ async function fetchImages(requestedImages, container) {
 			{
 				blockSize: 4 * 1024 * 1024, // 4MB block size
 				parallelism: 20, // 20 concurrency
-				progress: ev => console.log(ev)
+				// progress: ev => console.log(ev)
 			}
 		);
 		return buffer;
