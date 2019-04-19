@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" >
+   <head>
+      <meta charset="UTF-8">
+      <title>Proxy Nexus - Netunner Proxy Generator</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Print Netrunner Proxy cards. Enter a card list, a NetrunnerDB link or select a set." />
+      <link rel="stylesheet" href="css/style.css">
+      <link rel="shortcut icon" href="#"/>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-137348308-1"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-137348308-1');
+      </script>
+   </head>
+   <body>
+      <div class="print-hide">
+        <h1>
+          Proxy Nexus
+        </h1>
+        <p>
+          Print Netrunner Proxy cards. Enter a card list, a NetrunnerDB link or select a set.
+        </p>
+        <p id="notice">
+          Only tested with Chrome. <br />In order to fit 9 images per page, select more settings, set Margins to Custom, and drag the top and bottom margins to 0.25".
+          <a href="https://i.imgur.com/QlzlyX0.png" target="_blank" rel="noopener">Refer to this example</a>
+        </p>
+        <div id="side-bar" >
+            <div class="tab">
+              <button class="tablinks" onclick="selectTab(event, 'Decklist')">Decklist</button>
+              <button class="tablinks" onclick="selectTab(event, 'Set')">Set</button>
+              <button class="tablinks" onclick="selectTab(event, 'Card List')" id="defaultOpen">Card List</button>
+            </div>
+            <div id="Decklist" class="tabcontent">
+              <p>
+                Enter the URL of a published decklist from Netrunner DB.<br />
+              </p>
+              <textarea id="DeckId" name="DeckId" placeholder="https://netrunnerdb.com/en/decklist/xxxxx/deck-name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+              <p>
+                Enter the URL of an unpublished decklist from Netrunner DB, from a user who has "Share your decks" enabled.<br />
+              </p>
+              <textarea id="DeckView" name="DeckView" placeholder="https://netrunnerdb.com/en/deck/view/xxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+            </div>
+            <div id="Set" class="tabcontent">
+              <p>
+                Select a set from the dropdown
+              </p>
+              <select id="SetSelection">
+              </select>
+              <div id="PlaysetDisplay"> 
+                <div class="playset-tab">
+                  <button class="tabsets" onclick="selectPlayset(event, 'Single')" id="defaultSetTab">Single Set</button>
+                  <button class="tabsets" onclick="selectPlayset(event, 'Full')">Playset</button>
+                </div>
+                Playsets are three copies of each card.
+              </div>
+              <p>
+                Sets that have been already released as PDF are ommited. 
+                To print the Magnum Opus cards, you can download the official PDFs from here: <br />
+                <a href="https://images-cdn.fantasyflightgames.com/filer_public/3b/db/3bdbff3e-d8cb-4996-9846-76de80200b1c/adn_championcards.pdf" target="_blank" rel="noopener">Champion Cards</a> <br />
+                <a href="https://images-cdn.fantasyflightgames.com/filer_public/34/d4/34d48d51-4f61-475e-b825-0d33b4b40f6f/adn_magnumopuscommunitycards.pdf" target="_blank" rel="noopener">Community Cards</a> <br />
+                <a href="https://images-cdn.fantasyflightgames.com/filer_public/2a/9e/2a9e3c68-0dd7-4b22-bf0d-25e55e1d8f11/adn_napdmultiplayeridentity.pdf" target="_blank" rel="noopener">NAPD Multiplayer Identity</a> <br />
+              </p>
+              <p>
+                <a href="http://nisei.net" target="_blank" rel="noopener">Nisei</a> has also provided great print-and-play PDFs, which are found here: <br />
+                <a href="http://nisei.net/products/Downfall" target="_blank" rel="noopener">Downfall</a>
+              </p>
+              <p>
+                Consider supporting Nisei by buying their cards from one of their purchase options.
+              </p>
+            </div>
+            <div id="Card List" class="tabcontent">
+              <p>
+                Enter card names below. To add multiple copies, include a number preceeding the name. Max 6. Eg. 2x Corroder, or 2 Corroder.
+              </p>
+              <textarea id="UserInput" name="UserInput" placeholder="Card Names" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus></textarea>
+            </div>
+            <p>
+              <a class="btn" href="javascript:window.print();" title="Print">Download PDF</a>
+            </p>
+        </div>
+      </div>
+      <div id="Cards"></div>
+      <div class="print-hide">
+        <p>
+          Based on <a href="https://codepen.io/Theavon/pen/YQmgBG" target="_blank" rel="noopener">https://codepen.io/Theavon/pen/YQmgBG</a> 
+          and <a href="https://gparmer.github.io/anrproxy/" target="_blank" rel="noopener">https://gparmer.github.io/anrproxy/</a>
+        </p>
+        <p>
+          Uses scans from <a href="https://www.reddit.com/r/Netrunner/comments/8pgfbj/android_netrunner_cards_up_to_kitara_600dpi/" target="_blank" rel="noopener">"Android: Netrunner Cards up to Kitara @600dpi"</a>
+          Special thanks to <a href="https://www.reddit.com/user/LepcisMagna" target="_blank" rel="noopener">/u/LepcisMagna/</a>. Nisei cards are also included and unchanged from the print-and-play PDFs.  
+        </p>
+        <p>
+          The scan have been despeckled using <a href="https://gist.github.com/ankitjaininfo/86e7e07a8df12e246ce49ec0a7168716" target="_blank" rel="noopener">batch-despeckle.scm</a>
+          and enhanced using the tool mogrify with options "-modulate 105,105" from the <a href="https://www.imagemagick.org/" target="_blank" rel="noopener">Image Magick Suite</a>.
+          Here's a <a href="https://imgur.com/a/sGu4rih" target="_blank" rel="noopener">comparison of the improvements.</a> 
+          <br/>
+          Check out <a href="https://www.reddit.com/r/Netrunner/comments/b7fd24/proxy_nexus_a_netrunner_proxy_web_app/" target="_blank" rel="noopener">the reddit post</a> for more info! 
+        </p>
+        <p>
+          Uses the <a href="https://netrunnerdb.com/api/2.0/doc" target="_blank" rel="noopener">NetrunnerDB API</a> to query card IDs from names and deck URLs.
+        </p>
+        <p>
+          Built by Alex McCulloch (<a href="https://www.reddit.com/user/axmccx" target="_blank" rel="noopener">/u/axmccx</a>). 
+          Source published on <a href="https://github.com/axmccx/proxynexus" target="_blank" rel="noopener">github</a>. 
+        </p>
+      </div>
+      <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+      <script src="js/index.js"></script>
+   </body>
+</html>

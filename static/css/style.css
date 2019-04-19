@@ -1,175 +1,69 @@
-*,
-*:before,
-*:after {
-  box-sizing: border-box;
+.navbar-default {
+  background-color: #011f4c;
+  border-color: #385887;
 }
 
-html,
-html * {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #222;
+.navbar-default {
+  color: #9d9d9d;
 }
 
-body {
-  margin: 0;
-  background-color: white;
+.navbar-default .navbar-brand {
+  color: #ffffff;
 }
 
-#UserInput {
-  width: 18rem;
-  height: 28rem;
-  border: 0 none;
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  outline: none;
-  resize: none;
-  overflow-y: auto;
+.navbar-default .navbar-text {
+  color: #9d9d9d;
+}
+.navbar-default .navbar-nav > li > a {
+  color: #9d9d9d;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #ffffff;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #ffffff;
+  background-color: #385887;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+  color: #ffffff;
+  background-color: #385887;
+}
+.navbar-default .navbar-toggle {
+  border-color: #385887;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: #385887;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #9d9d9d;
+}
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+  border-color: #9d9d9d;
+}
+.navbar-default .navbar-link {
+  color: #9d9d9d;
+}
+.navbar-default .navbar-link:hover {
+  color: #ffffff;
 }
 
-#DeckId, #DeckView {
-  width: 18rem;
-  border: 0 none;
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  font-weight: bold;
-  color: #000;
-  outline: none;
-  resize: none;
-  overflow-y: auto;
+.demo-content.bg-alt{
+    padding: 15px;
+    background: #abb1b8;
 }
-
-#DeckId::placeholder, #DeckView::placeholder {
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  color: #aaa;
+.home-button{
+    max-height:30px;
+    padding: 1px;
 }
-
-#notice {
-  color: #8B0000;
-  font-weight: bold;
-}
-
-h1 {
-  margin: 3rem 0 1rem 0;
-  font-size: 1.75rem;
-}
-
-P {
-  margin: 1rem 0;
-}
-
-strong, b {
-  font-weight: 600;
-}
-
-a {
-  color: #0A539D;
-  font-weight: 400;
-  text-decoration: underline;
-}
-
-.btn {
-  display: inline-block;
-  padding: 0.8em 1.4em;
-  border: 0 solid transparent;
-  border-radius: 2px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  background-color: #0A539D;
-  color: white;
-  line-height: 1;
-  text-decoration: none !important;
-  cursor: pointer;
-  background-position: center;
-  transition: background 0.125s;
-}
-.btn:hover {
-  background: #B93A2F radial-gradient(circle, transparent 1%, #B93A2F 1%) center/15000%;
-}
-.btn:active {
-  background-color: #0A539D;
-  background-size: 100%;
-  transition: background 0s;
-}
-
-img.card {
-  width: 6.35cm;
-  height: 8.8cm;
-  vertical-align: top;
-}
-
-#Cards,
-#Cards > * {
-  line-height: 0;
-}
-
-#side-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 25rem;
-  height: 100vh;
-  padding: 3rem 1rem 6rem 1rem;
-  border: 0 none;
-  box-shadow: inset 0.4rem 0 0 #a13229;
-  background-color: #B93A2F;
-  color: white;
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  outline: none;
-  resize: none;
-  overflow-y: auto;
-}
-
-.text-muted {
-  color: #9e9e9e;
-}
-
-[data-loading] {
-  display: inline-block;
-  font-size: 1rem;
-  line-height: 1;
-  padding: 1em;
-}
-
-/* Style the tab */
-.tab {
-  overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
-}
-
-/* Style the buttons that are used to open the tab content */
-.tab button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 14px 16px;
-  transition: 0.3s;
-}
-
-/* Change background color of buttons on hover */
-.tab button:hover {
-  background-color: #ddd;
-}
-
-/* Create an active/current tablink class */
-.tab button.active {
-  background-color: #ccc;
-}
-
-/* Style the tab content */
-.tabcontent {
-  background-color: #f1f1f1;
-  display: none;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-top: none;
-  height: 36rem;
+body{
+  padding-top: 70px;
 }
 
 .playset-tab {
@@ -177,7 +71,7 @@ img.card {
   padding-top: 10px;
 }
 
-.playset-tab button {
+.playset-btn {
   background-color: inherit;
   border: 1px solid #ccc;
   outline: none;
@@ -185,67 +79,66 @@ img.card {
   transition: 0.3s;
 }
 
-.playset-tab button:hover {
+.playset-btn:hover {
   background-color: #ddd;
 }
 
-.playset-tab button.active {
+.playset-btn:focus {
   background-color: #ccc;
 }
 
-/* Fade in tabs */
-@-webkit-keyframes fadeEffect {
-  from {
-    opacity: 0;
+img.card{
+  /* width: 6.35cm;
+  height: 8.8cm; */
+  width: 5.715cm;
+  height: 7.92cm;
+  vertical-align: top;
+}
+  
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #9d9d9d;
   }
-  to {
-    opacity: 1;
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #ffffff;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #ffffff;
+    background-color: #385887;
   }
 }
-@keyframes fadeEffect {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@media print {
-  .print-hide {
-    display: none;
-  }
-}
-@media screen {
-  body {
-    margin: 0 1rem 4.4cm 27rem;
-    overflow-y: scroll;
-    cursor: default;
-  }
 
-  #Cards {
+@media screen {
+  #cardImgBox {
     margin-top: 1rem;
+    max-height: 800px;
+    min-height: 350px;
+    overflow-y: scroll;
   }
-  #Cards > * {
+  #cardImgBox > * {
     display: inline-block;
-    margin: 0;
+    margin: 1rem;
     vertical-align: top;
     position: relative;
     z-index: 10;
-    width: 6.35cm;
-    height: 8.8cm;
+    width: 5.08cm;
+    height: 7.04cm;
     background: #f6f7f7 linear-gradient(-54deg, rgba(0, 0, 0, 0.06) 50%, rgba(0, 0, 0, 0.02) 50%);
     transform: scale(1);
     transition: transform 0.125s, filter 0.1s ease-in-out;
   }
-  #Cards > * > img {
+  #cardImgBox > * > img {
     background-image: none;
   }
-  #Cards > * > img:after {
+  #cardImgBox > * > img:after {
     content: "card";
     padding: 1.621em 1rem;
     line-height: 1.5;
   }
-  #Cards > * > .label {
+  #cardImgBox > * > .label {
     visibility: hidden;
     position: absolute;
     left: 2px;
@@ -260,18 +153,16 @@ img.card {
     opacity: 0;
     transition: opacity 0.1s;
   }
-  #Cards > p {
+  #cardImgBox > p {
     padding: 1.621em 1rem;
     line-height: 1.5;
   }
-  #Cards > a:hover {
+  #cardImgBox > a:hover {
     transform: scale(1.1);
     z-index: 20;
   }
-  #Cards > a:hover > .label {
+  #cardImgBox > a:hover > .label {
     visibility: visible;
     opacity: 1;
   }
 }
-
-/*# sourceMappingURL=style.css.map */
