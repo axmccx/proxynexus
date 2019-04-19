@@ -292,10 +292,14 @@ function downloadPDF() {
       var link = document.createElement('a');
       link.href = window.URL.createObjectURL(data);
       link.download = "ProxyNexus.pdf";
+      document.body.appendChild(link);
       link.click();
       $('#downloadSpinner').hide();
+      window.setTimeout(function() {
+        document.body.removeChild(link);
+      }, 100);
     }).fail(function(xhr, textStatus, errorThrown) {
-      $('#downloadSpinner').show();
+      $('#downloadSpinner').hide();
       console.log(xhr);
       console.log(textStatus);
       console.log(errorThrown);

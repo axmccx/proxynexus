@@ -105,11 +105,6 @@ app.post('/api/makePDF', function (req, res) {
 		.catch(err => {
 			doc.end();
 			console.log(err);
-			// res.status(200);
-			// var result = {}
-			// result.success = false;
-			// result.error = err;
-			// res.json(result);
 		})
 });
 
@@ -117,7 +112,7 @@ function addImages(lst, doc, leftMargin, topMargin) {
 	var rowCount = 0;
 	var colCount = 0;
 
-	lst.forEach(buffer => {
+	lst.forEach((buffer, i) => {
 		const x = rowCount*cardwidthPt + leftMargin;
 		const y = colCount*cardheightPt + topMargin;
 
@@ -128,7 +123,7 @@ function addImages(lst, doc, leftMargin, topMargin) {
 			rowCount = 0;
 			colCount++;
 		}
-		if (colCount > 2) {
+		if (colCount > 2 && i+1<lst.length) {
 			colCount = 0;
 			doc.addPage();
 			drawCutLines(doc, leftMargin, topMargin);
@@ -145,7 +140,18 @@ async function fetchImages(requestedImages, container) {
 	const containerURL = ContainerURL.fromServiceURL(serviceURL, container);
 	const aborter = Aborter.timeout(30 * ONE_MINUTE);
 
-	const imgPromiseList = requestedImages.map(async code => {
+	var imgCodeList = [...requestedImages];
+	const biotechIndex = imgCodeList.indexOf("08012");
+	if (biotechIndex >= 0) {
+		const extraCodes = ["08012a", "08012", "08012b", "08012", "08012c"];
+		imgCodeList.splice(biotechIndex + 1, 0, ...extraCodes);
+	}
+	const syncIndex = imgCodeList.indexOf("09001");
+	if (syncIndex >= 0) {
+		imgCodeList.splice(syncIndex + 1, 0, "09001a");
+	}
+
+	const imgPromiseList = imgCodeList.map(async code => {
 		const blobName = code + '.jpg';
 		const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blobName);
 		const downloadResponse = await blockBlobURL.download(aborter, 0);
