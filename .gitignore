@@ -1,6 +1,5 @@
 .vscode
 static/images/*
 node_modules/*
-*.jpg
 *.pdf
 .env
