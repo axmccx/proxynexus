@@ -104,6 +104,7 @@ app.post('/api/makePDF', function (req, res) {
 		})
 		.catch(err => {
 			doc.end();
+			console.log("Error fetching images");
 			console.log(err);
 		})
 });
@@ -136,9 +137,7 @@ async function fetchImages(requestedImages, container) {
 	const credentials = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, ACCOUNT_ACCESS_KEY);
   const pipeline = StorageURL.newPipeline(credentials);
 	const serviceURL = new ServiceURL(`https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, pipeline);
-	
 	const containerURL = ContainerURL.fromServiceURL(serviceURL, container);
-	const aborter = Aborter.timeout(30 * ONE_MINUTE);
 
 	var imgCodeList = [...requestedImages];
 	const biotechIndex = imgCodeList.indexOf("08012");
@@ -154,12 +153,15 @@ async function fetchImages(requestedImages, container) {
 	const imgPromiseList = imgCodeList.map(async code => {
 		const blobName = code + '.jpg';
 		const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blobName);
-		const downloadResponse = await blockBlobURL.download(aborter, 0);
+		// var aborter = createAborter();
+		const downloadResponse = await blockBlobURL.download(Aborter.none, 0);
+		// aborter.abort();
 
+		// aborter = createAborter();
 		const fileSize = downloadResponse.contentLength;
 		const buffer = Buffer.alloc(fileSize);
 		await downloadBlobToBuffer(
-			aborter,
+			Aborter.none,
 			buffer,
 			blockBlobURL,
 			0,
@@ -170,12 +172,17 @@ async function fetchImages(requestedImages, container) {
 				// progress: ev => console.log(ev)
 			}
 		);
+		// aborter.abort();
 		return buffer;
 	});
 
 	const imgBufferList = await Promise.all(imgPromiseList);
 
 	return imgBufferList;
+}
+
+function createAborter() {
+	return Aborter.timeout(30 * ONE_MINUTE);
 }
 
 function drawCutLines(doc, leftMargin, topMargin) {
