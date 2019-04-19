@@ -42,6 +42,7 @@ app.post('/api/makePDF', function (req, res) {
 
 	const paperSize = req.body.paperSize;
 	const quality = req.body.quality;
+	const logInfo = req.body.logInfo;
 	const container = ((q) => {
 		switch(q) {
 			case 'High':
@@ -100,7 +101,7 @@ app.post('/api/makePDF', function (req, res) {
 		.then(imgBufferList => {
 			addImages(imgBufferList, doc, leftMargin, topMargin);
 			doc.end();
-			console.log(Date() + " DOWNLOAD; Papersize: " + paperSize + ", Quality: " + quality);
+			console.log(Date() + " DOWNLOAD; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
 		})
 		.catch(err => {
 			doc.end();

@@ -9,12 +9,14 @@ var _cardListHtml     = '';
 var _cardList;
 var _paperSize;
 var _imageQuality;
+var _selectedTab = "Card List";
 
 const IMAGE_BASE_DIR = "https://proxynexus.blob.core.windows.net/";
 const NRDB_API_DIR = "https://netrunnerdb.com/api/2.0/public/";
 const IMAGE_CONTAINER = "low-images/";
 
 function selectTab(tabLabel) {
+  _selectedTab = tabLabel;
   switch(tabLabel) {
     case "Card List":
       buildFromCardList();
@@ -273,11 +275,26 @@ function downloadPDF() {
   if (_paperSize != null && _imageQuality != null) {
     var paperSize = _paperSize;
     var imageQuality = _imageQuality;
+    var selectedTab = _selectedTab;
+    var extraInfo;
+
+    switch(selectedTab) {
+      case "Card List":
+        extraInfo = "Cards: " + _cardListTextArea.val().replace(/\n/g, ",");;
+        break;
+      case "Set":
+        extraInfo = "Set: " + _setSelection.val() + ", playset: " + _playsetSelection;
+        break;
+      case "NetrunnerDB":
+        extraInfo = "URL: " + _deckURLText.val();
+        break;
+    }
 
     const downloadOptions = {
       "paperSize": paperSize,
       "quality": imageQuality,
-      "requestedImages": _cardList
+      "requestedImages": _cardList,
+      "logInfo": "Selected Tab: " + selectedTab + ", " + extraInfo
     };
 
     $('#downloadSpinner').show();
