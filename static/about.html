@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Proxy Nexus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style></style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>    
+    <script src="js/index.js"></script>
+
+    <nav class="navbar navbar-default navbar-expand-md navbar-dark fixed-top">
+        <a class="navbar-brand" href="/">
+            <img class="home-button" src="logo2.jpg">
+            Proxy Nexus
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggler">
+            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Blog</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="about.html">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row justify-content-md-center" >
+            <div class="col-md-8 ">
+                <h2>The Goal</h2>
+                <p>
+                    To provide the best and easiest method of making Netrunner proxies. <br/>
+                    So that new players have somewhere to start. <br/>
+                    So that everyone can complete their collection. 
+                </p>
+                <h2>Notable Mentions</h2>
+                <p>
+                    The website is based on work from <a href="https://codepen.io/Theavon/pen/YQmgBG" target="_blank" rel="noopener">https://codepen.io/Theavon/pen/YQmgBG</a> 
+                    and <a href="https://gparmer.github.io/anrproxy/" target="_blank" rel="noopener">https://gparmer.github.io/anrproxy/</a>. They both provided a great starting point 
+                    to building this website.
+                </p>
+                <p>
+                    The card images are from the amazing archive found here <a href="https://www.reddit.com/r/Netrunner/comments/8pgfbj/android_netrunner_cards_up_to_kitara_600dpi/" target="_blank" rel="noopener">"Android: Netrunner Cards up to Kitara @600dpi"</a>
+                    Special thanks to <a href="https://www.reddit.com/user/LepcisMagna" target="_blank" rel="noopener">/u/LepcisMagna/</a>. Nisei cards are also included and unchanged from the print-and-play PDFs.  
+                </p>
+                <!-- <p>
+                    The proxy card backs in the zipped downloads are provided by Spencer Wharton. <a href="https://www.reddit.com/r/Netrunner/comments/beu869/announcing_system_backup_proxy_backs/" target="_blank" rel="noopener">Check out his post about them.</a>
+                </p> -->
+                <h2>
+                    Sources for Tokens
+                </h2>
+                <p>
+                    Here's a list of some methods for getting a set of tokens, in the event buying a retail core set becomes prohibitive. 
+                </p>
+                <ul>
+                    <li><a href="https://drive.google.com/open?id=0B_VXGwQiKFTKeFJUSkpNR0plU2M" target="_blank" rel="noopener">Netrunner Click-Credit-Counter Tracker</a>.   Not actual tokens, but an easy to make system for tracking the game state.</li>   
+                    <li><a href="https://burgertokens.com/collections/frontpage/products/netrunner-tokens" target="_blank" rel="noopener">Burger Tokens</a>.   They are applied to both sides of a penny to create weighted tokens.</li>
+                    <li><a href="https://aurbits.com/listing/645241827/netrunner-premium-pcb-tokens-fan-made" target="_blank" rel="noopener">Aurbits Netrunner PCB Tokens</a>.  Circuit board tokens, similar size and shape as the originals. Expensive but very high quality.</li>
+                </ul>
+                <h2>Technical Stuff for Nerds</h2>
+                <p>
+                    The card scans have been despeckled using <a href="https://gist.github.com/ankitjaininfo/86e7e07a8df12e246ce49ec0a7168716" target="_blank" rel="noopener">batch-despeckle.scm</a>
+                    and enhanced using the tool mogrify with options "-modulate 105,105" from the <a href="https://www.imagemagick.org/" target="_blank" rel="noopener">Image Magick Suite</a>.
+                    Here's a <a href="https://imgur.com/a/sGu4rih" target="_blank" rel="noopener">comparison of the improvements.</a> 
+                    Check out <a href="https://www.reddit.com/r/Netrunner/comments/b7fd24/proxy_nexus_a_netrunner_proxy_web_app/" target="_blank" rel="noopener">the reddit post</a> for more info! 
+                </p>
+                <p>
+                    This website depends on the <a href="https://netrunnerdb.com/api/2.0/doc" target="_blank" rel="noopener">NetrunnerDB API</a> to query things like card IDs from names and deck URLs.
+                </p>
+                <p>
+                    PDF generation is done using <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> and <a href="http://pdfkit.org/" target="_blank" rel="noopener">PDFKit</a>. 
+                </p>
+                <p>
+                    Website source published on <a href="https://github.com/axmccx/proxynexus" target="_blank" rel="noopener">github</a>. 
+                </p>
+                <hr>
+                <p>
+                    Built by Alex McCulloch (<a href="https://www.reddit.com/user/axmccx" target="_blank" rel="noopener">/u/axmccx</a>). Always be running.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
