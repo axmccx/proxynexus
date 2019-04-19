@@ -104,11 +104,12 @@ app.post('/api/makePDF', function (req, res) {
 		})
 		.catch(err => {
 			doc.end();
-			res.status(200);
-			var result = {}
-			result.success = false;
-			result.error = err;
-			res.json(result);
+			console.log(err);
+			// res.status(200);
+			// var result = {}
+			// result.success = false;
+			// result.error = err;
+			// res.json(result);
 		})
 });
 
