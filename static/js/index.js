@@ -314,7 +314,7 @@ function downloadPDF() {
       $('#downloadSpinner').hide();
       window.setTimeout(function() {
         document.body.removeChild(link);
-      }, 500);
+      }, 100);
     }).fail(function(xhr, textStatus, errorThrown) {
       $('#downloadSpinner').hide();
       console.log(xhr);
