@@ -32,6 +32,8 @@ function cmToPt (cm) {
 	return cm * 28.3465;
 }
 
+var IDCounter = 1;
+
 const cardwidth = 6.35;
 const cardheight = 8.80;
 
@@ -52,7 +54,10 @@ app.post('/api/makePDF', function (req, res) {
 		}
 	})(quality);
 	const requestedImages = req.body.requestedImages;
-
+	const downloadID = IDCounter;
+	IDCounter = IDCounter + 1;
+	console.log(Date() + " NEW DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
+	
 	if (requestedImages.length == 0) {
 		res.status(200);
 		var result = {}
@@ -97,11 +102,14 @@ app.post('/api/makePDF', function (req, res) {
 	doc.addPage();
 	drawCutLines(doc, leftMargin, topMargin);
 
-	fetchImages(requestedImages, container)
+	console.log(Date() + " DownloadID: " + downloadID + " Doc ready, about to fetch images");
+
+	fetchImages(requestedImages, container, downloadID)
 		.then(imgBufferList => {
+			console.log(Date() + " DownloadID: " + downloadID + " Images fetched, adding them to doc");
 			addImages(imgBufferList, doc, leftMargin, topMargin);
 			doc.end();
-			console.log(Date() + " DOWNLOAD; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
+			console.log(Date() + " DownloadID: " + downloadID + " sending doc to client");
 		})
 		.catch(err => {
 			doc.end();
@@ -133,7 +141,7 @@ function addImages(lst, doc, leftMargin, topMargin) {
 	});
 }
 
-async function fetchImages(requestedImages, container) {
+async function fetchImages(requestedImages, container, downloadID) {
 	// TODO check that code is valid, i.e. image exists. 	
 	const credentials = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, ACCOUNT_ACCESS_KEY);
   const pipeline = StorageURL.newPipeline(credentials);
@@ -151,18 +159,20 @@ async function fetchImages(requestedImages, container) {
 		imgCodeList.splice(syncIndex + 1, 0, "09001a");
 	}
 
+	console.log(Date() + " DownloadID: " + downloadID + " Code list ready, fetching images");
+
 	const imgPromiseList = imgCodeList.map(async code => {
 		const blobName = code + '.jpg';
 		const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blobName);
-		// var aborter = createAborter();
-		const downloadResponse = await blockBlobURL.download(Aborter.none, 0);
+		var aborter = createAborter();
+		const downloadResponse = await blockBlobURL.download(aborter, 0);
 		// aborter.abort();
 
 		// aborter = createAborter();
 		const fileSize = downloadResponse.contentLength;
 		const buffer = Buffer.alloc(fileSize);
 		await downloadBlobToBuffer(
-			Aborter.none,
+			aborter,
 			buffer,
 			blockBlobURL,
 			0,
@@ -170,10 +180,10 @@ async function fetchImages(requestedImages, container) {
 			{
 				blockSize: 4 * 1024 * 1024, // 4MB block size
 				parallelism: 20, // 20 concurrency
-				// progress: ev => console.log(ev)
+				progress: ev => console.log("DocumentID: " + downloadID + ", LoadedBytes: " + ev.loadedBytes)
 			}
 		);
-		// aborter.abort();
+		aborter.cancelTimer();
 		return buffer;
 	});
 
