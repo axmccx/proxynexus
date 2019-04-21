@@ -116,34 +116,37 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-6 order-2">
-                    <form>
-                        <div class="form-row align-items-center">
-                            <div class="col-auto my-1">
-                                <select class="form-control" id="paperSizeSelection">
-                                    <option selected disabled>- Paper Size -</option>
-                                    <option>Letter</option>
-                                    <option>A4</option>
-                                </select>
-                            </div>
-                            <div class="col-auto my-1">
-                                <select class="form-control" id="imageQualitySelection" aria-describedby="cardListHelpBlock">
-                                    <option selected disabled>- Image Quality -</option>
-                                    <option>High</option>
-                                    <option>Medium</option>
-                                </select>
-                            </div>
-                            <div class="col-auto my-1">
-                                <input type="button" id="PDFdownloadBtn" class="btn btn-primary btn-danger" value="Download"></button>
-                            </div>
-                            <div id="downloadSpinner" class="spinner-border text-success" role="status">
-                                <span class="sr-only">Generating...</span>
-                            </div>
-                            <small id="cardListHelpBlock" class="form-text text-muted">
-                                Medium quality reduces PDF size, with a small sacrifice to image quality.
-                            </small> 
+            <div class="col-xl-8 order-2">
+                <form>
+                    <div class="form-row align-items-center">
+                        <div class="col-auto my-1">
+                            <select class="form-control" id="paperSizeSelection">
+                                <option selected disabled>- Paper Size -</option>
+                                <option>Letter</option>
+                                <option>A4</option>
+                            </select>
                         </div>
-                    </form>
+                        <div class="col-auto my-1">
+                            <select class="form-control" id="imageQualitySelection" aria-describedby="cardListHelpBlock">
+                                <option selected disabled>- Image Quality -</option>
+                                <option>High</option>
+                                <option>Medium</option>
+                            </select>
+                        </div>
+                        <div class="col-auto my-1">
+                            <input type="button" id="PDFGenerateBtn" class="btn btn-danger" value="Generate PDF"></input>
+                            <a id="PDFdownloadBtn" class="btn btn-success" target="_blank" rel="noopener">Download</a>
+                            <input type="button" id="PDFResetBtn" class="btn btn-info" value="Reset"></input>
+                        </div>
+                        <div id="downloadSpinner" class="spinner-border text-success" role="status">
+                            <span class="sr-only">Generating...</span>
+                        </div>
+                        <small id="cardListHelpBlock" class="form-text text-muted">
+                            Medium quality reduces PDF size, with a small sacrifice to image quality.
+                        </small>
+                    </div>
+                    <div id="DownloadErrorMsg"></div>
+                </form>
             </div>
         </div>
     </div>
