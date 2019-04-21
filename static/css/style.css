@@ -98,6 +98,20 @@ img.card{
 #downloadSpinner{
   display: none
 }
+
+#DownloadErrorMsg {
+  color: red;
+  font-weight: bold;
+}
+
+#PDFdownloadBtn{
+  color: white; 
+  display: none
+}
+
+#PDFResetBtn{
+  display: none
+}
   
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {

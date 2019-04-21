@@ -8,6 +8,8 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+var crypto = require('crypto');
+
 const {
 	Aborter,
 	BlockBlobURL,
@@ -59,11 +61,31 @@ app.post('/api/makePDF', function (req, res) {
 	console.log(Date() + " NEW DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
 	
 	if (requestedImages.length == 0) {
+		console.error("No images requested");
 		res.status(200);
 		var result = {}
 		result.success = false;
-		result.reason = "No images requested";
+		result.errorMsg = "No images requested";
 		res.json(result);
+		return;
+	}
+
+	const request = paperSize + quality + requestedImages;
+	const hash = crypto.createHash('sha1').update(request).digest('hex');
+	const pdfPath = __dirname + "/static/tmp/" + hash + ".pdf";
+
+	console.log(Date() + " DownloadID: " + downloadID + "; PDF Name: " + hash + ".pdf");
+
+	// TODO check for hard coded PDFs in storage here
+
+	if (fs.existsSync(pdfPath)) {
+		console.log(Date() + " DownloadID: " + downloadID + "; PDF already exists, no need to generate");
+		res.status(200);
+		var result = {}
+		result.success = true;
+		result.fileName = "/tmp/" + hash + ".pdf";
+		res.json(result);
+		console.log(Date() + " DownloadID: " + downloadID + "; Download link sent to client");
 		return;
 	}
 
@@ -75,10 +97,11 @@ app.post('/api/makePDF', function (req, res) {
 		var leftMargin = 36;
 		var topMargin = 21;
 	} else {
+		console.error("Invalid paper size");
 		res.status(200);
 		var result = {}
 		result.success = false;
-		result.reason = "Invalid paper size";
+		result.errorMsg = "Invalid paper size";
 		res.json(result);
 		return;
 	}
@@ -93,28 +116,36 @@ app.post('/api/makePDF', function (req, res) {
 		  }
 	});
 
-  res.setHeader('Content-type', 'application/pdf');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Content-disposition', 'attachment; filename=ProxyNexus.pdf');
-	
-	doc.pipe(res);
-	makeFrontPage(doc);
-	doc.addPage();
-	drawCutLines(doc, leftMargin, topMargin);
-
-	console.log(Date() + " DownloadID: " + downloadID + " Doc ready, about to fetch images");
-
 	fetchImages(requestedImages, container, downloadID)
 		.then(imgBufferList => {
-			console.log(Date() + " DownloadID: " + downloadID + " Images fetched, adding them to doc");
+			console.log(Date() + " DownloadID: " + downloadID + "; Adding images to doc...");
+
+			doc.pipe(fs.createWriteStream(pdfPath));
+			makeFrontPage(doc);
+			doc.addPage();
+			drawCutLines(doc, leftMargin, topMargin);
 			addImages(imgBufferList, doc, leftMargin, topMargin);
 			doc.end();
-			console.log(Date() + " DownloadID: " + downloadID + " sending doc to client");
+
+			res.status(200);
+			var result = {}
+			result.success = true;
+			result.fileName = "/tmp/" + hash + ".pdf";
+			res.json(result);
+
+			console.log(Date() + " DownloadID: " + downloadID + "; Download link sent to client");
+			return;
 		})
 		.catch(err => {
 			doc.end();
-			console.log("Error fetching images");
-			console.log(err);
+			console.error("Error fetching images");
+			console.error(err);
+			res.status(200);
+			var result = {}
+			result.success = false;
+			result.errorMsg = "Error fetching images, try again";
+			res.json(result);
+			return;
 		})
 });
 
@@ -141,8 +172,7 @@ function addImages(lst, doc, leftMargin, topMargin) {
 	});
 }
 
-async function fetchImages(requestedImages, container, downloadID) {
-	// TODO check that code is valid, i.e. image exists. 	
+async function fetchImages(requestedImages, container, downloadID) {	
 	const credentials = new SharedKeyCredential(STORAGE_ACCOUNT_NAME, ACCOUNT_ACCESS_KEY);
   const pipeline = StorageURL.newPipeline(credentials);
 	const serviceURL = new ServiceURL(`https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net`, pipeline);
@@ -159,16 +189,14 @@ async function fetchImages(requestedImages, container, downloadID) {
 		imgCodeList.splice(syncIndex + 1, 0, "09001a");
 	}
 
-	console.log(Date() + " DownloadID: " + downloadID + " Code list ready, fetching images");
+	console.log(Date() + " DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
 	const imgPromiseList = imgCodeList.map(async code => {
 		const blobName = code + '.jpg';
 		const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blobName);
 		var aborter = createAborter();
 		const downloadResponse = await blockBlobURL.download(aborter, 0);
-		// aborter.abort();
 
-		// aborter = createAborter();
 		const fileSize = downloadResponse.contentLength;
 		const buffer = Buffer.alloc(fileSize);
 		await downloadBlobToBuffer(
@@ -188,7 +216,6 @@ async function fetchImages(requestedImages, container, downloadID) {
 	});
 
 	const imgBufferList = await Promise.all(imgPromiseList);
-
 	return imgBufferList;
 }
 

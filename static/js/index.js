@@ -7,8 +7,6 @@ var _cardImgBox;
 var _playsetSelection = "Single Set";
 var _cardListHtml     = '';
 var _cardList;
-var _paperSize;
-var _imageQuality;
 var _selectedTab = "Card List";
 
 const IMAGE_BASE_DIR = "https://proxynexus.blob.core.windows.net/";
@@ -77,7 +75,7 @@ function fetchAllCards() {
     _cardDB_keyID = {};
 
     $.each(response.data, function(key, item) {
-        var image = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code + '.jpg';
+        const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code + '.jpg';
 
         _cardDB[item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__')] = {
           code: item.code,
@@ -100,8 +98,20 @@ function fetchAllCards() {
 function fetchSetList() {
   $.getJSON( "json/packs.json", function(response) {
     $.each(response.data, function(key, item) {
-      _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
-      if (item.code === "sc19") {
+      // TEMP CORE SET DISABLE
+
+      //_setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
+      const coreSets = ["core", "core2", "sc19"];
+      if (coreSets.indexOf(item.code) > -1) {
+        _setSelection.append('<option disabled value=' + item.code + '>' + item.name + '</option>');
+      } else {
+        _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
+      }
+      // if (item.code === "sc19") {
+      //   _setSelection.val(item.code);
+      // }
+
+      if (item.code === "rar") {
         _setSelection.val(item.code);
       }
     });
@@ -109,8 +119,8 @@ function fetchSetList() {
 }
 
 function buildFromCardList() {
+  const input = _cardListTextArea.val().toLowerCase().split(/\n/);
   var html = '';
-  var input = _cardListTextArea.val().toLowerCase().split(/\n/);
   var unfound = 0;
   _cardList = [];
   
@@ -119,18 +129,18 @@ function buildFromCardList() {
   }
   
   for (var i=0; i<input.length; i++) {
-    var cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
-    var match = cardInputRegex.exec(input[i]);
+    const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
+    const match = cardInputRegex.exec(input[i]);
 
     var count = $.trim(match[1]).replace(/x/g, '');
-    var cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');	
+    const cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');	
 
     if (cardname == '') {		       
       continue;		
     }
 
     if (cardname in _cardDB) {
-      var card = _cardDB[cardname];
+      const card = _cardDB[cardname];
       if (count > 6) {
         count = 6;
       } else if (count < 1) {
@@ -164,7 +174,7 @@ function buildFromDeckID() {
   const publishedDeckIDRegex = /(\/en\/decklist\/)(\d+)/;
   const unpublishedDeckIDRegex = /(\/deck\/view\/)(\d+)/;
 
-  var match = publishedDeckIDRegex.exec(deckInput);
+  const match = publishedDeckIDRegex.exec(deckInput);
   var published = true;
   if (match == null) {
     match = unpublishedDeckIDRegex.exec(deckInput);
@@ -172,7 +182,7 @@ function buildFromDeckID() {
     if (match == null) return;
   }
 
-  var deckid = match[2];
+  const deckid = match[2];
   if (published) {
     $.getJSON(NRDB_API_DIR + "decklist/" + deckid, function(response) {
       makeCardHTML(response);
@@ -187,9 +197,9 @@ function buildFromDeckID() {
 // Used by buildFromDeckID for DRY, 
 // need to re-work it so buildFromCardList and buildFromSet uses it too
 function makeCardHTML(response) {
+  const input = response.data[0].cards;
+  const keys = Object.keys(input);
   var html = '';
-  var input = response.data[0].cards;
-  var keys = Object.keys(input);
   _cardList = [];
   for (var i = 0; i < keys.length; i++) {
     if (keys[i] in _cardDB_keyID) {
@@ -208,16 +218,16 @@ function makeCardHTML(response) {
 }
 
 function buildFromSet() {
-  var html = '';
-  var selectedSet = _setSelection.val();
+  const selectedSet = _setSelection.val();
   const coreSets = ["core", "core2", "sc19"];
+  var html = '';
   _cardList = [];
 
   if (!_cardDB_keyID || !selectedSet) {
     return false;
   }
 
-  var playsetDisplay = document.getElementById("playsetDisplay");
+  const playsetDisplay = document.getElementById("playsetDisplay");
   if (coreSets.indexOf(selectedSet) > -1) {
     playsetDisplay.style.display = "block";
   } else {
@@ -271,14 +281,13 @@ function buildCardHTML(code, image, title) {
   return newCard;
 }
 
-function downloadPDF() {
-  if (_paperSize != null && _imageQuality != null) {
-    var paperSize = _paperSize;
-    var imageQuality = _imageQuality;
-    var selectedTab = _selectedTab;
+function makePDF() {
+  const paperSize = $('#paperSizeSelection').find("option:selected").text();
+  const imageQuality = $('#imageQualitySelection').find("option:selected").text();
+  if (paperSize != null && imageQuality != null) {
     var extraInfo;
 
-    switch(selectedTab) {
+    switch(_selectedTab) {
       case "Card List":
         extraInfo = "Cards: " + _cardListTextArea.val().replace(/\n/g, ",");;
         break;
@@ -294,39 +303,57 @@ function downloadPDF() {
       "paperSize": paperSize,
       "quality": imageQuality,
       "requestedImages": _cardList,
-      "logInfo": "Selected Tab: " + selectedTab + ", " + extraInfo
+      "logInfo": "Selected Tab: " + _selectedTab + ", " + extraInfo
     };
 
     $('#downloadSpinner').show();
+    $('#PDFGenerateBtn').attr("value", "Generating...");
 
-    $.ajax({
-      method: "POST",
-      url: "/api/makePDF",
-      contentType: "application/json; charset=utf-8",
-      dataType: "binary",
-      data: JSON.stringify(downloadOptions)
-    }).done(function(data) {
-      var link = document.createElement('a');
-      link.href = window.URL.createObjectURL(data);
-      link.download = "ProxyNexus.pdf";
-      document.body.appendChild(link);
-      link.click();
-      $('#downloadSpinner').hide();
-      window.setTimeout(function() {
-        document.body.removeChild(link);
-      }, 100);
-    }).fail(function(xhr, textStatus, errorThrown) {
-      $('#downloadSpinner').hide();
-      console.log(xhr);
-      console.log(textStatus);
-      console.log(errorThrown);
-    });
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/makePDF", true);
+    xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    xhr.responseType = 'json';
+    xhr.onload = function (e) {
+      if (this.status == 200) {
+        if (this.response.success) {
+          displayDownload(this.response.fileName);
+        } else {
+          displayDownloadError(this.response.errorMsg);
+        }
+      }
+    }
+    const data = JSON.stringify(downloadOptions);
+    xhr.send(data);
   }
+}
+
+function displayDownloadError(msg) {
+  $('#PDFGenerateBtn').hide();
+  $('#PDFGenerateBtn').attr("value", "Generate PDF");
+  $('#downloadSpinner').hide();
+  $('#PDFResetBtn').show();
+  $("#DownloadErrorMsg").html(msg);
+}
+
+function displayDownload(pdfPath) {
+  $('#PDFdownloadBtn').attr('href', pdfPath); 
+  $('#PDFdownloadBtn').show();
+  $('#PDFGenerateBtn').hide();
+  $('#PDFGenerateBtn').attr("value", "Generate PDF");
+  $('#downloadSpinner').hide();
+  $('#PDFResetBtn').show();
+}
+
+function downloadReset() {
+  $('#PDFResetBtn').hide();
+  $('#PDFdownloadBtn').hide();
+  $('#PDFGenerateBtn').show();
+  $("#DownloadErrorMsg").html("");
 }
 
 function assignEvents() {
   $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-    var currentTab = $(e.target).text();
+    const currentTab = $(e.target).text();
     selectTab(currentTab);
   });
 
@@ -334,16 +361,12 @@ function assignEvents() {
     selectPlayset(e.target.value);
   })
 
-  $('#paperSizeSelection').change(function () {
-    _paperSize = $(this).find("option:selected").text();
-  });
+  $("#PDFGenerateBtn").click(function(e) {
+    makePDF();
+  })
 
-  $('#imageQualitySelection').change(function () {
-    _imageQuality = $(this).find("option:selected").text();
-  });
-
-  $("#PDFdownloadBtn").click(function(e) {
-    downloadPDF();
+  $("#PDFResetBtn").click(function(e) {
+    downloadReset();
   })
 
   _cardListTextArea.on('input',function(e){
