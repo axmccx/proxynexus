@@ -98,8 +98,20 @@ function fetchAllCards() {
 function fetchSetList() {
   $.getJSON( "json/packs.json", function(response) {
     $.each(response.data, function(key, item) {
-      _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
-      if (item.code === "sc19") {
+      // TEMP CORE SET DISABLE
+
+      //_setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
+      const coreSets = ["core", "core2", "sc19"];
+      if (coreSets.indexOf(item.code) > -1) {
+        _setSelection.append('<option disabled value=' + item.code + '>' + item.name + '</option>');
+      } else {
+        _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
+      }
+      // if (item.code === "sc19") {
+      //   _setSelection.val(item.code);
+      // }
+
+      if (item.code === "rar") {
         _setSelection.val(item.code);
       }
     });
