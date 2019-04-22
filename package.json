@@ -4,7 +4,7 @@
   "description": "Make high quality Netrunner proxies. Generates ready to print PDFs from a NetrunnerDB deck list, a retail set, or a custom card list.",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node --optimize_for_size --max_old_space_size=460 app.js"
   },
   "repository": {
     "type": "git",
