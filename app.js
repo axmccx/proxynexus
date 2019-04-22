@@ -127,6 +127,9 @@ app.post('/api/makePDF', function (req, res) {
 			addImages(imgBufferList, doc, leftMargin, topMargin);
 			doc.end();
 
+			// does nulling the buffer list help free memory?
+			imgBufferList = null; 
+
 			res.status(200);
 			var result = {}
 			result.success = true;
@@ -170,6 +173,7 @@ function addImages(lst, doc, leftMargin, topMargin) {
 			drawCutLines(doc, leftMargin, topMargin);
 		}
 	});
+	return;
 }
 
 async function fetchImages(requestedImages, container, downloadID) {	
