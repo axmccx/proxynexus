@@ -10,10 +10,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const PDFDocument = require('pdfkit');
 var crypto = require('crypto');
 
-// if (process.env.NODE_ENV !== "production") {
-//     require("dotenv").config();
-// }
-
 function cmToPt (cm) {
 	return cm * 28.3465;
 }
@@ -22,6 +18,7 @@ const cardwidth = 6.35;
 const cardheight = 8.80;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
+const storagePath = "https://proxynexus.blob.core.windows.net/";
 
 // setInterval(function() {
 // 	const used = process.memoryUsage();
@@ -64,13 +61,13 @@ app.post('/api/makePDF', function (req, res) {
 	console.log(Date() + " DownloadID: " + downloadID + "; PDF Name: " + hash + ".pdf");
 
 	if (fs.existsSync(pdfPath)) {
-		console.log(Date() + " DownloadID: " + downloadID + "; PDF already exists, no need to generate");
+		console.log(Date() + " DownloadID: " + downloadID + "; PDF already exists, don't generate");
 		res.status(200);
 		var result = {}
 		result.success = true;
 		result.fileName = "/tmp/" + hash + ".pdf";
 		res.json(result);
-		console.log(Date() + " DownloadID: " + downloadID + "; Download link sent to client");
+		console.log(Date() + " DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
 		return;
 	}
 
@@ -117,11 +114,25 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 		imgCodeList.splice(syncIndex + 1, 0, "09001a");
 	}
 
+	const filteredImgCodeList = imgCodeList.filter( code => {
+		const imgPath = "./static/tmp/" + code + ".jpg";
+		try {
+			fs.statSync(imgPath);
+			console.log(Date() + " DownloadID: " + downloadID + "; Found cached copy of " + code + ".jpg, don't download");
+			return false;
+		}
+		catch (err) {
+			if (err.code === 'ENOENT') {
+				return true;
+			}
+		}
+	});
+
 	console.log(Date() + " DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
-	const imgPromises = imgCodeList.map( async code => {
+	const imgPromises = filteredImgCodeList.map( async code => {
 		const imgPath = "./static/tmp/" + code + ".jpg";
-		const url = "https://proxynexus.blob.core.windows.net/" + container + "/" + code + ".jpg";
+		const url = storagePath + container + "/" + code + ".jpg";
 		const res = await fetch(url);
 		const fileStream = fs.createWriteStream(imgPath);
 		return new Promise((resolve, reject) => {
@@ -152,7 +163,7 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 	result.fileName = "/tmp/" + hash + ".pdf";
 	res.json(result);
 
-	console.log(Date() + " DownloadID: " + downloadID + "; Download link sent to client");
+	console.log(Date() + " DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
 	return;
 }
 

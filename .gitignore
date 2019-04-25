@@ -1,4 +1,4 @@
 .vscode
 node_modules/*
-*.pdf
-.env
+static/tmp/*.pdf
+static/tmp/*.jpg
