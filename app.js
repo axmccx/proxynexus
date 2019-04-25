@@ -42,10 +42,10 @@ app.post('/api/makePDF', function (req, res) {
 	const requestedImages = req.body.requestedImages;
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
-	console.log(Date() + " NEW DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
+	console.log("NEW DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
 	
 	if (requestedImages.length == 0) {
-		console.error("No images requested");
+		console.error("DownloadID: " + downloadID + "; No images requested");
 		res.status(200);
 		var result = {}
 		result.success = false;
@@ -54,20 +54,30 @@ app.post('/api/makePDF', function (req, res) {
 		return;
 	}
 
+	if (container == null) {
+		console.error("DownloadID: " + downloadID + "; No image quality selected");
+		res.status(200);
+		var result = {}
+		result.success = false;
+		result.errorMsg = "No image quality selected";
+		res.json(result);
+		return;
+	}
+
 	const requestedPDFOptions = paperSize + quality + requestedImages;
 	const hash = crypto.createHash('sha1').update(requestedPDFOptions).digest('hex');
 	const pdfPath = __dirname + "/static/tmp/" + hash + ".pdf";
 
-	console.log(Date() + " DownloadID: " + downloadID + "; PDF Name: " + hash + ".pdf");
+	console.log("DownloadID: " + downloadID + "; PDF Name: " + hash + ".pdf");
 
 	if (fs.existsSync(pdfPath)) {
-		console.log(Date() + " DownloadID: " + downloadID + "; PDF already exists, don't generate");
+		console.log("DownloadID: " + downloadID + "; PDF already exists, don't generate");
 		res.status(200);
 		var result = {}
 		result.success = true;
 		result.fileName = "/tmp/" + hash + ".pdf";
 		res.json(result);
-		console.log(Date() + " DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
 		return;
 	}
 
@@ -79,7 +89,7 @@ app.post('/api/makePDF', function (req, res) {
 		var leftMargin = 36;
 		var topMargin = 21;
 	} else {
-		console.error("Invalid paper size");
+		console.error("DownloadID: " + downloadID + "; Invalid paper size");
 		res.status(200);
 		var result = {}
 		result.success = false;
@@ -119,7 +129,7 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 		const imgPath = "./static/tmp/" + code + ".jpg";
 		try {
 			fs.statSync(imgPath);
-			console.log(Date() + " DownloadID: " + downloadID + "; Found cached copy of " + code + ".jpg, don't download");
+			console.log("DownloadID: " + downloadID + "; Found cached copy of " + code + ".jpg, don't download");
 			return false;
 		}
 		catch (err) {
@@ -129,27 +139,44 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 		}
 	});
 
-	console.log(Date() + " DownloadID: " + downloadID + "; Code list ready, Fetching images...");
+	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
-	const imgPromises = imgCodesToFetch.map( async code => {
-		const imgPath = "./static/tmp/" + code + ".jpg";
-		const url = storagePath + container + "/" + code + ".jpg";
-		const res = await fetch(url);
-		const fileStream = fs.createWriteStream(imgPath);
-		return new Promise((resolve, reject) => {
-			res.body.pipe(fileStream);
-			res.body.on("error", (err) => {
-				reject(err);
+	try {
+		const imgPromises = imgCodesToFetch.map( async code => {
+			const imgPath = "./static/tmp/" + code + ".jpg";
+			const url = storagePath + container + "/" + code + ".jpg";
+			const imgRes = await fetch(url)
+			.then( res => {
+				if (!res.ok) {
+					throw new Error("Error downloading: " + container + "/error.jpg");
+				}
+				console.log("DownloadID: " + downloadID + "; Downloaded " + code + ".jpg");
+				return res;
 			});
-			fileStream.on("finish", function() {
-				resolve();
+			const fileStream = fs.createWriteStream(imgPath);
+			return new Promise((resolve, reject) => {
+				imgRes.body.pipe(fileStream);
+				imgRes.body.on("error", (err) => {
+					reject(err);
+				});
+				fileStream.on("finish", function() {
+					resolve();
+				});
 			});
 		});
-	});
+		await Promise.all(imgPromises);
+	}
+	catch(err) {
+		console.error("DownloadID: " + downloadID + "; " + err.message);
+		res.status(200);
+		var result = {}
+		result.success = false;
+		result.errorMsg = err.message;
+		res.json(result);
+		return;
+	}
 
-	await Promise.all(imgPromises);
-
-	console.log(Date() + " DownloadID: " + downloadID + "; Adding images to doc...");
+	console.log("DownloadID: " + downloadID + "; Adding images to doc...");
 
 	doc.pipe(fs.createWriteStream(pdfPath));
 	makeFrontPage(doc);
@@ -164,7 +191,7 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 	result.fileName = "/tmp/" + hash + ".pdf";
 	res.json(result);
 
-	console.log(Date() + " DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+	console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
 	return;
 }
 
