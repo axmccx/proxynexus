@@ -45,6 +45,28 @@
         <div class="row justify-content-md-center" >
             <div class="col-md-8 ">
                 <div class="card">
+                    <h3>Performance Improvements and Memory Fixes</h3>
+                    <h5>April 25, 2019</h5>
+                    <p>
+                        New features:
+                        <ul>
+                            <li>Faster PDF generation using cached PDFs and image files. </li>
+                            <li>Reduced pdf file size with no quality loss.</li>
+                            <li>Separate Generate PDF and Download buttons.</li>
+                        </ul>
+                    </P>
+                    <p>
+                        Technical Improvements:
+                        <ul>
+                            <li>Moved from Azure to Heroku. Simply a better service.</li>
+                            <li>Improved image fetching process. Instead of using the Azure SDK to download images into JavaScript buffers, now downloads image files using <a href="https://www.npmjs.com/package/fetch/" target="_blank" rel="noopener">fetch</a>.</li>
+                            <li>Reduced pdf file size. When PDFkit adds images to a document from files instead of buffers, it appears to not increase the pdf file size when adding duplicate images.</li>
+                            <li>Fixed Memory Leak. The removal of JavaScript buffers appears to have fixed a memory leak, which was causing the website to crash at Heroku's 1GB hard limit.</li>
+                        </ul>
+                    </p>
+                </div>
+                <br/>
+                <div class="card">
                     <h2>Feature Update and Facelift</h2>
                     <h5>April 19, 2019</h5>
                     <p>

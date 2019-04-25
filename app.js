@@ -103,18 +103,19 @@ app.post('/api/makePDF', function (req, res) {
 
 async function fetchImages(requestedImages, doc, container, pdfPath, downloadID, topMargin, leftMargin, res, hash) {	
 
-	var imgCodeList = [...requestedImages];
-	const biotechIndex = imgCodeList.indexOf("08012");
+	var imgCodes = [...requestedImages];
+	const biotechIndex = imgCodes.indexOf("08012");
 	if (biotechIndex >= 0) {
 		const extraCodes = ["08012a", "08012", "08012b", "08012", "08012c"];
-		imgCodeList.splice(biotechIndex + 1, 0, ...extraCodes);
+		imgCodes.splice(biotechIndex + 1, 0, ...extraCodes);
 	}
-	const syncIndex = imgCodeList.indexOf("09001");
+	const syncIndex = imgCodes.indexOf("09001");
 	if (syncIndex >= 0) {
-		imgCodeList.splice(syncIndex + 1, 0, "09001a");
+		imgCodes.splice(syncIndex + 1, 0, "09001a");
 	}
 
-	const filteredImgCodeList = imgCodeList.filter( code => {
+	const uniqueImgCodes = [...new Set(imgCodes)]
+	const imgCodesToFetch = uniqueImgCodes.filter( code => {
 		const imgPath = "./static/tmp/" + code + ".jpg";
 		try {
 			fs.statSync(imgPath);
@@ -130,7 +131,7 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 
 	console.log(Date() + " DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
-	const imgPromises = filteredImgCodeList.map( async code => {
+	const imgPromises = imgCodesToFetch.map( async code => {
 		const imgPath = "./static/tmp/" + code + ".jpg";
 		const url = storagePath + container + "/" + code + ".jpg";
 		const res = await fetch(url);
@@ -154,7 +155,7 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 	makeFrontPage(doc);
 	doc.addPage();
 	drawCutLines(doc, leftMargin, topMargin);
-	addImages(requestedImages, doc, leftMargin, topMargin);
+	addImages(imgCodes, doc, leftMargin, topMargin);
 	doc.end();
 
 	res.status(200);
