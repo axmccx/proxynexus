@@ -20,23 +20,17 @@ const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
 const storagePath = "https://proxynexus.blob.core.windows.net/";
 
-// setInterval(function() {
-// 	const used = process.memoryUsage();
-// 	for (let key in used) {
-// 		console.log(`${key} ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
-// 	}
-// }, 100);
-
 app.post('/api/makePDF', function (req, res) {
+	// unpack request
 	const paperSize = req.body.paperSize;
 	const quality = req.body.quality;
 	const logInfo = req.body.logInfo;
 	const container = ((q) => {
 		switch(q) {
 			case 'High':
-				return 'images';
+				return 'images/';
 			case 'Medium':
-				return 'med-images';
+				return 'med-images/';
 		}
 	})(quality);
 	const requestedImages = req.body.requestedImages;
@@ -44,6 +38,7 @@ app.post('/api/makePDF', function (req, res) {
 	IDCounter = IDCounter + 1;
 	console.log("NEW DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
 	
+	// Catch empty image request, and return error message
 	if (requestedImages.length == 0) {
 		console.error("DownloadID: " + downloadID + "; No images requested");
 		res.status(200);
@@ -54,6 +49,7 @@ app.post('/api/makePDF', function (req, res) {
 		return;
 	}
 
+	// Catch missing image selection. Container would be null since it won't hit either case in assignment
 	if (container == null) {
 		console.error("DownloadID: " + downloadID + "; No image quality selected");
 		res.status(200);
@@ -64,23 +60,7 @@ app.post('/api/makePDF', function (req, res) {
 		return;
 	}
 
-	const requestedPDFOptions = paperSize + quality + requestedImages;
-	const hash = crypto.createHash('sha1').update(requestedPDFOptions).digest('hex');
-	const pdfPath = __dirname + "/static/tmp/" + hash + ".pdf";
-
-	console.log("DownloadID: " + downloadID + "; PDF Name: " + hash + ".pdf");
-
-	if (fs.existsSync(pdfPath)) {
-		console.log("DownloadID: " + downloadID + "; PDF already exists, don't generate");
-		res.status(200);
-		var result = {}
-		result.success = true;
-		result.fileName = "/tmp/" + hash + ".pdf";
-		res.json(result);
-		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
-		return;
-	}
-
+	// determine margin sizes from selected paper size, return error if chouse is missing
 	if (paperSize === 'A4') {
 		var leftMargin = 30;
 		var topMargin = 46;
@@ -98,7 +78,26 @@ app.post('/api/makePDF', function (req, res) {
 		return;
 	}
 
-	var doc = new PDFDocument({
+	// request is good, make hash for request and pdf file name
+	const requestedPDFOptions = paperSize + quality + requestedImages + logInfo;
+	const hash = crypto.createHash('sha1').update(requestedPDFOptions).digest('hex');
+	const pdfFileName = hash + ".pdf";
+	const pdfPath = __dirname + "/static/tmp/" + pdfFileName;
+	console.log("DownloadID: " + downloadID + "; PDF Name: " + pdfFileName);
+
+	// check if request pdf was already generated, save from re-generating it
+	if (fs.existsSync(pdfPath)) {
+		console.log("DownloadID: " + downloadID + "; PDF already exists, don't generate");
+		res.status(200);
+		var result = {}
+		result.success = true;
+		result.fileName = "/tmp/" + pdfFileName;
+		res.json(result);
+		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		return;
+	}
+
+	const doc = new PDFDocument({
 		size: paperSize,
 		margins: {
 			top: topMargin,
@@ -108,11 +107,34 @@ app.post('/api/makePDF', function (req, res) {
 		  }
 	});
 
-	fetchImages(requestedImages, doc, container, pdfPath, downloadID, topMargin, leftMargin, res, hash);
+	const opt = {
+		container: container,
+		quality: quality,
+		doc: doc,
+		downloadID: downloadID,
+		pdfFileName: pdfFileName,
+		requestedImages: requestedImages,
+		pdfPath: pdfPath,
+		topMargin: topMargin,
+		leftMargin: leftMargin,
+		res: res
+	};
+	fetchImages(opt);
 });
 
-async function fetchImages(requestedImages, doc, container, pdfPath, downloadID, topMargin, leftMargin, res, hash) {	
+async function fetchImages(opt) {	
+	const container = opt.container;
+	const quality = opt.quality;
+	const doc = opt.doc;
+	const downloadID = opt.downloadID;
+	const pdfFileName = opt.pdfFileName
+	const requestedImages = opt.requestedImages;
+	const pdfPath = opt.pdfPath;
+	const topMargin = opt.topMargin;
+	const leftMargin = opt.leftMargin;
+	const res = opt.res;
 
+	// Add back side art for flippable IDs
 	var imgCodes = [...requestedImages];
 	const biotechIndex = imgCodes.indexOf("08012");
 	if (biotechIndex >= 0) {
@@ -124,12 +146,14 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 		imgCodes.splice(syncIndex + 1, 0, "09001a");
 	}
 
-	const uniqueImgCodes = [...new Set(imgCodes)]
+	// Strip duplicate and already downloaded image codes, to prevent downloading more than needed
+	const imgFileNames = imgCodes.map(code => {return code + ".jpg"});	// used for building document later, need to maintain img count
+	const uniqueImgCodes = [...new Set(imgFileNames)];
 	const imgCodesToFetch = uniqueImgCodes.filter( code => {
-		const imgPath = "./static/tmp/" + code + ".jpg";
+		const imgPath = "./static/tmp/" + container + code;
 		try {
 			fs.statSync(imgPath);
-			console.log("DownloadID: " + downloadID + "; Found cached copy of " + code + ".jpg, don't download");
+			console.log("DownloadID: " + downloadID + "; Found cached copy of " + code + ", don't download");
 			return false;
 		}
 		catch (err) {
@@ -138,19 +162,19 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 			}
 		}
 	});
-
 	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
+	// Download image files, and wait until all are ready
 	try {
 		const imgPromises = imgCodesToFetch.map( async code => {
-			const imgPath = "./static/tmp/" + code + ".jpg";
-			const url = storagePath + container + "/" + code + ".jpg";
+			const imgPath = "./static/tmp/" + container + code;
+			const url = storagePath + container + code;
 			const imgRes = await fetch(url)
 			.then( res => {
 				if (!res.ok) {
-					throw new Error("Error downloading: " + container + "/error.jpg");
+					throw new Error("Error downloading: " + container + code);
 				}
-				console.log("DownloadID: " + downloadID + "; Downloaded " + code + ".jpg");
+				console.log("DownloadID: " + downloadID + "; Downloaded " + code);
 				return res;
 			});
 			const fileStream = fs.createWriteStream(imgPath);
@@ -177,32 +201,30 @@ async function fetchImages(requestedImages, doc, container, pdfPath, downloadID,
 	}
 
 	console.log("DownloadID: " + downloadID + "; Adding images to doc...");
-
 	doc.pipe(fs.createWriteStream(pdfPath));
-	makeFrontPage(doc);
+	makeFrontPage(doc, quality);
 	doc.addPage();
 	drawCutLines(doc, leftMargin, topMargin);
-	addImages(imgCodes, doc, leftMargin, topMargin);
+	addImages(imgFileNames, doc, container, leftMargin, topMargin);
 	doc.end();
 
 	res.status(200);
 	var result = {}
 	result.success = true;
-	result.fileName = "/tmp/" + hash + ".pdf";
+	result.fileName = "/tmp/" + pdfFileName;
 	res.json(result);
-
 	console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
 	return;
 }
 
-function addImages(lst, doc, leftMargin, topMargin) {
+function addImages(lst, doc, container, leftMargin, topMargin) {
 	var rowCount = 0;
 	var colCount = 0;
 
 	lst.forEach((code, i) => {
 		const x = rowCount*cardwidthPt + leftMargin;
 		const y = colCount*cardheightPt + topMargin;
-		const imgPath = "static/tmp/" + code + ".jpg";
+		const imgPath = "static/tmp/" + container + code;
 
 		doc.image(imgPath, x, y, {width: cardwidthPt, height: cardheightPt});
 		rowCount++;
@@ -269,7 +291,7 @@ function drawCutLines(doc, leftMargin, topMargin) {
 	return;
 }
 
-function makeFrontPage(doc) {
+function makeFrontPage(doc, quality) {
 	doc.moveDown(15);
 	doc.fontSize(20);
 	doc.text('Generated by Proxy Nexus at https://proxynexus.net', {
@@ -280,6 +302,16 @@ function makeFrontPage(doc) {
 	doc.fontSize(14);
 	doc.text('Print this PDF at 100% size with no additional margins.', {
 		align: 'center'
+	});
+
+	doc.moveDown(20);
+	doc.fontSize(12);
+	doc.text('Image quality: ' + quality, {
+		align: 'left'
+	});
+	doc.moveDown(1);
+	doc.text('Generated on: ' + new Date().toString(), {
+		align: 'left'
 	});
 	return;
 }
