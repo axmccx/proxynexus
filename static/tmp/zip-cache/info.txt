@@ -1,0 +1,1 @@
+Required directory for cache images before they're zipped. 

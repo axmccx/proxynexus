@@ -1,0 +1,1 @@
+Required directory for keeping fitted MPC images. 

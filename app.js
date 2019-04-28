@@ -9,6 +9,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 const PDFDocument = require('pdfkit');
 var crypto = require('crypto');
+var Jimp = require('jimp');
+var archiver = require('archiver');
 
 function cmToPt (cm) {
 	return cm * 28.3465;
@@ -36,7 +38,7 @@ app.post('/api/makePDF', function (req, res) {
 	const requestedImages = req.body.requestedImages;
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
-	console.log("NEW DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
+	console.log("PDF Request! DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
 	
 	// Catch empty image request, and return error message
 	if (requestedImages.length == 0) {
@@ -119,10 +121,10 @@ app.post('/api/makePDF', function (req, res) {
 		leftMargin: leftMargin,
 		res: res
 	};
-	fetchImages(opt);
+	fetchImagesForPDF(opt);
 });
 
-async function fetchImages(opt) {	
+async function fetchImagesForPDF(opt) {	
 	const container = opt.container;
 	const quality = opt.quality;
 	const doc = opt.doc;
@@ -135,32 +137,15 @@ async function fetchImages(opt) {
 	const res = opt.res;
 
 	// Add back side art for flippable IDs
-	var imgCodes = [...requestedImages];
-	const biotechIndex = imgCodes.indexOf("08012");
-	if (biotechIndex >= 0) {
-		const extraCodes = ["08012a", "08012", "08012b", "08012", "08012c"];
-		imgCodes.splice(biotechIndex + 1, 0, ...extraCodes);
-	}
-	const syncIndex = imgCodes.indexOf("09001");
-	if (syncIndex >= 0) {
-		imgCodes.splice(syncIndex + 1, 0, "09001a");
-	}
+	const imgCodes = addFlippedIds(requestedImages);
 
 	// Strip duplicate and already downloaded image codes, to prevent downloading more than needed
 	const imgFileNames = imgCodes.map(code => {return code + ".jpg"});	// used for building document later, need to maintain img count
 	const uniqueImgCodes = [...new Set(imgFileNames)];
 	const imgCodesToFetch = uniqueImgCodes.filter( code => {
 		const imgPath = "./static/tmp/" + container + code;
-		try {
-			fs.statSync(imgPath);
-			console.log("DownloadID: " + downloadID + "; Found cached copy of " + code + ", don't download");
-			return false;
-		}
-		catch (err) {
-			if (err.code === 'ENOENT') {
-				return true;
-			}
-		}
+		const onExistsMsg = "DownloadID: " + downloadID + "; Found cached copy of " + code + ", don't download";
+		return doesNotExists(imgPath, onExistsMsg);
 	});
 	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
@@ -313,6 +298,257 @@ function makeFrontPage(doc, quality) {
 	doc.text('Generated on: ' + new Date().toString(), {
 		align: 'left'
 	});
+	return;
+}
+
+function addFlippedIds(requestedImages) {
+	var imgCodes = [...requestedImages];
+	const biotechIndex = imgCodes.indexOf("08012");
+	if (biotechIndex >= 0) {
+		const extraCodes = ["08012a", "08012", "08012b", "08012", "08012c"];
+		imgCodes.splice(biotechIndex + 1, 0, ...extraCodes);
+	}
+	const syncIndex = imgCodes.indexOf("09001");
+	if (syncIndex >= 0) {
+		imgCodes.splice(syncIndex + 1, 0, "09001a");
+	}
+	return imgCodes;
+}
+
+// if the path does NOT exist, return true
+// if the path exists, print the message and return false
+function doesNotExists(path, onExistsMsg) {
+	try {
+		fs.statSync(path);
+		console.log(onExistsMsg);
+		return false;
+	}
+	catch (err) {
+		if (err.code === 'ENOENT') {
+			return true;
+		}
+	}
+}
+
+// Duplicates an image with a unique border pixel set to red
+// to make this copy unique as far as MPC can tell
+function setRedPixel(orinalPath, dupPath, index, completeMsg) {
+	return new Promise((resolve, reject) => {
+		try {
+			Jimp.read(orinalPath)
+			.then(image => {
+				image.scan(0, index, 1, 1, function(x, y, idx) {
+						this.bitmap.data[idx] = 255;
+						image.quality(90)
+					}
+				).write(dupPath, () => {
+					console.log(completeMsg);
+					resolve();
+				});
+			})
+			.catch(err => { reject(err) });
+		} catch (err) { reject(err) }
+	});
+}
+
+app.post('/api/makeMpcZip', function (req, res) {
+
+	const imagePlacement = req.body.imagePlacement;
+	const logInfo = req.body.logInfo;
+	const container = ((q) => {
+		switch(q) {
+			case 'Scale':
+				return 'scaled/';
+			case 'Fit':
+				return 'fitted/';
+		}
+	})(imagePlacement);
+	const requestedImages = req.body.requestedImages;
+	const downloadID = IDCounter;
+	IDCounter = IDCounter + 1;
+	console.log("MPC-zip Request! DownloadID: " + downloadID + "; Image Placement: " + imagePlacement + ", " + logInfo);
+
+	// Catch empty image request, and return error message
+	if (requestedImages.length == 0) {
+		console.error("DownloadID: " + downloadID + "; No images requested");
+		res.status(200);
+		var result = {}
+		result.success = false;
+		result.errorMsg = "No images requested";
+		res.json(result);
+		return;
+	}
+
+	if (container == null) {
+		console.error("DownloadID: " + downloadID + "; No image placement method selected");
+		res.status(200);
+		var result = {}
+		result.success = false;
+		result.errorMsg = "No image placement method selected";
+		res.json(result);
+		return;
+	}
+
+	const requestedZipOptions = imagePlacement + requestedImages + logInfo;
+	const hash = crypto.createHash('sha1').update(requestedZipOptions).digest('hex');
+	const zipFileName = hash + ".zip";
+	const zipPath = __dirname + "/static/tmp/" + zipFileName;
+	const zipDir = __dirname + "/static/tmp/zip-cache/" + hash + "/";
+	console.log("DownloadID: " + downloadID + "; Zip Name: " + zipFileName);
+
+	if (fs.existsSync(zipPath)) {
+		console.log("DownloadID: " + downloadID + "; Zip already exists, don't generate");
+		res.status(200);
+		var result = {}
+		result.success = true;
+		result.fileName = "/tmp/" + zipFileName;
+		res.json(result);
+		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		return;
+	}
+
+	if (!fs.existsSync(zipDir)) {
+		fs.mkdirSync(zipDir);
+	}
+
+	const opt = {
+		container: container,
+		downloadID: downloadID,
+		requestedImages: requestedImages,
+		res: res,
+		zipFileName: zipFileName,
+		zipDir: zipDir,
+		zipPath: zipPath
+	};
+
+	fetchImagesForZip(opt);
+});
+
+async function fetchImagesForZip(opt) {
+
+	const container = opt.container;
+	const downloadID = opt.downloadID;
+	const requestedImages = opt.requestedImages;
+	const res = opt.res;
+	const zipFileName = opt.zipFileName;
+	const zipDir = opt.zipDir;
+	const zipPath = opt.zipPath;
+
+	// Add back side art for flippable IDs
+	const imgCodes = addFlippedIds(requestedImages);
+
+	// buid an object of codes and counts
+	// TODO check that there's no more than 99 copies of a single image
+	imgCounts = {}
+	imgCodes.forEach( code => {
+		const fileName = container.replace(/\/$/, "") + "-" + code + ".jpg";
+		if (fileName in imgCounts) {
+			imgCounts[fileName]++;
+		} else {
+			imgCounts[fileName] = 1;
+		}
+	});
+
+	const imgFileNames = Object.keys(imgCounts);
+	const imgCodesToFetch = imgFileNames.filter( file => {
+		const imgPath = "./static/tmp/" + container + file;
+		const onExistsMsg = "DownloadID: " + downloadID + "; Found cached copy of " + file + ", don't download";
+		return doesNotExists(imgPath, onExistsMsg);
+	});
+	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
+
+	// Download image files, and wait until all are ready
+	try {
+		const imgPromises = imgCodesToFetch.map( async code => {
+			const imgPath = "./static/tmp/" + container + code;
+			const url = storagePath + container + code;
+			const imgRes = await fetch(url)
+			.then( res => {
+				if (!res.ok) {
+					throw new Error("Error downloading: " + container + code);
+				}
+				console.log("DownloadID: " + downloadID + "; Downloaded " + code);
+				return res;
+			});
+			const fileStream = fs.createWriteStream(imgPath);
+			return new Promise((resolve, reject) => {
+				imgRes.body.pipe(fileStream);
+				imgRes.body.on("error", (err) => {
+					reject(err);
+				});
+				fileStream.on("finish", function() {
+					resolve();
+				});
+			});
+		});
+		await Promise.all(imgPromises);
+	}
+	catch(err) {
+		console.error("DownloadID: " + downloadID + "; " + err.message);
+		res.status(200);
+		var result = {}
+		result.success = false;
+		result.errorMsg = err.message;
+		res.json(result);
+		return;
+	}
+
+	// For duplicate images, make a copy if not already cached and save the names
+	var dupFileNames = [];
+	var dupImgPromises = [];
+	console.log("DownloadID: " + downloadID + "; Creating duplicate copies...");
+	Object.keys(imgCounts).forEach( fileName => {
+		const count = imgCounts[fileName];
+		const splitName = fileName.split(".");
+		for (var i=1; i<count; i++) {
+			const dupName = splitName[0] + "-" + i + "." + splitName[1];
+			const imgPath = "./static/tmp/" + container + dupName;
+			const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
+			dupFileNames.push(dupName);
+
+			// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
+			if (doesNotExists(imgPath, onExistsMsg)) {
+				const originalImg = "./static/tmp/" + container + fileName;
+				const msg = fileName + " being copied to " + dupName;
+				dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+			}
+		}	
+	});
+
+	await Promise.all(dupImgPromises);
+
+	console.log("DownloadID: " + downloadID + "; Duplicates Ready");
+
+	const allFileNames = imgFileNames.concat(dupFileNames);
+
+	// Copy all allFileNames to zipDir
+	allFileNames.forEach( file => {
+		fs.copyFileSync("./static/tmp/" + container + file, zipDir + file);
+	});
+	
+	console.log("DownloadID: " + downloadID + "; Zipping up images...");
+
+	var zipFile = fs.createWriteStream(zipPath);
+	var archive = archiver('zip');
+
+	zipFile.on('close', function() {
+		console.log("DownloadID: " + downloadID + "; Zip file ready, " + archive.pointer() + " total bytes");
+	});
+
+	zipFile.on('end', function() {
+		console.log("DownloadID: " + downloadID + "; Data has been drained");
+	});
+
+	archive.pipe(zipFile);
+	archive.directory(zipDir, false);
+	archive.finalize();
+
+	res.status(200);
+	var result = {}
+	result.success = true;
+	result.fileName = "/tmp/" + zipFileName;
+	res.json(result);
+	console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
 	return;
 }
 
