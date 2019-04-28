@@ -1,16 +1,16 @@
 const port = process.env.PORT || 8000;
-var fs  = require('fs');
+const fs = require('fs');
 const fetch = require("node-fetch");
-var express = require("express");
-var app = express();
+const express = require("express");
+const bodyParser = require('body-parser');
+const PDFDocument = require('pdfkit');
+const crypto = require('crypto');
+const Jimp = require('jimp');
+const archiver = require('archiver');
+const app = express();
 app.use(express.static('static'));
-var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-const PDFDocument = require('pdfkit');
-var crypto = require('crypto');
-var Jimp = require('jimp');
-var archiver = require('archiver');
 
 function cmToPt (cm) {
 	return cm * 28.3465;
@@ -21,6 +21,13 @@ const cardheight = 8.80;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
 const storagePath = "https://proxynexus.blob.core.windows.net/";
+
+// setInterval(function() {
+// 	const used = process.memoryUsage();
+// 	for (let key in used) {
+// 		console.log(`${key} ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
+// 	}
+// }, 100);
 
 app.post('/api/makePDF', function (req, res) {
 	// unpack request
@@ -150,30 +157,10 @@ async function fetchImagesForPDF(opt) {
 	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
 	// Download image files, and wait until all are ready
+	const imgPath = "./static/tmp/" + container;
+	const url = storagePath + container;
 	try {
-		const imgPromises = imgCodesToFetch.map( async code => {
-			const imgPath = "./static/tmp/" + container + code;
-			const url = storagePath + container + code;
-			const imgRes = await fetch(url)
-			.then( res => {
-				if (!res.ok) {
-					throw new Error("Error downloading: " + container + code);
-				}
-				console.log("DownloadID: " + downloadID + "; Downloaded " + code);
-				return res;
-			});
-			const fileStream = fs.createWriteStream(imgPath);
-			return new Promise((resolve, reject) => {
-				imgRes.body.pipe(fileStream);
-				imgRes.body.on("error", (err) => {
-					reject(err);
-				});
-				fileStream.on("finish", function() {
-					resolve();
-				});
-			});
-		});
-		await Promise.all(imgPromises);
+		await downloadFiles(imgCodesToFetch, imgPath, url, downloadID);
 	}
 	catch(err) {
 		console.error("DownloadID: " + downloadID + "; " + err.message);
@@ -351,6 +338,34 @@ function setRedPixel(orinalPath, dupPath, index, completeMsg) {
 	});
 }
 
+// Download all files in fileNames to destination from the baseUrl
+// Needs to be called from within a try-catch block!!
+async function downloadFiles(fileNames, destination, baseUrl, downloadID) {
+	const promises = fileNames.map( async fileName => {
+		const filePath = destination + fileName;
+		const url = baseUrl + fileName;
+		const imgRes = await fetch(url)
+		.then( res => {
+			if (!res.ok) {
+				throw new Error("Error downloading: " + fileName);
+			}
+			console.log("DownloadID: " + downloadID + "; Downloaded " + fileName);
+			return res;
+		});
+		const fileStream = fs.createWriteStream(filePath);
+		return new Promise((resolve, reject) => {
+			imgRes.body.pipe(fileStream);
+			imgRes.body.on("error", (err) => {
+				reject(err);
+			});
+			fileStream.on("finish", function() {
+				resolve();
+			});
+		});
+	});
+	await Promise.all(promises);
+}
+
 app.post('/api/makeMpcZip', function (req, res) {
 
 	const imagePlacement = req.body.imagePlacement;
@@ -433,17 +448,21 @@ async function fetchImagesForZip(opt) {
 	const zipFileName = opt.zipFileName;
 	const zipDir = opt.zipDir;
 	const zipPath = opt.zipPath;
+	var result = {};
 
 	// Add back side art for flippable IDs
 	const imgCodes = addFlippedIds(requestedImages);
 
 	// buid an object of codes and counts
-	// TODO check that there's no more than 99 copies of a single image
 	imgCounts = {}
 	imgCodes.forEach( code => {
 		const fileName = container.replace(/\/$/, "") + "-" + code + ".jpg";
 		if (fileName in imgCounts) {
-			imgCounts[fileName]++;
+			if (imgCounts[fileName] < 99) {
+				imgCounts[fileName]++;
+			} else {
+				result.infoMsg = "Card count limited to 99 copies.";
+			}
 		} else {
 			imgCounts[fileName] = 1;
 		}
@@ -458,39 +477,41 @@ async function fetchImagesForZip(opt) {
 	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
 	// Download image files, and wait until all are ready
+	const imgPath = "./static/tmp/" + container;
+	const url = storagePath + container;
 	try {
-		const imgPromises = imgCodesToFetch.map( async code => {
-			const imgPath = "./static/tmp/" + container + code;
-			const url = storagePath + container + code;
-			const imgRes = await fetch(url)
-			.then( res => {
-				if (!res.ok) {
-					throw new Error("Error downloading: " + container + code);
-				}
-				console.log("DownloadID: " + downloadID + "; Downloaded " + code);
-				return res;
-			});
-			const fileStream = fs.createWriteStream(imgPath);
-			return new Promise((resolve, reject) => {
-				imgRes.body.pipe(fileStream);
-				imgRes.body.on("error", (err) => {
-					reject(err);
-				});
-				fileStream.on("finish", function() {
-					resolve();
-				});
-			});
-		});
-		await Promise.all(imgPromises);
+		await downloadFiles(imgCodesToFetch, imgPath, url, downloadID);
 	}
 	catch(err) {
 		console.error("DownloadID: " + downloadID + "; " + err.message);
 		res.status(200);
-		var result = {}
 		result.success = false;
 		result.errorMsg = err.message;
 		res.json(result);
 		return;
+	}
+
+	// download back images if they're missing
+	const cardBacks = ["corp-back.png", "runner-back.png"];
+	const cardBacksToFetch = cardBacks.filter( file => {
+		const imgPath = "./static/tmp/zip-cache/" + file;
+		const onExistsMsg = "DownloadID: " + downloadID + "; Found cached copy of " + file + ", don't download";
+		return doesNotExists(imgPath, onExistsMsg);
+	});
+	if (cardBacksToFetch.length > 0) {
+		const imgPath = "./static/tmp/zip-cache/";
+		const url = storagePath + "misc/";
+		try {
+			await downloadFiles(cardBacksToFetch, imgPath, url, downloadID);
+		}
+		catch(err) {
+			console.error("DownloadID: " + downloadID + "; " + err.message);
+			res.status(200);
+			result.success = false;
+			result.errorMsg = err.message;
+			res.json(result);
+			return;
+		}
 	}
 
 	// For duplicate images, make a copy if not already cached and save the names
@@ -514,37 +535,32 @@ async function fetchImagesForZip(opt) {
 			}
 		}	
 	});
-
 	await Promise.all(dupImgPromises);
 
 	console.log("DownloadID: " + downloadID + "; Duplicates Ready");
-
 	const allFileNames = imgFileNames.concat(dupFileNames);
-
-	// Copy all allFileNames to zipDir
-	allFileNames.forEach( file => {
+	allFileNames.forEach( file => {			// Copy all allFileNames to zipDir
 		fs.copyFileSync("./static/tmp/" + container + file, zipDir + file);
 	});
 	
 	console.log("DownloadID: " + downloadID + "; Zipping up images...");
-
 	var zipFile = fs.createWriteStream(zipPath);
 	var archive = archiver('zip');
-
 	zipFile.on('close', function() {
 		console.log("DownloadID: " + downloadID + "; Zip file ready, " + archive.pointer() + " total bytes");
 	});
-
 	zipFile.on('end', function() {
 		console.log("DownloadID: " + downloadID + "; Data has been drained");
 	});
 
 	archive.pipe(zipFile);
 	archive.directory(zipDir, false);
+	cardBacks.forEach(file => {
+		archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: "backs/" + file });
+	});
 	archive.finalize();
 
 	res.status(200);
-	var result = {}
 	result.success = true;
 	result.fileName = "/tmp/" + zipFileName;
 	res.json(result);
