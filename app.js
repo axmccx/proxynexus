@@ -509,13 +509,33 @@ async function fetchImagesForZip(opt) {
 
 	// For duplicate images, make a copy if not already cached and save the names
 	var dupFileNames = [];
-	var dupImgPromises = [];
+	// var dupImgPromises = [];
 	console.log("DownloadID: " + downloadID + "; Creating duplicate copies...");
-	Object.keys(imgCounts).forEach( async fileName => {
+	// Object.keys(imgCounts).forEach( async fileName => {
+	// 	const count = imgCounts[fileName];
+	// 	const splitName = fileName.split(".");
+	// 	for (var i=1; i<count; i++) {
+	// 		const dupName = splitName[0] + "-" + i + "." + splitName[1];
+	// 		const imgPath = "./static/tmp/" + container + dupName;
+	// 		const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
+	// 		dupFileNames.push(dupName);
+
+	// 		// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
+	// 		if (doesNotExists(imgPath, onExistsMsg)) {
+	// 			const originalImg = "./static/tmp/" + container + fileName;
+	// 			const msg = fileName + " being copied to " + dupName;
+	// 			dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+	// 		}
+	// 	}	
+	// });
+	// await Promise.all(dupImgPromises);
+
+	for (var i=0; i<Object.keys(imgCounts).length; i++) {
+		const fileName = Object.keys(imgCounts)[i];
 		const count = imgCounts[fileName];
 		const splitName = fileName.split(".");
-		for (var i=1; i<count; i++) {
-			const dupName = splitName[0] + "-" + i + "." + splitName[1];
+		for (var j=1; j<count; j++) {
+			const dupName = splitName[0] + "-" + j + "." + splitName[1];
 			const imgPath = "./static/tmp/" + container + dupName;
 			const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
 			dupFileNames.push(dupName);
@@ -524,11 +544,11 @@ async function fetchImagesForZip(opt) {
 			if (doesNotExists(imgPath, onExistsMsg)) {
 				const originalImg = "./static/tmp/" + container + fileName;
 				const msg = fileName + " being copied to " + dupName;
-				dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+				// dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+				await setRedPixel(originalImg, imgPath, j, msg);
 			}
-		}	
-	});
-	await Promise.all(dupImgPromises);
+		}
+    }
 
 	console.log("DownloadID: " + downloadID + "; Duplicates Ready");
 	const allFileNames = imgFileNames.concat(dupFileNames);
