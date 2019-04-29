@@ -3,7 +3,7 @@ var _cardDB_keyID     = {}; //same as _cardDB, but keyed by card code instead of
 var _cardListTextArea;
 var _deckURLText;
 var _setSelection;
-var _cardImgBox;
+var _cardPreview;
 var _playsetSelection = "Single Set";
 var _cardListHtml     = '';
 var _cardList;
@@ -68,7 +68,7 @@ function reset() {
 function fetchAllCards() {
   localStorage.removeItem('cardsDB');
   localStorage.removeItem('cardDB_keyID');
-  _cardImgBox.html('<span class="text-muted" data-loading>loading cards ...</span>');
+  _cardPreview.html('<span class="text-muted" data-loading>loading cards ...</span>');
 
   $.getJSON(NRDB_API_DIR + "cards", function(response) {
     _cardDB = {};
@@ -99,19 +99,6 @@ function fetchSetList() {
   $.getJSON( "json/packs.json", function(response) {
     $.each(response.data, function(key, item) {
       _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
-
-      // TEMP CORE SET DISABLE
-      // const coreSets = ["core", "core2", "sc19"];
-      // if (coreSets.indexOf(item.code) > -1) {
-      //   _setSelection.append('<option disabled value=' + item.code + '>' + item.name + '</option>');
-      // } else {
-      //   _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
-      // }
-
-      // if (item.code === "rar") {
-      //   _setSelection.val(item.code);
-      // }
-
       if (item.code === "sc19") {
         _setSelection.val(item.code);
       }
@@ -162,7 +149,7 @@ function buildFromCardList() {
   
   if (_cardListHtml != html) {
     _cardListHtml = html;
-    _cardImgBox.html(_cardListHtml);
+    _cardPreview.html(_cardListHtml);
   } 
 }
 
@@ -214,7 +201,7 @@ function makeCardHTML(response) {
 
   if (_cardListHtml != html) {
     _cardListHtml = html;
-    _cardImgBox.html(_cardListHtml);
+    _cardPreview.html(_cardListHtml);
   }
 }
 
@@ -252,7 +239,7 @@ function buildFromSet() {
 
     if (_cardListHtml != html) {
       _cardListHtml = html;
-      _cardImgBox.html(_cardListHtml);
+      _cardPreview.html(_cardListHtml);
     }
   });
 }
@@ -261,7 +248,7 @@ function buildCardHTML(code, image, title) {
   var newCard = '';
   newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
   newCard += '<img class="card" src="' + image + '" alt="' + code + '" />';
-  newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
+  newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
   newCard += '</a>';
   if (code == "08012") {
     const extras = ["08012a", "08012", "08012b", "08012", "08012c"];
@@ -269,87 +256,141 @@ function buildCardHTML(code, image, title) {
       const img = IMAGE_BASE_DIR + IMAGE_CONTAINER + extra + '.jpg';
       newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
       newCard += '<img class="card" src="' + img + '" alt="' + code + '" />';
-      newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
+      newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
       newCard += '</a>';
     });
   } else if (code == "09001") {
     const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '09001a.jpg';
     newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
     newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
-    newCard += '<span class="label print-hide">' + code + ' ' + title + '</span>'; 
+    newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
     newCard += '</a>';
   }
   return newCard;
 }
 
+function getExtraInfo() {
+  var extraInfo;
+  switch(_selectedTab) {
+    case "Card List":
+      extraInfo = "Cards: " + _cardListTextArea.val().replace(/\n/g, ",");;
+      break;
+    case "Set":
+      extraInfo = "Set: " + _setSelection.val() + ", playset: " + _playsetSelection;
+      break;
+    case "NetrunnerDB":
+      extraInfo = "URL: " + _deckURLText.val();
+      break;
+  }
+  return extraInfo;
+}
+
 function makePDF() {
-  const paperSize = $('#paperSizeSelection').find("option:selected").text();
-  const imageQuality = $('#imageQualitySelection').find("option:selected").text();
-  if (paperSize != null && imageQuality != null) {
-    var extraInfo;
+  const paperSize = $("input[type='radio'][name='paperSizeSelection']:checked").val();
+  const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
 
-    switch(_selectedTab) {
-      case "Card List":
-        extraInfo = "Cards: " + _cardListTextArea.val().replace(/\n/g, ",");;
-        break;
-      case "Set":
-        extraInfo = "Set: " + _setSelection.val() + ", playset: " + _playsetSelection;
-        break;
-      case "NetrunnerDB":
-        extraInfo = "URL: " + _deckURLText.val();
-        break;
-    }
+  const downloadOptions = {
+    "paperSize": paperSize,
+    "quality": imageQuality,
+    "requestedImages": _cardList,
+    "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
+  };
 
-    const downloadOptions = {
-      "paperSize": paperSize,
-      "quality": imageQuality,
-      "requestedImages": _cardList,
-      "logInfo": "Selected Tab: " + _selectedTab + ", " + extraInfo
-    };
+  $('#PDFDownloadSpinner').show();
+  $('#PDFGenerateBtn').attr("value", "Generating...");
 
-    $('#downloadSpinner').show();
-    $('#PDFGenerateBtn').attr("value", "Generating...");
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/makePDF", true);
-    xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-    xhr.responseType = 'json';
-    xhr.onload = function (e) {
-      if (this.status == 200) {
-        if (this.response.success) {
-          displayDownload(this.response.fileName);
-        } else {
-          displayDownloadError(this.response.errorMsg);
-        }
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/makePDF", true);
+  xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+  xhr.responseType = 'json';
+  xhr.onload = function (e) {
+    if (this.status == 200) {
+      if (this.response.success) {
+        displayPDFDownload(this.response.fileName);
+      } else {
+        displayPDFDownloadError(this.response.errorMsg);
       }
     }
-    const data = JSON.stringify(downloadOptions);
-    xhr.send(data);
   }
+  const data = JSON.stringify(downloadOptions);
+  xhr.send(data);
 }
 
-function displayDownloadError(msg) {
+function displayPDFDownloadError(msg) {
   $('#PDFGenerateBtn').hide();
   $('#PDFGenerateBtn').attr("value", "Generate PDF");
-  $('#downloadSpinner').hide();
+  $('#PDFDownloadSpinner').hide();
   $('#PDFResetBtn').show();
-  $("#DownloadErrorMsg").html(msg);
+  $("#PDFDownloadErrorMsg").html(msg);
 }
 
-function displayDownload(pdfPath) {
-  $('#PDFdownloadBtn').attr('href', pdfPath); 
-  $('#PDFdownloadBtn').show();
+function displayPDFDownload(pdfPath) {
+  $('#PDFDownloadBtn').attr('href', pdfPath); 
+  $('#PDFDownloadBtn').show();
   $('#PDFGenerateBtn').hide();
   $('#PDFGenerateBtn').attr("value", "Generate PDF");
-  $('#downloadSpinner').hide();
+  $('#PDFDownloadSpinner').hide();
   $('#PDFResetBtn').show();
 }
 
-function downloadReset() {
+function resetPDFDownload() {
   $('#PDFResetBtn').hide();
-  $('#PDFdownloadBtn').hide();
+  $('#PDFDownloadBtn').hide();
   $('#PDFGenerateBtn').show();
-  $("#DownloadErrorMsg").html("");
+  $("#PDFDownloadErrorMsg").html("");
+}
+
+function getZip() {
+  const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
+
+  const downloadOptions = {
+    "imagePlacement": imgPlacement,
+    "requestedImages": _cardList,
+    "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
+  };
+
+  $('#ZipDownloadSpinner').show();
+  $('#ZipGenerateBtn').attr("value", "Making Zip...");
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/makeMpcZip", true);
+  xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+  xhr.responseType = 'json';
+  xhr.onload = function (e) {
+    if (this.status == 200) {
+      if (this.response.success) {
+        displayZipDownload(this.response.fileName);
+      } else {
+        displayZipDownloadError(this.response.errorMsg);
+      }
+    }
+  }
+  const data = JSON.stringify(downloadOptions);
+  xhr.send(data);
+}
+
+function displayZipDownloadError(msg) {
+  $('#ZipGenerateBtn').hide();
+  $('#ZipGenerateBtn').attr("value", "Get MPC Images");
+  $('#ZipDownloadSpinner').hide();
+  $('#ZipResetBtn').show();
+  $("#ZipDownloadErrorMsg").html(msg);
+}
+
+function displayZipDownload(ZipPath) {
+  $('#ZipDownloadBtn').attr('href', ZipPath); 
+  $('#ZipDownloadBtn').show();
+  $('#ZipGenerateBtn').hide();
+  $('#ZipGenerateBtn').attr("value", "Get MPC Images");
+  $('#ZipDownloadSpinner').hide();
+  $('#ZipResetBtn').show();
+}
+
+function resetZipDownload() {
+  $('#ZipResetBtn').hide();
+  $('#ZipDownloadBtn').hide();
+  $('#ZipGenerateBtn').show();
+  $("#ZipDownloadErrorMsg").html("");
 }
 
 function assignEvents() {
@@ -367,7 +408,15 @@ function assignEvents() {
   })
 
   $("#PDFResetBtn").click(function(e) {
-    downloadReset();
+    resetPDFDownload();
+  })
+
+  $("#ZipGenerateBtn").click(function(e) {
+    getZip();
+  })
+
+  $("#ZipResetBtn").click(function(e) {
+    resetZipDownload();
   })
 
   _cardListTextArea.on('input',function(e){
@@ -387,7 +436,7 @@ $(function() {
   _cardListTextArea = $('#cardListTextArea');
   _deckURLText = $('#deckURLText');
   _setSelection = $('#setSelection');
-  _cardImgBox = $('#cardImgBox');
+  _cardPreview = $('#cardPreview');
 
   assignEvents();
   loadCards();

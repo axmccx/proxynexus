@@ -50,7 +50,7 @@
         </div>
         <div class="row">
             <div class="col-md-8 order-3 order-md-1">
-                <div id="cardImgBox"></div>
+                <div id="cardPreview"></div>
             </div>
             <div class="col-md-4 order-1">
                 <nav>
@@ -122,36 +122,84 @@
                 </div>
             </div>
             <div class="col-xl-8 order-2">
-                <form>
-                    <div class="form-row align-items-center">
-                        <div class="col-auto my-1">
-                            <select class="form-control" id="paperSizeSelection">
-                                <option selected disabled>- Paper Size -</option>
-                                <option>Letter</option>
-                                <option>A4</option>
-                            </select>
+                <div class="row pt-3">
+                    <form>
+                        <div class="d-flex align-items-center">
+                            <div class="col-auto">
+                                <h6>Paper Size</h6>
+                                <div class="custom-control custom-radio">
+                                   <input type="radio" id="letterRadio" name="paperSizeSelection" value="Letter" class="custom-control-input" checked>
+                                   <label class="custom-control-label" for="letterRadio">Letter</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                   <input type="radio" id="a4Radio" name="paperSizeSelection" value="A4" class="custom-control-input">
+                                   <label class="custom-control-label" for="a4Radio">A4</label>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <h6>Image Quality</h6>
+                                <div class="custom-control custom-radio">
+                                   <input type="radio" id="highQualityRadio" name="imageQualitySelection" value="High" class="custom-control-input" checked>
+                                   <label class="custom-control-label" for="highQualityRadio">High</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                   <input type="radio" id="MediumQualityRadio" name="imageQualitySelection" value="Medium" class="custom-control-input">
+                                   <label class="custom-control-label" for="MediumQualityRadio">Medium</label>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <input type="button" id="PDFGenerateBtn" class="btn btn-danger" value="Generate PDF"></input>
+                                <a id="PDFDownloadBtn" class="btn btn-success downloadBtn" target="_blank" rel="noopener">Download</a>
+                                <input type="button" id="PDFResetBtn" class="btn btn-info initHide" value="Reset"></input>
+                            </div>
+                            <div id="PDFDownloadSpinner" class="spinner-border text-success initHide" role="status">
+                                <span class="sr-only">Generating...</span>
+                            </div>
                         </div>
-                        <div class="col-auto my-1">
-                            <select class="form-control" id="imageQualitySelection" aria-describedby="cardListHelpBlock">
-                                <option selected disabled>- Image Quality -</option>
-                                <option>High</option>
-                                <option>Medium</option>
-                            </select>
+                    </form>
+                </div>
+                <div class="row pl-3">
+                    <small id="cardListHelpBlock" class="form-text text-muted">
+                        Medium quality reduces PDF size, with a small sacrifice to image quality.
+                    </small>
+                </div>
+                <div class="row pl-3">
+                    <div class="errorMsg" id="PDFDownloadErrorMsg"></div>
+                </div>
+                <br>
+                <div class="row pt-1">
+                    <form>
+                        <div class="d-flex align-items-center">
+                            <div class="col-auto my-1">
+                                <h6>Image Placement Method</h6>
+                                <div class="custom-control custom-radio">
+                                   <input type="radio" id="scaleRadio" name="imgPlacement" value="Scale" class="custom-control-input" checked>
+                                   <label class="custom-control-label" for="scaleRadio">Scale</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                   <input type="radio" id="fitRadio" name="imgPlacement" value="Fit" class="custom-control-input">
+                                   <label class="custom-control-label" for="fitRadio">Fit</label>
+                                </div>
+                            </div>
+                            <div class="col-auto my-1">
+                                <input type="button" id="ZipGenerateBtn" class="btn btn-danger " value="Get MPC Images"></input>
+                                <a id="ZipDownloadBtn" class="btn btn-success downloadBtn" target="_blank" rel="noopener">Download</a>
+                                <input type="button" id="ZipResetBtn" class="btn btn-info initHide" value="Reset"></input>
+                            </div>
+                            <div id="ZipDownloadSpinner" class="spinner-border text-success initHide" role="status">
+                                <span class="sr-only">Generating...</span>
+                            </div>
                         </div>
-                        <div class="col-auto my-1">
-                            <input type="button" id="PDFGenerateBtn" class="btn btn-danger" value="Generate PDF"></input>
-                            <a id="PDFdownloadBtn" class="btn btn-success" target="_blank" rel="noopener">Download</a>
-                            <input type="button" id="PDFResetBtn" class="btn btn-info" value="Reset"></input>
-                        </div>
-                        <div id="downloadSpinner" class="spinner-border text-success" role="status">
-                            <span class="sr-only">Generating...</span>
-                        </div>
-                        <small id="cardListHelpBlock" class="form-text text-muted">
-                            Medium quality reduces PDF size, with a small sacrifice to image quality.
-                        </small>
-                    </div>
-                    <div id="DownloadErrorMsg"></div>
-                </form>
+                    </form>
+                </div>
+                <div class="row pl-3">
+                    <small id="cardListHelpBlock" class="form-text text-muted">
+                            Not sure which to pick? <a href="/">Check this out.</a>
+                    </small>
+                </div>
+                <div class="row pl-3">
+                    <div class="errorMsg" id="ZipDownloadErrorMsg"></div>
+                </div>
             </div>
         </div>
     </div>

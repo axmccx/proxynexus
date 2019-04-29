@@ -95,21 +95,17 @@ img.card{
   vertical-align: top;
 }
 
-#downloadSpinner{
-  display: none
-}
-
-#DownloadErrorMsg {
+.errorMsg {
   color: red;
   font-weight: bold;
 }
 
-#PDFdownloadBtn{
+.downloadBtn{
   color: white; 
   display: none
 }
 
-#PDFResetBtn{
+.initHide{
   display: none
 }
   
@@ -130,13 +126,13 @@ img.card{
 }
 
 @media screen {
-  #cardImgBox {
+  #cardPreview {
     margin-top: 1rem;
     max-height: 800px;
     min-height: 350px;
     overflow-y: scroll;
   }
-  #cardImgBox > * {
+  #cardPreview > * {
     display: inline-block;
     margin: 1rem;
     vertical-align: top;
@@ -148,20 +144,20 @@ img.card{
     transform: scale(1);
     transition: transform 0.125s, filter 0.1s ease-in-out;
   }
-  #cardImgBox > * > img {
+  #cardPreview > * > img {
     background-image: none;
   }
-  #cardImgBox > * > img:after {
+  #cardPreview > * > img:after {
     content: "card";
     padding: 1.621em 1rem;
     line-height: 1.5;
   }
-  #cardImgBox > * > .label {
+  #cardPreview > * > .label {
     visibility: hidden;
     position: absolute;
     left: 2px;
     right: 2px;
-    bottom: 2px;
+    bottom: -32px;
     padding: 0.5em 1em;
     border-radius: 0 0 0.1cm 0.1cm;
     font-size: 12px;
@@ -171,15 +167,15 @@ img.card{
     opacity: 0;
     transition: opacity 0.1s;
   }
-  #cardImgBox > p {
+  #cardPreview > p {
     padding: 1.621em 1rem;
     line-height: 1.5;
   }
-  #cardImgBox > a:hover {
+  #cardPreview > a:hover {
     transform: scale(1.1);
     z-index: 20;
   }
-  #cardImgBox > a:hover > .label {
+  #cardPreview > a:hover > .label {
     visibility: visible;
     opacity: 1;
   }

@@ -58,17 +58,6 @@ app.post('/api/makePDF', function (req, res) {
 		return;
 	}
 
-	// Catch missing image selection. Container would be null since it won't hit either case in assignment
-	if (container == null) {
-		console.error("DownloadID: " + downloadID + "; No image quality selected");
-		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = "No image quality selected";
-		res.json(result);
-		return;
-	}
-
 	// determine margin sizes from selected paper size, return error if chouse is missing
 	if (paperSize === 'A4') {
 		var leftMargin = 30;
@@ -83,6 +72,17 @@ app.post('/api/makePDF', function (req, res) {
 		var result = {}
 		result.success = false;
 		result.errorMsg = "Invalid paper size";
+		res.json(result);
+		return;
+	}
+
+	// Catch missing image selection. Container would be null since it won't hit either case in assignment
+	if (container == null) {
+		console.error("DownloadID: " + downloadID + "; No image quality selected");
+		res.status(200);
+		var result = {}
+		result.success = false;
+		result.errorMsg = "No image quality selected";
 		res.json(result);
 		return;
 	}
@@ -319,8 +319,8 @@ function doesNotExists(path, onExistsMsg) {
 
 // Duplicates an image with a unique border pixel set to red
 // to make this copy unique as far as MPC can tell
-function setRedPixel(orinalPath, dupPath, index, completeMsg) {
-	return new Promise((resolve, reject) => {
+async function setRedPixel(orinalPath, dupPath, index, completeMsg) {
+	return await new Promise((resolve, reject) => {
 		try {
 			Jimp.read(orinalPath)
 			.then(image => {
@@ -516,13 +516,14 @@ async function fetchImagesForZip(opt) {
 
 	// For duplicate images, make a copy if not already cached and save the names
 	var dupFileNames = [];
-	var dupImgPromises = [];
+	// var dupImgPromises = [];
 	console.log("DownloadID: " + downloadID + "; Creating duplicate copies...");
-	Object.keys(imgCounts).forEach( fileName => {
+	for (var i=0; i<Object.keys(imgCounts).length; i++) {
+		const fileName = Object.keys(imgCounts)[i];
 		const count = imgCounts[fileName];
 		const splitName = fileName.split(".");
-		for (var i=1; i<count; i++) {
-			const dupName = splitName[0] + "-" + i + "." + splitName[1];
+		for (var j=1; j<count; j++) {
+			const dupName = splitName[0] + "-" + j + "." + splitName[1];
 			const imgPath = "./static/tmp/" + container + dupName;
 			const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
 			dupFileNames.push(dupName);
@@ -531,11 +532,30 @@ async function fetchImagesForZip(opt) {
 			if (doesNotExists(imgPath, onExistsMsg)) {
 				const originalImg = "./static/tmp/" + container + fileName;
 				const msg = fileName + " being copied to " + dupName;
-				dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+				// dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+				await setRedPixel(originalImg, imgPath, j, msg);
 			}
-		}	
-	});
-	await Promise.all(dupImgPromises);
+		}
+	}
+	// Object.keys(imgCounts).forEach( async fileName => {
+	// 	const count = imgCounts[fileName];
+	// 	const splitName = fileName.split(".");
+	// 	for (var i=1; i<count; i++) {
+	// 		const dupName = splitName[0] + "-" + i + "." + splitName[1];
+	// 		const imgPath = "./static/tmp/" + container + dupName;
+	// 		const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
+	// 		dupFileNames.push(dupName);
+
+	// 		// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
+	// 		if (doesNotExists(imgPath, onExistsMsg)) {
+	// 			const originalImg = "./static/tmp/" + container + fileName;
+	// 			const msg = fileName + " being copied to " + dupName;
+	// 			// dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
+	// 			await setRedPixel(originalImg, imgPath, i, msg);
+	// 		}
+	// 	}	
+	// });
+	// await Promise.all(dupImgPromises);
 
 	console.log("DownloadID: " + downloadID + "; Duplicates Ready");
 	const allFileNames = imgFileNames.concat(dupFileNames);
@@ -548,6 +568,12 @@ async function fetchImagesForZip(opt) {
 	var archive = archiver('zip');
 	zipFile.on('close', function() {
 		console.log("DownloadID: " + downloadID + "; Zip file ready, " + archive.pointer() + " total bytes");
+		res.status(200);
+		result.success = true;
+		result.fileName = "/tmp/" + zipFileName;
+		res.json(result);
+		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		return;
 	});
 	zipFile.on('end', function() {
 		console.log("DownloadID: " + downloadID + "; Data has been drained");
@@ -559,13 +585,6 @@ async function fetchImagesForZip(opt) {
 		archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: "backs/" + file });
 	});
 	archive.finalize();
-
-	res.status(200);
-	result.success = true;
-	result.fileName = "/tmp/" + zipFileName;
-	res.json(result);
-	console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
-	return;
 }
 
 app.listen(port, () => {
