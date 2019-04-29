@@ -5,7 +5,7 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const PDFDocument = require('pdfkit');
 const crypto = require('crypto');
-const Jimp = require('jimp');
+const sharp = require('sharp');
 const archiver = require('archiver');
 const app = express();
 app.use(express.static('static'));
@@ -320,22 +320,15 @@ function doesNotExists(path, onExistsMsg) {
 // Duplicates an image with a unique border pixel set to red
 // to make this copy unique as far as MPC can tell
 async function setRedPixel(orinalPath, dupPath, index, completeMsg) {
-	return await new Promise((resolve, reject) => {
-		try {
-			Jimp.read(orinalPath)
-			.then(image => {
-				image.scan(0, index, 1, 1, function(x, y, idx) {
-						this.bitmap.data[idx] = 255;
-						image.quality(90)
-					}
-				).write(dupPath, () => {
-					console.log(completeMsg);
-					resolve();
-				});
-			})
-			.catch(err => { reject(err) });
-		} catch (err) { reject(err) }
-	});
+	return sharp(orinalPath)
+		.composite([{ input: 'misc/redDot.png', blend: 'over', top: index, left: 0 }])
+		.toFile(dupPath)
+		.then( () => { 
+			console.log(completeMsg)
+		})
+		.catch(err => { 
+			console.log(err)
+		});
 }
 
 // Download all files in fileNames to destination from the baseUrl
@@ -516,14 +509,13 @@ async function fetchImagesForZip(opt) {
 
 	// For duplicate images, make a copy if not already cached and save the names
 	var dupFileNames = [];
-	// var dupImgPromises = [];
+	var dupImgPromises = [];
 	console.log("DownloadID: " + downloadID + "; Creating duplicate copies...");
-	for (var i=0; i<Object.keys(imgCounts).length; i++) {
-		const fileName = Object.keys(imgCounts)[i];
+	Object.keys(imgCounts).forEach( async fileName => {
 		const count = imgCounts[fileName];
 		const splitName = fileName.split(".");
-		for (var j=1; j<count; j++) {
-			const dupName = splitName[0] + "-" + j + "." + splitName[1];
+		for (var i=1; i<count; i++) {
+			const dupName = splitName[0] + "-" + i + "." + splitName[1];
 			const imgPath = "./static/tmp/" + container + dupName;
 			const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
 			dupFileNames.push(dupName);
@@ -532,30 +524,11 @@ async function fetchImagesForZip(opt) {
 			if (doesNotExists(imgPath, onExistsMsg)) {
 				const originalImg = "./static/tmp/" + container + fileName;
 				const msg = fileName + " being copied to " + dupName;
-				// dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
-				await setRedPixel(originalImg, imgPath, j, msg);
+				dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
 			}
-		}
-	}
-	// Object.keys(imgCounts).forEach( async fileName => {
-	// 	const count = imgCounts[fileName];
-	// 	const splitName = fileName.split(".");
-	// 	for (var i=1; i<count; i++) {
-	// 		const dupName = splitName[0] + "-" + i + "." + splitName[1];
-	// 		const imgPath = "./static/tmp/" + container + dupName;
-	// 		const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
-	// 		dupFileNames.push(dupName);
-
-	// 		// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
-	// 		if (doesNotExists(imgPath, onExistsMsg)) {
-	// 			const originalImg = "./static/tmp/" + container + fileName;
-	// 			const msg = fileName + " being copied to " + dupName;
-	// 			// dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
-	// 			await setRedPixel(originalImg, imgPath, i, msg);
-	// 		}
-	// 	}	
-	// });
-	// await Promise.all(dupImgPromises);
+		}	
+	});
+	await Promise.all(dupImgPromises);
 
 	console.log("DownloadID: " + downloadID + "; Duplicates Ready");
 	const allFileNames = imgFileNames.concat(dupFileNames);
