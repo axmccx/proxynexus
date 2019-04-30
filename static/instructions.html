@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Proxy Nexus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-137348308-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-137348308-1');
+    </script>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>    
+
+    <nav class="navbar navbar-default navbar-expand-md navbar-dark fixed-top">
+        <a class="navbar-brand" href="/">
+            <img class="home-button" src="logo.jpg">
+            Proxy Nexus
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggler">
+            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="blog.html">Blog</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="about.html">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row justify-content-md-center" >
+            <div class="col-lg-12">
+                <h1>Instructions</h1>
+                <p>
+                    Proxy Nexus provides two methods of making Netrunner Proxies, paper proxies and printed cards at makeplayingcards.com.
+                </p>
+                <h4>Paper Proxies</h4>
+                <p>
+                    These are cards printed on standard printer paper, either at home or at a self-serve print shop like Staples, and then sleeved with another card behind it. This is a cheap and accessible way of making proxies but involved a bit of work.
+                </p>
+                <ol type="1">
+                    <li value="1">Download the PDF from Proxy Nexus. Make sure to choose the paper size that matches the printer you're using.</li>
+                    <li>Print the PDFs in color or black &amp; white on standard paper.</li>
+                    <li>Use a guillotine cutter or scissors to cut the prints. Note the cut lines on the printouts.</li>
+                    <li>Sleeve the cut cards along with another card behind it for support. Cheap magic card commons/uncommon work well, and so do unused Netrunner cards.</li>
+                </ol>
+                <a class="anchor" id="mpcInfo"></a>
+                <h4>Printed card from makeplayingcards.com</h4>
+                <p>
+                    These are actual cards produced by makeplayingcards.com (MPC), printed with a scaled or fitted scan of a Netrunner card. Proxy Nexus produces image files ready to submit to print at MPC. This option is less work, provides nice results, but is more expensive than paper proxies.
+                </p>
+                <p>
+                    The scanned Netrunner images used by Proxy Nexus all have varying pixel dimensions and some weren't completely upright when scanned. Also, Netrunner cards are narrower than the closest card size MPC offers. To work around this, Proxy Nexus offers two different versions of card image files to choose from, both with a black border to function as a bleed.
+                </p>
+                <h5>Scaled</h5>
+                <p>
+                    The shortest dimension of the original scans is resized and scaled by 1.5% past MPC's cut line. This should help minimize most black lines along the edge of cards but may result a small loss of the original graphic. Choose this option to help avoid any black lines/borders along the edge of the cards.
+                </p>
+                <h5>Fit</h5>
+                <p>
+                    Fits the scans within MPC's cut line. May result in black lines along the edges of the card. Choose this option to avoid any loss of the scanned image.
+                </p>
+                <p>
+                    For anyone interested in the technical details, the images were produced with this Python script: <a href="https://github.com/axmccx/proxynexus/tree/master/misc/borderGenerator.py" target="_blank" rel="noopener">https://github.com/axmccx/proxynexus/tree/master/misc/borderGenerator.py</a>
+                </p>
+                <p>The zip file Proxy Nexus provides contains:</p>
+                <ul>
+                    <li>Corp images</li>
+                    <li>Runner images</li>
+                    <li>Card backs</li>
+                </ul>
+                <p>
+                    The included card backs have been designed and created by Spencer Wharton. (/u/SpencerDub)
+                </p>
+                <p>
+                    The files are separated by Corp and Runner to make it easy to design the MPC order, especially for large orders.
+                </p>
+                <h4>How to make an MPC order</h4>
+                <ol>
+                    <li>Download the zip file from Proxy Nexus.</li>
+                    <li>Extra the zip file.</li>
+                    <li>Visit <a href="https://www.makeplayingcards.com/design/custom-blank-card.html" target="_blank" rel="noopener">https://www.makeplayingcards.com/design/custom-blank-card.html</a>. This brings you to a new "Custom Game Cards (63 x 88mm)" project.</li>
+                    <li>Choose the card stock, (I prefer 300gsm, but 330gsm works well too).</li>
+                    <li>Chose the deck size. <br /> <strong>Note:</strong> <i>Large orders, e.g. a single System Core 2019 Set, contains 255 cards. The MPC option that fits this size is 396, which costs $69.05 USD. It would be easier to setup and possibly cheaper to split the order into a Corp and Runner deck. (Hence why the files are separated in the zip file). The Corp deck would contain 144 cards, and the Runner deck would contain 111 cards. This would cost $27.90 USD + $24.95 USD = $52.85 USD.</i></li>
+                    <li>Click the red "start you design" button.</li>
+                    <li>Enter the exact card count for the deck and click the blue "Different images" button for the card fronts.</li>
+                    <li>Click the red "Upload images" button near the top right and<strong> select all the images</strong> in either the corp or runner folder from the extracted zip file. If printing all the cards in one deck, repeat this step with the other folder from the zip file.</li>
+                    <li>Once all the images have finished uploading, <a href="https://i.imgur.com/CN5FStf.png" target="_blank" rel="noopener">click the "Help me autofill images!" button.</a> Or simply drag and drop all the images to the cards on the left. <u>If the deck is a mix of corp and runner cards,</u></If> take note of the <strong>Side</strong> (corp or runner) of each card number.</li>
+                    <li>Once all the images have been placed, click the "Next Step" button at the top right of the screen.</li>
+                    <li>Click "Next Step" again, since I assume you're not adding text to the front of the cards.</li>
+                    <li>This next step depends on whether the deck is entire one side, or a mix of the two. If the deck is a mix of the two, select "Different images" for the card backs. Otherwise, select "Same Image".</li>
+                    <li>If you picked "Different images", then upload the two card back images and manually place them on them respective cards like you did in step 8. Otherwise, if you picked "Same Image", then upload the corp or runner card back image, and place it in the single card preview on the left. <br/><strong>Note:</strong> <i>This step is much easier when the deck is all one side.</i></li>
+                    <li>Click the "Next Step" button at the top right of the screen.</li>
+                    <li>Click "Next Step" again, since I assume you're not adding text to the back of the cards.</li>
+                    <li>You will now see a preview of the deck, the fronts and backs of each card. This is a good chance to review the placement of back and front images if that was done manually.</li>
+                    <li>Click the confirmation checkbox at the bottom of the page, and then click "Add to Cart".</li>
+                    <li>Here you can either checkout, save the design or add another deck to your order.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

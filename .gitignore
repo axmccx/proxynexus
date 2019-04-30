@@ -6,5 +6,5 @@ static/tmp/images/*.jpg
 static/tmp/fitted/*.jpg
 static/tmp/scaled/*.jpg
 static/tmp/zip-cache/*
-!static/tmp/zip-cache/*.txt
+!static/tmp/zip-cache/info.txt
 *.zip
