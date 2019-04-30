@@ -88,7 +88,7 @@ app.post('/api/makePDF', function (req, res) {
 	const pdfPath = __dirname + "/static/tmp/" + pdfFileName;
 	console.log("DownloadID " + downloadID + ": PDF Name: " + pdfFileName);
 
-	// check if request pdf was already generated, save from re-generating it
+	// check if requested pdf or zip was already generated, save from re-generating it
 	if (fs.existsSync(pdfPath)) {
 		const fileName = "/tmp/" + pdfFileName;
 		console.log("DownloadID " + downloadID + ": PDF already exists, don't generate");
@@ -96,25 +96,24 @@ app.post('/api/makePDF', function (req, res) {
 		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 		return;
 	}
-
-	const doc = new PDFDocument({
-		size: paperSize,
-		margins: {
-			top: topMargin,
-			bottom: topMargin,
-			left: leftMargin,
-			right: leftMargin
-		  }
-	});
+	const zipPath = pdfPath.split(".")[0] + ".zip";
+	const zipFileName = pdfFileName.split('.')[0] + ".zip";
+	if (fs.existsSync(zipPath)) {
+		const fileName = "/tmp/" + zipFileName;
+		console.log("DownloadID " + downloadID + ": PDFs in zip file already exists, don't generate");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+		return;
+	}
 
 	const opt = {
 		container: container,
 		quality: quality,
-		doc: doc,
 		downloadID: downloadID,
 		pdfFileName: pdfFileName,
 		requestedImages: requestedImages,
 		pdfPath: pdfPath,
+		paperSize: paperSize,
 		topMargin: topMargin,
 		leftMargin: leftMargin,
 		ws: ws,
@@ -125,11 +124,11 @@ app.post('/api/makePDF', function (req, res) {
 async function fetchImagesForPDF(opt) {	
 	const container = opt.container;
 	const quality = opt.quality;
-	const doc = opt.doc;
 	const downloadID = opt.downloadID;
 	const pdfFileName = opt.pdfFileName
 	const requestedImages = opt.requestedImages;
 	const pdfPath = opt.pdfPath;
+	const paperSize = opt.paperSize;
 	const topMargin = opt.topMargin;
 	const leftMargin = opt.leftMargin;
 	const ws = opt.ws;
@@ -162,17 +161,86 @@ async function fetchImagesForPDF(opt) {
 
 	console.log("DownloadID " + downloadID + ": Adding images to doc...");
 	ws.send(JSON.stringify({ "status": "Adding images to pdf...", "reqType": "pdf" }));
-	doc.pipe(fs.createWriteStream(pdfPath));
-	makeFrontPage(doc, quality);
-	doc.addPage();
-	drawCutLines(doc, leftMargin, topMargin);
-	addImages(imgFileNames, doc, container, leftMargin, topMargin);
-	doc.end();
+	const CARDS_PER_PDF = 144
+	if (imgFileNames.length <= CARDS_PER_PDF) {
+		const doc = new PDFDocument({
+			size: paperSize,
+			margins: {
+				top: topMargin,
+				bottom: topMargin,
+				left: leftMargin,
+				right: leftMargin
+			  }
+		});
+	
+		doc.pipe(fs.createWriteStream(pdfPath));
+		makeFrontPage(doc, quality);
+		doc.addPage();
+		drawCutLines(doc, leftMargin, topMargin);
+		addImages(imgFileNames, doc, container, leftMargin, topMargin);
+		doc.end();
+		var fileName = "/tmp/" + pdfFileName;
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+		return;
+	} else {
+		console.log("DownloadID " + downloadID + ": Large PDF, splitting it up...")
 
-	const fileName = "/tmp/" + pdfFileName;
-	console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
-	ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
-	return;
+		const docNum = Math.ceil(imgFileNames.length / CARDS_PER_PDF);
+		const splitPDFPath = pdfPath.split(".");
+		var allSplitPDFs = [];
+
+		for (var i=0; i<docNum; i++) {
+			const doc = new PDFDocument({
+				size: paperSize,
+				margins: {
+					top: topMargin,
+					bottom: topMargin,
+					left: leftMargin,
+					right: leftMargin
+				  }
+			});
+			const lowerIndex = i * CARDS_PER_PDF;
+			if ( (i+1)*CARDS_PER_PDF > imgFileNames.length ) {
+				var upperIndex = imgFileNames.length
+			} else {
+				var upperIndex = (i+1)*CARDS_PER_PDF;
+			}
+
+			const splitPdfFileName = pdfFileName.split('.')[0] + "-" + (i+1) + ".pdf";
+			allSplitPDFs.push(splitPdfFileName);
+			const splitPDF = splitPDFPath[0] + "-" + (i+1) + ".pdf";
+			doc.pipe(fs.createWriteStream(splitPDF));
+			makeFrontPage(doc, quality);
+			doc.addPage();
+			drawCutLines(doc, leftMargin, topMargin);
+			addImages(imgFileNames.slice(lowerIndex, upperIndex), doc, container, leftMargin, topMargin);
+			doc.end();
+		}
+
+		ws.send(JSON.stringify({ "status": "Adding pdfs to zip file...", "reqType": "pdf" }));
+		console.log("DownloadID " + downloadID + ": Zipping up pdfs...");
+
+		const zipPath = splitPDFPath[0] + ".zip";
+		const zipFileName = pdfFileName.split('.')[0] + ".zip";
+		var zipFile = fs.createWriteStream(zipPath);
+		var archive = archiver('zip', {
+			zlib: { level: 0 }
+		});
+		zipFile.on('close', function() {
+			const fileName = "/tmp/" + zipFileName;
+			console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
+			console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+			ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+			return;
+		});
+	
+		archive.pipe(zipFile);
+		allSplitPDFs.forEach(file => {
+			archive.file(__dirname + "/static/tmp/" + file, { name: file });
+		});
+		archive.finalize();
+	}
 }
 
 function addImages(lst, doc, container, leftMargin, topMargin) {
@@ -543,7 +611,9 @@ async function fetchImagesForZip(opt) {
 	ws.send(JSON.stringify({ "status": "Adding images to zip file...", "reqType": "zip" }));
 	console.log("DownloadID " + downloadID + ": Zipping up images...");
 	var zipFile = fs.createWriteStream(zipPath);
-	var archive = archiver('zip');
+	var archive = archiver('zip', {
+		zlib: { level: 0 }
+	});
 	zipFile.on('close', function() {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
