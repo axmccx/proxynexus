@@ -2,6 +2,7 @@ const port = process.env.PORT || 8000;
 const fs = require('fs');
 const fetch = require("node-fetch");
 const express = require("express");
+const SocketServer = require('ws').Server;
 const bodyParser = require('body-parser');
 const PDFDocument = require('pdfkit');
 const crypto = require('crypto');
@@ -12,10 +13,9 @@ app.use(express.static('static'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-function cmToPt (cm) {
-	return cm * 28.3465;
-}
 var IDCounter = 1;
+var sessCounter = 1;
+var sessions = {};
 const cardwidth = 6.35;
 const cardheight = 8.80;
 const cardwidthPt = cmToPt(cardwidth);
@@ -49,7 +49,7 @@ app.post('/api/makePDF', function (req, res) {
 	
 	// Catch empty image request, and return error message
 	if (requestedImages.length == 0) {
-		console.error("DownloadID: " + downloadID + "; No images requested");
+		console.error("DownloadID " + downloadID + ": No images requested");
 		res.status(200);
 		var result = {}
 		result.success = false;
@@ -67,7 +67,7 @@ app.post('/api/makePDF', function (req, res) {
 		var leftMargin = 36;
 		var topMargin = 21;
 	} else {
-		console.error("DownloadID: " + downloadID + "; Invalid paper size");
+		console.error("DownloadID " + downloadID + ": Invalid paper size");
 		res.status(200);
 		var result = {}
 		result.success = false;
@@ -78,7 +78,7 @@ app.post('/api/makePDF', function (req, res) {
 
 	// Catch missing image selection. Container would be null since it won't hit either case in assignment
 	if (container == null) {
-		console.error("DownloadID: " + downloadID + "; No image quality selected");
+		console.error("DownloadID " + downloadID + ": No image quality selected");
 		res.status(200);
 		var result = {}
 		result.success = false;
@@ -92,17 +92,17 @@ app.post('/api/makePDF', function (req, res) {
 	const hash = crypto.createHash('sha1').update(requestedPDFOptions).digest('hex');
 	const pdfFileName = hash + ".pdf";
 	const pdfPath = __dirname + "/static/tmp/" + pdfFileName;
-	console.log("DownloadID: " + downloadID + "; PDF Name: " + pdfFileName);
+	console.log("DownloadID " + downloadID + ": PDF Name: " + pdfFileName);
 
 	// check if request pdf was already generated, save from re-generating it
 	if (fs.existsSync(pdfPath)) {
-		console.log("DownloadID: " + downloadID + "; PDF already exists, don't generate");
+		console.log("DownloadID " + downloadID + ": PDF already exists, don't generate");
 		res.status(200);
 		var result = {}
 		result.success = true;
 		result.fileName = "/tmp/" + pdfFileName;
 		res.json(result);
-		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + result.fileName + " to client");
 		return;
 	}
 
@@ -151,10 +151,10 @@ async function fetchImagesForPDF(opt) {
 	const uniqueImgCodes = [...new Set(imgFileNames)];
 	const imgCodesToFetch = uniqueImgCodes.filter( code => {
 		const imgPath = "./static/tmp/" + container + code;
-		const onExistsMsg = "DownloadID: " + downloadID + "; Found cached copy of " + code + ", don't download";
+		const onExistsMsg = "DownloadID " + downloadID + ": Found cached copy of " + code + ", don't download";
 		return doesNotExists(imgPath, onExistsMsg);
 	});
-	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
+	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
 
 	// Download image files, and wait until all are ready
 	const imgPath = "./static/tmp/" + container;
@@ -163,7 +163,7 @@ async function fetchImagesForPDF(opt) {
 		await downloadFiles(imgCodesToFetch, imgPath, url, downloadID);
 	}
 	catch(err) {
-		console.error("DownloadID: " + downloadID + "; " + err.message);
+		console.error("DownloadID " + downloadID + ": " + err.message);
 		res.status(200);
 		var result = {}
 		result.success = false;
@@ -172,7 +172,7 @@ async function fetchImagesForPDF(opt) {
 		return;
 	}
 
-	console.log("DownloadID: " + downloadID + "; Adding images to doc...");
+	console.log("DownloadID " + downloadID + ": Adding images to doc...");
 	doc.pipe(fs.createWriteStream(pdfPath));
 	makeFrontPage(doc, quality);
 	doc.addPage();
@@ -185,7 +185,7 @@ async function fetchImagesForPDF(opt) {
 	result.success = true;
 	result.fileName = "/tmp/" + pdfFileName;
 	res.json(result);
-	console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+	console.log("DownloadID " + downloadID + ": Sent " + result.fileName + " to client");
 	return;
 }
 
@@ -302,12 +302,18 @@ function addFlippedIds(requestedImages) {
 	return imgCodes;
 }
 
+function cmToPt (cm) {
+	return cm * 28.3465;
+}
+
 // if the path does NOT exist, return true
 // if the path exists, print the message and return false
 function doesNotExists(path, onExistsMsg) {
 	try {
 		fs.statSync(path);
-		console.log(onExistsMsg);
+		if (onExistsMsg != null) {
+			console.log(onExistsMsg);
+		}
 		return false;
 	}
 	catch (err) {
@@ -342,7 +348,7 @@ async function downloadFiles(fileNames, destination, baseUrl, downloadID) {
 			if (!res.ok) {
 				throw new Error("Error downloading: " + fileName);
 			}
-			console.log("DownloadID: " + downloadID + "; Downloaded " + fileName);
+			console.log("DownloadID " + downloadID + ": Downloaded " + fileName);
 			return res;
 		});
 		const fileStream = fs.createWriteStream(filePath);
@@ -360,7 +366,7 @@ async function downloadFiles(fileNames, destination, baseUrl, downloadID) {
 }
 
 app.post('/api/makeMpcZip', function (req, res) {
-
+	const sessID = req.body.sessID;
 	const imagePlacement = req.body.imagePlacement;
 	const logInfo = req.body.logInfo;
 	const container = ((q) => {
@@ -374,26 +380,22 @@ app.post('/api/makeMpcZip', function (req, res) {
 	const requestedImages = req.body.requestedImages;
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
+	const ws = sessions[sessID];
 	console.log("MPC-zip Request! DownloadID: " + downloadID + "; Image Placement: " + imagePlacement + ", " + logInfo);
+
+	res.status(200);
+	res.end();
 
 	// Catch empty image request, and return error message
 	if (requestedImages.length == 0) {
-		console.error("DownloadID: " + downloadID + "; No images requested");
-		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = "No images requested";
-		res.json(result);
+		console.error("DownloadID " + downloadID + ": No images requested");
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested." }));
 		return;
 	}
 
 	if (container == null) {
-		console.error("DownloadID: " + downloadID + "; No image placement method selected");
-		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = "No image placement method selected";
-		res.json(result);
+		console.error("DownloadID " + downloadID + ": No image placement method selected");
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "No image placement method selected" }));
 		return;
 	}
 
@@ -402,16 +404,13 @@ app.post('/api/makeMpcZip', function (req, res) {
 	const zipFileName = hash + ".zip";
 	const zipPath = __dirname + "/static/tmp/" + zipFileName;
 	const zipDir = __dirname + "/static/tmp/zip-cache/" + hash + "/";
-	console.log("DownloadID: " + downloadID + "; Zip Name: " + zipFileName);
+	console.log("DownloadID " + downloadID + ": Zip Name: " + zipFileName);
 
 	if (fs.existsSync(zipPath)) {
-		console.log("DownloadID: " + downloadID + "; Zip already exists, don't generate");
-		res.status(200);
-		var result = {}
-		result.success = true;
-		result.fileName = "/tmp/" + zipFileName;
-		res.json(result);
-		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		const fileName = "/tmp/" + zipFileName;
+		console.log("DownloadID " + downloadID + ": Zip already exists, don't generate");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName }));
 		return;
 	}
 
@@ -423,7 +422,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		container: container,
 		downloadID: downloadID,
 		requestedImages: requestedImages,
-		res: res,
+		ws: ws,
 		zipFileName: zipFileName,
 		zipDir: zipDir,
 		zipPath: zipPath
@@ -433,15 +432,13 @@ app.post('/api/makeMpcZip', function (req, res) {
 });
 
 async function fetchImagesForZip(opt) {
-
 	const container = opt.container;
 	const downloadID = opt.downloadID;
 	const requestedImages = opt.requestedImages;
-	const res = opt.res;
+	const ws = opt.ws;
 	const zipFileName = opt.zipFileName;
 	const zipDir = opt.zipDir;
 	const zipPath = opt.zipPath;
-	var result = {};
 
 	// Add back side art for flippable IDs
 	const imgCodes = addFlippedIds(requestedImages);
@@ -453,8 +450,6 @@ async function fetchImagesForZip(opt) {
 		if (fileName in imgCounts) {
 			if (imgCounts[fileName] < 99) {
 				imgCounts[fileName]++;
-			} else {
-				result.infoMsg = "Card count limited to 99 copies.";
 			}
 		} else {
 			imgCounts[fileName] = 1;
@@ -464,23 +459,21 @@ async function fetchImagesForZip(opt) {
 	const imgFileNames = Object.keys(imgCounts);
 	const imgCodesToFetch = imgFileNames.filter( file => {
 		const imgPath = "./static/tmp/" + container + file;
-		const onExistsMsg = "DownloadID: " + downloadID + "; Found cached copy of " + file + ", don't download";
+		const onExistsMsg = "DownloadID " + downloadID + ": Found cached copy of " + file + ", don't download";
 		return doesNotExists(imgPath, onExistsMsg);
 	});
-	console.log("DownloadID: " + downloadID + "; Code list ready, Fetching images...");
 
 	// Download image files, and wait until all are ready
+	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
+	ws.send(JSON.stringify({ "status": "Fetching images..." }));
 	const imgPath = "./static/tmp/" + container;
 	const url = storagePath + container;
 	try {
 		await downloadFiles(imgCodesToFetch, imgPath, url, downloadID);
 	}
 	catch(err) {
-		console.error("DownloadID: " + downloadID + "; " + err.message);
-		res.status(200);
-		result.success = false;
-		result.errorMsg = err.message;
-		res.json(result);
+		console.error("DownloadID " + downloadID + ": " + err.message);
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again." }));
 		return;
 	}
 
@@ -488,8 +481,7 @@ async function fetchImagesForZip(opt) {
 	const cardBacks = ["corp-back.png", "runner-back.png"];
 	const cardBacksToFetch = cardBacks.filter( file => {
 		const imgPath = "./static/tmp/zip-cache/" + file;
-		const onExistsMsg = "DownloadID: " + downloadID + "; Found cached copy of " + file + ", don't download";
-		return doesNotExists(imgPath, onExistsMsg);
+		return doesNotExists(imgPath, null);
 	});
 	if (cardBacksToFetch.length > 0) {
 		const imgPath = "./static/tmp/zip-cache/";
@@ -498,38 +490,16 @@ async function fetchImagesForZip(opt) {
 			await downloadFiles(cardBacksToFetch, imgPath, url, downloadID);
 		}
 		catch(err) {
-			console.error("DownloadID: " + downloadID + "; " + err.message);
-			res.status(200);
-			result.success = false;
-			result.errorMsg = err.message;
-			res.json(result);
+			console.error("DownloadID " + downloadID + ": " + err.message);
+			ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again." }));
 			return;
 		}
 	}
 
 	// For duplicate images, make a copy if not already cached and save the names
 	var dupFileNames = [];
-	// var dupImgPromises = [];
-	console.log("DownloadID: " + downloadID + "; Creating duplicate copies...");
-	// Object.keys(imgCounts).forEach( async fileName => {
-	// 	const count = imgCounts[fileName];
-	// 	const splitName = fileName.split(".");
-	// 	for (var i=1; i<count; i++) {
-	// 		const dupName = splitName[0] + "-" + i + "." + splitName[1];
-	// 		const imgPath = "./static/tmp/" + container + dupName;
-	// 		const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
-	// 		dupFileNames.push(dupName);
-
-	// 		// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
-	// 		if (doesNotExists(imgPath, onExistsMsg)) {
-	// 			const originalImg = "./static/tmp/" + container + fileName;
-	// 			const msg = fileName + " being copied to " + dupName;
-	// 			dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
-	// 		}
-	// 	}	
-	// });
-	// await Promise.all(dupImgPromises);
-
+	ws.send(JSON.stringify({ "status": "Preparing images..." }));
+	console.log("DownloadID " + downloadID + ": Creating duplicate copies...");
 	for (var i=0; i<Object.keys(imgCounts).length; i++) {
 		const fileName = Object.keys(imgCounts)[i];
 		const count = imgCounts[fileName];
@@ -537,39 +507,34 @@ async function fetchImagesForZip(opt) {
 		for (var j=1; j<count; j++) {
 			const dupName = splitName[0] + "-" + j + "." + splitName[1];
 			const imgPath = "./static/tmp/" + container + dupName;
-			const onExistsMsg = "DownloadID: " + downloadID + "; Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
+			const onExistsMsg = "DownloadID " + downloadID + ": Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
 			dupFileNames.push(dupName);
 
 			// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
 			if (doesNotExists(imgPath, onExistsMsg)) {
 				const originalImg = "./static/tmp/" + container + fileName;
 				const msg = fileName + " being copied to " + dupName;
-				// dupImgPromises.push(setRedPixel(originalImg, imgPath, i, msg));	// makes a copy
-				await setRedPixel(originalImg, imgPath, j, msg);
+				await setRedPixel(originalImg, imgPath, j, msg);  // makes a copy
 			}
 		}
     }
 
-	console.log("DownloadID: " + downloadID + "; Duplicates Ready");
+	console.log("DownloadID " + downloadID + ": Duplicates Ready");
 	const allFileNames = imgFileNames.concat(dupFileNames);
 	allFileNames.forEach( file => {			// Copy all allFileNames to zipDir
 		fs.copyFileSync("./static/tmp/" + container + file, zipDir + file);
 	});
-	
-	console.log("DownloadID: " + downloadID + "; Zipping up images...");
+
+	ws.send(JSON.stringify({ "status": "Adding images to zip file..." }));
+	console.log("DownloadID " + downloadID + ": Zipping up images...");
 	var zipFile = fs.createWriteStream(zipPath);
 	var archive = archiver('zip');
 	zipFile.on('close', function() {
-		console.log("DownloadID: " + downloadID + "; Zip file ready, " + archive.pointer() + " total bytes");
-		res.status(200);
-		result.success = true;
-		result.fileName = "/tmp/" + zipFileName;
-		res.json(result);
-		console.log("DownloadID: " + downloadID + "; Sent " + result.fileName + " to client");
+		const fileName = "/tmp/" + zipFileName;
+		console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName }));
 		return;
-	});
-	zipFile.on('end', function() {
-		console.log("DownloadID: " + downloadID + "; Data has been drained");
 	});
 
 	archive.pipe(zipFile);
@@ -580,6 +545,14 @@ async function fetchImagesForZip(opt) {
 	archive.finalize();
 }
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
 	console.log('listening on port ' + port);
+});
+
+const wss = new SocketServer({ server });
+wss.on("connection", (ws) => {
+	const id = sessCounter++;
+	sessions[id] = ws;
+	console.log("Session " + id + " connected");
+	ws.send(JSON.stringify({ "sessID": id }));
 });

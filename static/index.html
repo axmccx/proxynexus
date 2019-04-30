@@ -182,12 +182,13 @@
                                 </div>
                             </div>
                             <div class="col-auto my-1">
-                                <input type="button" id="ZipGenerateBtn" class="btn btn-danger " value="Get MPC Images"></input>
+                                <input type="button" id="ZipGenerateBtn" class="btn btn-danger" value="Get MPC Images"></input>
                                 <a id="ZipDownloadBtn" class="btn btn-success downloadBtn" target="_blank" rel="noopener">Download</a>
                                 <input type="button" id="ZipResetBtn" class="btn btn-info initHide" value="Reset"></input>
-                            </div>
-                            <div id="ZipDownloadSpinner" class="spinner-border text-success initHide" role="status">
-                                <span class="sr-only">Generating...</span>
+                                <div id="ZipDownloadSpinner" class="spinner-border text-success initHide" role="status">
+                                    <span class="sr-only">Generating...</span>
+                                </div>
+                                <div id="ZipStatus" class="statusMsg"></div>
                             </div>
                         </div>
                     </form>
