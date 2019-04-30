@@ -627,6 +627,7 @@ async function fetchImagesForZip(opt) {
 	cardBacks.forEach(file => {
 		archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: file });
 	});
+	archive.file(__dirname + "/static/tmp/zip-cache/README.txt", { name: "README.txt" });
 	archive.finalize();
 }
 
