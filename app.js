@@ -31,6 +31,7 @@ const storagePath = "https://proxynexus.blob.core.windows.net/";
 
 app.post('/api/makePDF', function (req, res) {
 	// unpack request
+	const sessID = req.body.sessID;
 	const paperSize = req.body.paperSize;
 	const quality = req.body.quality;
 	const logInfo = req.body.logInfo;
@@ -45,16 +46,17 @@ app.post('/api/makePDF', function (req, res) {
 	const requestedImages = req.body.requestedImages;
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
+	const ws = sessions[sessID];
 	console.log("PDF Request! DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
 	
+	res.status(200);
+	res.end();
+
 	// Catch empty image request, and return error message
 	if (requestedImages.length == 0) {
 		console.error("DownloadID " + downloadID + ": No images requested");
 		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = "No images requested";
-		res.json(result);
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested.", "reqType": "pdf" }));
 		return;
 	}
 
@@ -68,22 +70,14 @@ app.post('/api/makePDF', function (req, res) {
 		var topMargin = 21;
 	} else {
 		console.error("DownloadID " + downloadID + ": Invalid paper size");
-		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = "Invalid paper size";
-		res.json(result);
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" }));
 		return;
 	}
 
 	// Catch missing image selection. Container would be null since it won't hit either case in assignment
 	if (container == null) {
 		console.error("DownloadID " + downloadID + ": No image quality selected");
-		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = "No image quality selected";
-		res.json(result);
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" }));
 		return;
 	}
 
@@ -96,13 +90,10 @@ app.post('/api/makePDF', function (req, res) {
 
 	// check if request pdf was already generated, save from re-generating it
 	if (fs.existsSync(pdfPath)) {
+		const fileName = "/tmp/" + pdfFileName;
 		console.log("DownloadID " + downloadID + ": PDF already exists, don't generate");
-		res.status(200);
-		var result = {}
-		result.success = true;
-		result.fileName = "/tmp/" + pdfFileName;
-		res.json(result);
-		console.log("DownloadID " + downloadID + ": Sent " + result.fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 		return;
 	}
 
@@ -126,7 +117,7 @@ app.post('/api/makePDF', function (req, res) {
 		pdfPath: pdfPath,
 		topMargin: topMargin,
 		leftMargin: leftMargin,
-		res: res
+		ws: ws,
 	};
 	fetchImagesForPDF(opt);
 });
@@ -141,7 +132,7 @@ async function fetchImagesForPDF(opt) {
 	const pdfPath = opt.pdfPath;
 	const topMargin = opt.topMargin;
 	const leftMargin = opt.leftMargin;
-	const res = opt.res;
+	const ws = opt.ws;
 
 	// Add back side art for flippable IDs
 	const imgCodes = addFlippedIds(requestedImages);
@@ -154,9 +145,10 @@ async function fetchImagesForPDF(opt) {
 		const onExistsMsg = "DownloadID " + downloadID + ": Found cached copy of " + code + ", don't download";
 		return doesNotExists(imgPath, onExistsMsg);
 	});
-	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
 
 	// Download image files, and wait until all are ready
+	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
+	ws.send(JSON.stringify({ "status": "Fetching images...", "reqType": "pdf" }));
 	const imgPath = "./static/tmp/" + container;
 	const url = storagePath + container;
 	try {
@@ -164,15 +156,12 @@ async function fetchImagesForPDF(opt) {
 	}
 	catch(err) {
 		console.error("DownloadID " + downloadID + ": " + err.message);
-		res.status(200);
-		var result = {}
-		result.success = false;
-		result.errorMsg = err.message;
-		res.json(result);
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "pdf" }));
 		return;
 	}
 
 	console.log("DownloadID " + downloadID + ": Adding images to doc...");
+	ws.send(JSON.stringify({ "status": "Adding images to pdf...", "reqType": "pdf" }));
 	doc.pipe(fs.createWriteStream(pdfPath));
 	makeFrontPage(doc, quality);
 	doc.addPage();
@@ -180,12 +169,9 @@ async function fetchImagesForPDF(opt) {
 	addImages(imgFileNames, doc, container, leftMargin, topMargin);
 	doc.end();
 
-	res.status(200);
-	var result = {}
-	result.success = true;
-	result.fileName = "/tmp/" + pdfFileName;
-	res.json(result);
-	console.log("DownloadID " + downloadID + ": Sent " + result.fileName + " to client");
+	const fileName = "/tmp/" + pdfFileName;
+	console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+	ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 	return;
 }
 
@@ -391,13 +377,13 @@ app.post('/api/makeMpcZip', function (req, res) {
 	// Catch empty image request, and return error message
 	if (requestedImages.length == 0) {
 		console.error("DownloadID " + downloadID + ": No images requested");
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested." }));
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested.", "reqType": "zip" }));
 		return;
 	}
 
 	if (container == null) {
 		console.error("DownloadID " + downloadID + ": No image placement method selected");
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "No image placement method selected" }));
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "No image placement method selected", "reqType": "zip" }));
 		return;
 	}
 
@@ -412,7 +398,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName }));
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "zip" }));
 		return;
 	}
 
@@ -484,7 +470,7 @@ async function fetchImagesForZip(opt) {
 
 	// Download image files, and wait until all are ready
 	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
-	ws.send(JSON.stringify({ "status": "Fetching images..." }));
+	ws.send(JSON.stringify({ "status": "Fetching images...", "reqType": "zip" }));
 	const imgPath = "./static/tmp/" + container;
 	const url = storagePath + container;
 	try {
@@ -492,7 +478,7 @@ async function fetchImagesForZip(opt) {
 	}
 	catch(err) {
 		console.error("DownloadID " + downloadID + ": " + err.message);
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again." }));
+		ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "zip" }));
 		return;
 	}
 
@@ -510,7 +496,7 @@ async function fetchImagesForZip(opt) {
 		}
 		catch(err) {
 			console.error("DownloadID " + downloadID + ": " + err.message);
-			ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again." }));
+			ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "zip" }));
 			return;
 		}
 	}
@@ -518,7 +504,7 @@ async function fetchImagesForZip(opt) {
 	// For duplicate images, make a copy if not already cached and save the names
 	var dupCorpFiles = [];
 	var dupRunnerFiles = [];
-	ws.send(JSON.stringify({ "status": "Preparing images..." }));
+	ws.send(JSON.stringify({ "status": "Preparing images...", "reqType": "zip" }));
 	console.log("DownloadID " + downloadID + ": Creating duplicate copies...");
 	for (var i=0; i<Object.keys(imgCounts).length; i++) {
 		const fileName = Object.keys(imgCounts)[i];
@@ -554,7 +540,7 @@ async function fetchImagesForZip(opt) {
 		fs.copyFileSync("./static/tmp/" + container + file, zipDir + "runner/" + file);
 	});
 
-	ws.send(JSON.stringify({ "status": "Adding images to zip file..." }));
+	ws.send(JSON.stringify({ "status": "Adding images to zip file...", "reqType": "zip" }));
 	console.log("DownloadID " + downloadID + ": Zipping up images...");
 	var zipFile = fs.createWriteStream(zipPath);
 	var archive = archiver('zip');
@@ -562,7 +548,7 @@ async function fetchImagesForZip(opt) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName }));
+		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "zip" }));
 		return;
 	});
 

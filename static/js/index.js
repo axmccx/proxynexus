@@ -289,45 +289,35 @@ function makePDF() {
     const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
 
     const downloadOptions = {
+        "sessID": _sessID,
         "paperSize": paperSize,
         "quality": imageQuality,
         "requestedImages": _cardList,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
     };
 
+    $('#PDFGenerateBtn').hide();
     $('#PDFDownloadSpinner').show();
-    $('#PDFGenerateBtn').attr("value", "Generating...");
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/makePDF", true);
     xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhr.responseType = 'json';
-    xhr.onload = function (e) {
-        if (this.status == 200) {
-            if (this.response.success) {
-                displayPDFDownload(this.response.fileName);
-            } else {
-                displayPDFDownloadError(this.response.errorMsg);
-            }
-        }
-    }
     const data = JSON.stringify(downloadOptions);
     xhr.send(data);
 }
 
 function displayPDFDownloadError(msg) {
-    $('#PDFGenerateBtn').hide();
-    $('#PDFGenerateBtn').attr("value", "Generate PDF");
+    $("#PDFStatus").html("");
     $('#PDFDownloadSpinner').hide();
     $('#PDFResetBtn').show();
     $("#PDFDownloadErrorMsg").html(msg);
 }
 
 function displayPDFDownload(pdfPath) {
+    $("#PDFStatus").html("");
     $('#PDFDownloadBtn').attr('href', pdfPath); 
     $('#PDFDownloadBtn').show();
-    $('#PDFGenerateBtn').hide();
-    $('#PDFGenerateBtn').attr("value", "Generate PDF");
     $('#PDFDownloadSpinner').hide();
     $('#PDFResetBtn').show();
 }
@@ -448,15 +438,29 @@ function setupWS() {
         if ("sessID" in msg) {
             _sessID = msg.sessID;
         }
-        if ("success" in msg) {
-            if (msg.success) {
-                displayZipDownload(msg.downloadLink);
-            } else {
-                displayZipDownloadError(msg.errorMsg);
+        if (msg.reqType === "pdf") {
+            if ("success" in msg) {
+                if (msg.success) {
+                    displayPDFDownload(msg.downloadLink);
+                } else {
+                    displayPDFDownloadError(msg.errorMsg);
+                }
+            }
+            if ("status" in msg) {
+                $("#PDFStatus").html(msg.status);
             }
         }
-        if ("status" in msg) {
-            $("#ZipStatus").html(msg.status);
+        if (msg.reqType === "zip") {
+            if ("success" in msg) {
+                if (msg.success) {
+                    displayZipDownload(msg.downloadLink);
+                } else {
+                    displayZipDownloadError(msg.errorMsg);
+                }
+            }
+            if ("status" in msg) {
+                $("#ZipStatus").html(msg.status);
+            }
         }
     }
 }

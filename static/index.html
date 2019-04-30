@@ -136,7 +136,7 @@
                                    <label class="custom-control-label" for="a4Radio">A4</label>
                                 </div>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-auto my-1">
                                 <h6>Image Quality</h6>
                                 <div class="custom-control custom-radio">
                                    <input type="radio" id="highQualityRadio" name="imageQualitySelection" value="High" class="custom-control-input" checked>
@@ -147,13 +147,14 @@
                                    <label class="custom-control-label" for="MediumQualityRadio">Medium</label>
                                 </div>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-auto my-1">
                                 <input type="button" id="PDFGenerateBtn" class="btn btn-danger" value="Generate PDF"></input>
                                 <a id="PDFDownloadBtn" class="btn btn-success downloadBtn" target="_blank" rel="noopener">Download</a>
                                 <input type="button" id="PDFResetBtn" class="btn btn-info initHide" value="Reset"></input>
-                            </div>
-                            <div id="PDFDownloadSpinner" class="spinner-border text-success initHide" role="status">
-                                <span class="sr-only">Generating...</span>
+                                <div id="PDFDownloadSpinner" class="spinner-border text-success initHide" role="status">
+                                    <span class="sr-only">Generating...</span>
+                                </div>
+                                <div id="PDFStatus" class="statusMsg"></div>
                             </div>
                         </div>
                     </form>
