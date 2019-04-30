@@ -377,7 +377,9 @@ app.post('/api/makeMpcZip', function (req, res) {
 				return 'fitted/';
 		}
 	})(imagePlacement);
-	const requestedImages = req.body.requestedImages;
+	const corpCodes = req.body.corpCodes;
+	const runnerCodes = req.body.runnerCodes;
+	const requestedImages = corpCodes.concat(runnerCodes);
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
 	const ws = sessions[sessID];
@@ -416,12 +418,15 @@ app.post('/api/makeMpcZip', function (req, res) {
 
 	if (!fs.existsSync(zipDir)) {
 		fs.mkdirSync(zipDir);
+		fs.mkdirSync(zipDir + "corp/");
+		fs.mkdirSync(zipDir + "runner/");
 	}
 
 	const opt = {
 		container: container,
 		downloadID: downloadID,
-		requestedImages: requestedImages,
+		corpCodes: corpCodes,
+		runnerCodes: runnerCodes,
 		ws: ws,
 		zipFileName: zipFileName,
 		zipDir: zipDir,
@@ -434,25 +439,39 @@ app.post('/api/makeMpcZip', function (req, res) {
 async function fetchImagesForZip(opt) {
 	const container = opt.container;
 	const downloadID = opt.downloadID;
-	const requestedImages = opt.requestedImages;
+	const corpCodes = opt.corpCodes;
+	const runnerCodes = opt.runnerCodes;
 	const ws = opt.ws;
 	const zipFileName = opt.zipFileName;
 	const zipDir = opt.zipDir;
 	const zipPath = opt.zipPath;
 
-	// Add back side art for flippable IDs
-	const imgCodes = addFlippedIds(requestedImages);
+	const corpFilesNames = addFlippedIds(corpCodes).map( code => {
+		return container.replace(/\/$/, "") + "-" + code + ".jpg";
+	})
 
-	// buid an object of codes and counts
-	imgCounts = {}
-	imgCodes.forEach( code => {
-		const fileName = container.replace(/\/$/, "") + "-" + code + ".jpg";
+	const runnerFileNames = runnerCodes.map( code => {
+		return container.replace(/\/$/, "") + "-" + code + ".jpg";
+	})
+
+	// buid an object of {fileName: {count: num, side: side}
+	var imgCounts = {}
+	corpFilesNames.forEach( fileName => {
 		if (fileName in imgCounts) {
-			if (imgCounts[fileName] < 99) {
-				imgCounts[fileName]++;
+			if (imgCounts[fileName].count < 99) {
+				imgCounts[fileName].count++;
 			}
 		} else {
-			imgCounts[fileName] = 1;
+			imgCounts[fileName] = { "count": 1, "side": "corp" };
+		}
+	});
+	runnerFileNames.forEach( fileName => {
+		if (fileName in imgCounts) {
+			if (imgCounts[fileName].count < 99) {
+				imgCounts[fileName].count++;
+			}
+		} else {
+			imgCounts[fileName] = { "count": 1, "side": "runner" };;
 		}
 	});
 
@@ -497,19 +516,24 @@ async function fetchImagesForZip(opt) {
 	}
 
 	// For duplicate images, make a copy if not already cached and save the names
-	var dupFileNames = [];
+	var dupCorpFiles = [];
+	var dupRunnerFiles = [];
 	ws.send(JSON.stringify({ "status": "Preparing images..." }));
 	console.log("DownloadID " + downloadID + ": Creating duplicate copies...");
 	for (var i=0; i<Object.keys(imgCounts).length; i++) {
 		const fileName = Object.keys(imgCounts)[i];
-		const count = imgCounts[fileName];
+		const count = imgCounts[fileName].count;
 		const splitName = fileName.split(".");
 		for (var j=1; j<count; j++) {
 			const dupName = splitName[0] + "-" + j + "." + splitName[1];
 			const imgPath = "./static/tmp/" + container + dupName;
 			const onExistsMsg = "DownloadID " + downloadID + ": Found " + dupName + ", a cached copy of " + fileName + ", don't duplicate";
-			dupFileNames.push(dupName);
-
+			if (imgCounts[fileName].side === "corp") {
+				dupCorpFiles.push(dupName);
+			} 
+			if (imgCounts[fileName].side === "runner") {
+				dupRunnerFiles.push(dupName);
+			} 
 			// if duplicate missing, make a copy and set the red pixel to make it unique for MPC
 			if (doesNotExists(imgPath, onExistsMsg)) {
 				const originalImg = "./static/tmp/" + container + fileName;
@@ -520,9 +544,14 @@ async function fetchImagesForZip(opt) {
     }
 
 	console.log("DownloadID " + downloadID + ": Duplicates Ready");
-	const allFileNames = imgFileNames.concat(dupFileNames);
-	allFileNames.forEach( file => {			// Copy all allFileNames to zipDir
-		fs.copyFileSync("./static/tmp/" + container + file, zipDir + file);
+	const allCorpFiles = corpFilesNames.concat(dupCorpFiles);
+	allCorpFiles.forEach( file => {			
+		fs.copyFileSync("./static/tmp/" + container + file, zipDir + "corp/" + file);
+	});
+
+	const allRunnerFiles = runnerFileNames.concat(dupRunnerFiles);
+	allRunnerFiles.forEach( file => {	
+		fs.copyFileSync("./static/tmp/" + container + file, zipDir + "runner/" + file);
 	});
 
 	ws.send(JSON.stringify({ "status": "Adding images to zip file..." }));
@@ -540,7 +569,7 @@ async function fetchImagesForZip(opt) {
 	archive.pipe(zipFile);
 	archive.directory(zipDir, false);
 	cardBacks.forEach(file => {
-		archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: "backs/" + file });
+		archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: file });
 	});
 	archive.finalize();
 }

@@ -51,7 +51,7 @@ function loadCards() {
     
     if (!_cardDB) {
         fetchAllCards();
-    } else if (!('title' in _cardDB)) {
+    } else if (!('title' in _cardDB) || !('side' in _cardDB)) {
         fetchAllCards();
     } else {
         buildFromCardList();
@@ -61,10 +61,6 @@ function loadCards() {
 function saveCards() {
     localStorage.setItem('cardsDB', JSON.stringify(_cardDB));
     localStorage.setItem('cardDB_keyID', JSON.stringify(_cardDB_keyID));
-}
-
-function reset() {
-    return fetchAllCards();
 }
 
 function fetchAllCards() {
@@ -87,6 +83,7 @@ function fetchAllCards() {
 
             _cardDB_keyID[item.code] = {
             code: item.code,
+            side: item.side_code,
             title: item.title,
             image: image
             }
@@ -343,11 +340,26 @@ function resetPDFDownload() {
 }
 
 function getZip() {
+
+    // split cards in _cardList
+    var corpCodes = [];
+    var runnerCodes = [];
+
+    _cardList.forEach( code => {
+        if (_cardDB_keyID[code].side === 'corp') {
+            corpCodes.push(code);
+        }
+        if (_cardDB_keyID[code].side === 'runner') {
+            runnerCodes.push(code);
+        }
+    });
+
     const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
     const downloadOptions = {
         "sessID": _sessID,
         "imagePlacement": imgPlacement,
-        "requestedImages": _cardList,
+        "corpCodes": corpCodes,
+        "runnerCodes": runnerCodes,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
     };
     const data = JSON.stringify(downloadOptions);
