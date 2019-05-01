@@ -7,6 +7,11 @@ var _cardPreview;
 var _playsetSelection = "Single Set";
 var _cardListHtml     = '';
 var _cardList;
+var _altArtCodes = {};
+var _altArtSelector;
+var _altArtSelectorHTML = '';
+var _artSelectors = {};
+var _imgCount;
 var _selectedTab = "Card List";
 var _socket;
 var _sessID;
@@ -14,6 +19,42 @@ var _sessID;
 const IMAGE_BASE_DIR = "https://proxynexus.blob.core.windows.net/";
 const NRDB_API_DIR = "https://netrunnerdb.com/api/2.0/public/";
 const IMAGE_CONTAINER = "low-images/";
+
+class AltSelector {
+    constructor(imgID, selectID, selectedCode, altCodes) {
+        this.imgID = imgID;
+        this.selectID = selectID;
+        this.selectedCode = selectedCode;
+        this.altCodes = altCodes; 
+    }
+
+    cycleRight() {
+        const index = this.altCodes.indexOf(this.selectedCode);
+        const newIndex = (index+1) % this.altCodes.length;
+        const newCode = this.altCodes[newIndex];
+        this.switchArt(newCode);
+        $("#"+this.selectID).val(newCode);
+    }
+
+    cycleLeft() {
+        const index = this.altCodes.indexOf(this.selectedCode);
+        const newIndex = index-1;
+        if (newIndex < 0) {
+            var newCode = this.altCodes[this.altCodes.length-1]
+        } else {
+            var newCode = this.altCodes[newIndex]
+        }
+        this.switchArt(newCode);
+        $("#"+this.selectID).val(newCode);
+    }
+
+    switchArt(code) {
+        const replaceIndex = _cardList.indexOf(this.selectedCode);
+        _cardList[replaceIndex] = code;
+        $("#"+this.imgID).attr("src", IMAGE_BASE_DIR + IMAGE_CONTAINER + code + ".jpg");
+        this.selectedCode = code;
+    }
+}
 
 function selectTab(tabLabel) {
     _selectedTab = tabLabel;
@@ -105,10 +146,19 @@ function fetchSetList() {
     });
 }
 
+function fetchAltArts() {
+    $.getJSON( "json/altart.json", function(response) {
+        $.each(response.data, function(key, item) {
+            _altArtCodes[item.code] = item.alts;
+        });
+    });
+}
+
 function buildFromCardList() {
     const input = _cardListTextArea.val().toLowerCase().split(/\n/);
     var html = '';
     var unfound = 0;
+    _altArtSelectorHTML = '';
     _cardList = [];
     
     if (!_cardDB) {
@@ -149,10 +199,13 @@ function buildFromCardList() {
     if (_cardListHtml != html) {
         _cardListHtml = html;
         _cardPreview.html(_cardListHtml);
-    } 
+        _altArtSelector.html(_altArtSelectorHTML);
+    }
 }
 
 function buildFromDeckID() {
+    _altArtSelectorHTML = '';
+
     if (!_cardDB_keyID) {
         return false;
     }
@@ -181,8 +234,6 @@ function buildFromDeckID() {
     }
 }
 
-// Used by buildFromDeckID for DRY, 
-// need to re-work it so buildFromCardList and buildFromSet uses it too
 function makeCardHTML(response) {
     const input = response.data[0].cards;
     const keys = Object.keys(input);
@@ -201,6 +252,7 @@ function makeCardHTML(response) {
     if (_cardListHtml != html) {
         _cardListHtml = html;
         _cardPreview.html(_cardListHtml);
+        _altArtSelector.html(_altArtSelectorHTML);
     }
 }
 
@@ -208,6 +260,7 @@ function buildFromSet() {
     const selectedSet = _setSelection.val();
     const coreSets = ["core", "core2", "sc19"];
     var html = '';
+    _altArtSelectorHTML = '';
     _cardList = [];
 
     if (!_cardDB_keyID || !selectedSet) {
@@ -239,14 +292,20 @@ function buildFromSet() {
         if (_cardListHtml != html) {
             _cardListHtml = html;
             _cardPreview.html(_cardListHtml);
+            _altArtSelector.html(_altArtSelectorHTML);
         }
     });
 }
 
 function buildCardHTML(code, image, title) {
+    var imgID = "cardPrev" + _imgCount++;
+    if (code in _altArtCodes) {
+        addAltArtSelector(code, imgID);
+    }
+
     var newCard = '';
     newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
-    newCard += '<img class="card" src="' + image + '" alt="' + code + '" />';
+    newCard += '<img class="card" id="' + imgID + '" src="' + image + '" alt="' + code + '" />';
     newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
     newCard += '</a>';
     if (code == "08012") {
@@ -266,6 +325,42 @@ function buildCardHTML(code, image, title) {
         newCard += '</a>';
     }
     return newCard;
+}
+
+function addAltArtSelector(code, imgID) {
+    const alts = _altArtCodes[code];
+    const altCodes = alts.map( alt => {
+        return alt.code;
+    })
+    const selectID = "selector" + _imgCount;
+
+    _artSelectors[imgID] = new AltSelector(imgID, selectID, code, altCodes);
+    const switchArtCall = '_artSelectors[\''+ imgID +'\'].switchArt(this.value)';
+    const cycleLeftCall = '_artSelectors[\''+ imgID +'\'].cycleLeft()';
+    const cycleRightCall = '_artSelectors[\''+ imgID +'\'].cycleRight()';
+
+    var selectorEntry = '<li class="list-group-item">';
+    selectorEntry += '<div class="row">';
+    selectorEntry += '<button type="button" class="btn btn-default btn-sm" onclick="' + cycleLeftCall + '">';
+    selectorEntry += '<span class="fas fa-chevron-left"></span>';
+    selectorEntry += '</button>';
+    selectorEntry += '<select id="'+selectID+'" class="form-control form-control-sm" onchange="' + switchArtCall + '" style="width:auto;">';
+
+    for (var i=0; i<alts.length; i++) {
+        selectorEntry += '<option value="' + alts[i].code + '">' + alts[i].title + '</option>';
+    }
+
+    selectorEntry += '</select>';
+    selectorEntry += '<button type="button" class="btn btn-default btn-sm" onclick="' + cycleRightCall + '">';
+    selectorEntry += '<span class="fas fa-chevron-right"></span>';
+    selectorEntry += '</button>';
+    selectorEntry += '</div></li>';
+
+    if (_altArtSelectorHTML === '') {
+        _altArtSelectorHTML += '<h6>Alt Arts</h6>';
+    }
+
+    _altArtSelectorHTML += selectorEntry;
 }
 
 function getExtraInfo() {
@@ -470,10 +565,13 @@ $(function() {
     _deckURLText = $('#deckURLText');
     _setSelection = $('#setSelection');
     _cardPreview = $('#cardPreview');
+    _altArtSelector = $('#alt-art-selector');
+    _imgCount = 0;
 
     assignEvents();
     loadCards();
     fetchSetList();
+    fetchAltArts();
     setupWS();
 
     if (!_cardDB) {
@@ -487,6 +585,6 @@ $(function() {
             const card = cards[rand_index];
             chosenCards[i] = card.title;
         }
-        _cardListTextArea.val(chosenCards[0] + "\n" + chosenCards[1] + "\n" + chosenCards[2] + "\n");
+        _cardListTextArea.val(chosenCards[0]+ "\n" + chosenCards[1]+ "\n" + chosenCards[2]+ "\n");
     }
 });

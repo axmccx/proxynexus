@@ -1,0 +1,39 @@
+{
+    "data": [
+        {
+            "code": "01055",
+            "alts": [
+                {
+                    "code": "01055",
+                    "title": "Accelerated Beta Test"
+                },
+                {
+                    "code": "01055-alt1",
+                    "title": "World Champ 2015"
+                }
+            ]
+        },
+        {
+            "code": "08025",
+            "alts": [
+                {
+                    "code": "08025",
+                    "title": "Hayley Kaplan: Universal Scholar"
+                },
+                {
+                    "code": "08025-alt1",
+                    "title": "2016 Summer GNK"
+                },
+                {
+                    "code": "08025-alt2",
+                    "title": "2018 National Champ"
+                },
+                {
+                    "code": "08025-alt3",
+                    "title": "2017 World Champ Deck"
+                }
+            ]
+        }
+    ]
+}
+
