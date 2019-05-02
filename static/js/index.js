@@ -7,11 +7,9 @@ var _cardPreview;
 var _playsetSelection = "Single Set";
 var _cardListHtml     = '';
 var _cardList;
-var _altArtCodes = {};
 var _altArtSelector;
 var _altArtSelectorHTML = '';
 var _artSelectors = {};
-var _backCodes;
 var _imgCount;
 var _selectedTab = "Card List";
 var _socket;
@@ -19,6 +17,7 @@ var _sessID;
 
 const IMAGE_BASE_DIR = "https://proxynexus.blob.core.windows.net/";
 const NRDB_API_DIR = "https://netrunnerdb.com/api/2.0/public/";
+const NRDB_CARD_DIR = "https://netrunnerdb.com/en/card/";
 const IMAGE_CONTAINER = "low-images/";
 
 class AltSelector {
@@ -52,13 +51,13 @@ class AltSelector {
     switchArt(code) {
         const replaceIndex = _cardList.indexOf(this.selectedCode);
         _cardList[replaceIndex] = code;
-        $("#"+this.imgID).attr("src", IMAGE_BASE_DIR + IMAGE_CONTAINER + code + ".jpg");
+        $("#"+this.imgID).attr("src", _cardDB_keyID[code].image);
         this.selectedCode = code;
-
+ 
         const backImgID = "#" + this.imgID + "backImg";
         const backLink = "#" + this.imgID + "backLink";
-        if (code in _backCodes) {
-            $(backImgID).attr("src", IMAGE_BASE_DIR + IMAGE_CONTAINER + _backCodes[code] + ".jpg");
+        if (_cardDB_keyID[code].back_code) {
+            $(backImgID).attr("src", _cardDB_keyID[code].back_img);
             $(backLink).show();
         } else {
             $(backLink).hide();
@@ -125,8 +124,9 @@ function fetchAllCards() {
 
         $.each(response.data, function(key, item) {
             const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code + '.jpg';
+            const cardDBKey = item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__');
 
-            _cardDB[item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__')] = {
+            _cardDB[cardDBKey] = {
             code: item.code,
             title: item.title,
             image: image
@@ -139,7 +139,37 @@ function fetchAllCards() {
             image: image
             }
         });
-        
+
+        $.getJSON( "json/altart.json", function(response) {
+
+            // add alt art codes
+            $.each(response.altArtRelations, function(key, item) {
+                _cardDB_keyID[item.code].alts = item.alts;
+
+                const cardDBKey = _cardDB_keyID[item.code].title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__');
+                _cardDB[cardDBKey].alts = item.alts;
+            });
+
+            // add entries for alt art codes, to store their side_code, title, and back code if it exists
+            $.each(response.altArtCards, function(key, item) {
+                const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code + '.jpg';
+                if (item.back_code) {
+                    var back_img = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.back_code + ".jpg"
+                } else {
+                    var back_img = null;
+                }
+
+                _cardDB_keyID[item.code] = {
+                    code: item.code,
+                    back_code: item.back_code,
+                    back_img: back_img,
+                    side: item.side_code,
+                    title: item.title,
+                    image: image
+                }
+            });
+        });
+
         saveCards();
         buildFromCardList();
     });
@@ -156,20 +186,11 @@ function fetchSetList() {
     });
 }
 
-function fetchAltArts() {
-    $.getJSON( "json/altart.json", function(response) {
-        $.each(response.data, function(key, item) {
-            _altArtCodes[item.code] = item.alts;
-        });
-        _backCodes = response.backCodes;
-    });
-}
-
 function buildFromCardList() {
     const input = _cardListTextArea.val().toLowerCase().split(/\n/);
     var html = '';
     var unfound = 0;
-    _altArtSelectorHTML = '';
+    var artSelectorHTML = '';
     _cardList = [];
     
     if (!_cardDB) {
@@ -195,8 +216,17 @@ function buildFromCardList() {
                 count = 1;
             }
             for (var j=0; j<count; j++) {
-                html += buildCardHTML(card.code, card.image, card.title);
+                const imgID = "cardPrev" + _imgCount++;
+
                 _cardList.push(card.code);
+                html += buildCardHTML(card.code, card.image, card.title, imgID);
+
+                if ("alts" in card) {
+                    if (artSelectorHTML === '') {
+                        artSelectorHTML += '<h6>Alt Arts</h6>';
+                    }
+                    artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
+                }
             }
         } else {
             unfound++;
@@ -210,13 +240,11 @@ function buildFromCardList() {
     if (_cardListHtml != html) {
         _cardListHtml = html;
         _cardPreview.html(_cardListHtml);
-        _altArtSelector.html(_altArtSelectorHTML);
+        _altArtSelector.html(artSelectorHTML);
     }
 }
 
 function buildFromDeckID() {
-    _altArtSelectorHTML = '';
-
     if (!_cardDB_keyID) {
         return false;
     }
@@ -249,13 +277,24 @@ function makeCardHTML(response) {
     const input = response.data[0].cards;
     const keys = Object.keys(input);
     var html = '';
+    var artSelectorHTML = '';
     _cardList = [];
     for (var i = 0; i < keys.length; i++) {
         if (keys[i] in _cardDB_keyID) {
             var card = _cardDB_keyID[keys[i]];
             for (var j = 0; j < input[keys[i]]; j++) {
-                html += buildCardHTML(card.code, card.image, card.title);
+                const imgID = "cardPrev" + _imgCount++;
+
                 _cardList.push(card.code);
+                html += buildCardHTML(card.code, card.image, card.title, imgID);
+
+                if ("alts" in card) {
+                    if (artSelectorHTML === '') {
+                        artSelectorHTML += '<h6>Alt Arts</h6>';
+                    }
+                    artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
+                }
+
             }
         }
     }
@@ -263,7 +302,7 @@ function makeCardHTML(response) {
     if (_cardListHtml != html) {
         _cardListHtml = html;
         _cardPreview.html(_cardListHtml);
-        _altArtSelector.html(_altArtSelectorHTML);
+        _altArtSelector.html(artSelectorHTML);
     }
 }
 
@@ -271,7 +310,7 @@ function buildFromSet() {
     const selectedSet = _setSelection.val();
     const coreSets = ["core", "core2", "sc19"];
     var html = '';
-    _altArtSelectorHTML = '';
+    var artSelectorHTML = '';
     _cardList = [];
 
     if (!_cardDB_keyID || !selectedSet) {
@@ -294,34 +333,41 @@ function buildFromSet() {
             }
 
             for (var i = 0; i < quantity; i++) {
-                var image = IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code + '.jpg';
-                html += buildCardHTML(card.code, image, card.title);
+                const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code + '.jpg';
+                const imgID = "cardPrev" + _imgCount++;
+                const localCard = _cardDB_keyID[card.code];
+
                 _cardList.push(card.code);
+                html += buildCardHTML(card.code, image, card.title, imgID);
+
+                if ("alts" in localCard) {
+                    if (artSelectorHTML === '') {
+                        artSelectorHTML += '<h6>Alt Arts</h6>';
+                    }
+                    artSelectorHTML += addAltArtSelector(card.code, localCard.alts, imgID);
+                }
             }
         });
 
         if (_cardListHtml != html) {
             _cardListHtml = html;
             _cardPreview.html(_cardListHtml);
-            _altArtSelector.html(_altArtSelectorHTML);
+            _altArtSelector.html(artSelectorHTML);
         }
     });
 }
 
-function buildCardHTML(code, image, title) {
-    var imgID = "cardPrev" + _imgCount++;
+function buildCardHTML(code, image, title, imgID) {
     var newCard = '';
-
-    newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+    newCard += '<a href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
     newCard += '<img class="card" id="' + imgID + '" src="' + image + '" alt="' + code + '" />';
     newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
     newCard += '</a>';
 
-    if (code in _altArtCodes) {
+    if ("alts" in _cardDB_keyID[code]) {   
         const backImgID = imgID + "backImg";
         const backLink = imgID + "backLink";
-        addAltArtSelector(code, imgID);
-        newCard += '<a id="' + backLink + '" style="display: none;" href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+        newCard += '<a id="' + backLink + '" style="display: none;" href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
         newCard += '<img class="card" id="' + backImgID + '"/>';
         newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
         newCard += '</a>';
@@ -330,14 +376,14 @@ function buildCardHTML(code, image, title) {
             const extras = ["08012a", "08012", "08012b", "08012", "08012c"];
             extras.forEach(function(extra) {
             const img = IMAGE_BASE_DIR + IMAGE_CONTAINER + extra + '.jpg';
-            newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+            newCard += '<a href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
             newCard += '<img class="card" src="' + img + '" alt="' + code + '" />';
             newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
             newCard += '</a>';
             });
         } else if (code == "09001") {
             const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '09001a.jpg';
-            newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+            newCard += '<a href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
             newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
             newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
             newCard += '</a>';
@@ -346,14 +392,10 @@ function buildCardHTML(code, image, title) {
     return newCard;
 }
 
-function addAltArtSelector(code, imgID) {
-    const alts = _altArtCodes[code];
-    const altCodes = alts.map( alt => {
-        return alt.code;
-    })
+function addAltArtSelector(code, alts, imgID) {
     const selectID = "selector" + _imgCount;
+    _artSelectors[imgID] = new AltSelector(imgID, selectID, code, alts);
 
-    _artSelectors[imgID] = new AltSelector(imgID, selectID, code, altCodes);
     const switchArtCall = '_artSelectors[\''+ imgID +'\'].switchArt(this.value)';
     const cycleLeftCall = '_artSelectors[\''+ imgID +'\'].cycleLeft()';
     const cycleRightCall = '_artSelectors[\''+ imgID +'\'].cycleRight()';
@@ -366,20 +408,17 @@ function addAltArtSelector(code, imgID) {
     selectorEntry += '<select id="'+selectID+'" class="form-control form-control-sm" onchange="' + switchArtCall + '" style="width:auto;">';
 
     for (var i=0; i<alts.length; i++) {
-        selectorEntry += '<option value="' + alts[i].code + '">' + alts[i].title + '</option>';
+        const altCode = alts[i];
+        const title = _cardDB_keyID[altCode].title;
+        selectorEntry += '<option value="' + altCode + '">' + title + '</option>';
     }
-
     selectorEntry += '</select>';
     selectorEntry += '<button type="button" class="btn btn-default btn-sm" onclick="' + cycleRightCall + '">';
     selectorEntry += '<span class="fas fa-chevron-right"></span>';
     selectorEntry += '</button>';
     selectorEntry += '</div></li>';
 
-    if (_altArtSelectorHTML === '') {
-        _altArtSelectorHTML += '<h6>Alt Arts</h6>';
-    }
-
-    _altArtSelectorHTML += selectorEntry;
+    return selectorEntry;
 }
 
 function getExtraInfo() {
@@ -590,7 +629,6 @@ $(function() {
     assignEvents();
     loadCards();
     fetchSetList();
-    fetchAltArts();
     setupWS();
 
     if (!_cardDB) {

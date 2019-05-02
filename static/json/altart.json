@@ -1,131 +1,75 @@
 {
-    "data": [
+    "altArtRelations": [
         {
             "code": "01055",
-            "alts": [
-                {
-                    "title": "Accelerated Beta Test",
-                    "code": "01055"
-                },
-                {
-                    "title": "World Champ 2015",
-                    "code": "01055-alt1"
-                }
-            ]
+            "alts": ["01055", "01055-alt1"]
         },
         {
             "code": "08025",
-            "alts": [
-                {
-                    "title": "Hayley Kaplan: Universal Scholar",
-                    "code": "08025"
-                },
-                {
-                    "title": "2016 Summer GNK",
-                    "code": "08025-alt1"
-                },
-                {
-                    "title": "2018 National Champ",
-                    "code": "08025-alt2"
-                },
-                {
-                    "title": "2017 World Champ Deck",
-                    "code": "08025-alt3"
-                }
-            ]
+            "alts": ["08025", "08025-alt1", "08025-alt2", "08025-alt3"]
         },
         {
             "code": "04041",
-            "alts": [
-                {
-                    "title": "Reina Roja: Freedom Fighter",
-                    "code": "04041"
-                },
-                {
-                    "title": "Revised Core Set",
-                    "code": "20001"
-                },
-                {
-                    "title": "2015 Regionals",
-                    "code": "04041-alt1"
-                },
-                {
-                    "title": "2018 Nationals",
-                    "code": "04041-alt2"
-                },
-                {
-                    "title": "2018 Nationals Top 4",
-                    "code": "04041-alt3"
-                },
-                {
-                    "title": "Magnum Opus",
-                    "code": "04041-alt4"
-                }
-            ]
+            "alts": ["04041", "20001", "04041-alt1", "04041-alt2", "04041-alt3", "04041-alt4"]
         },
         {
             "code": "20001",
-            "alts": [
-                {
-                    "title": "Reina Roja: Freedom Fighter",
-                    "code": "20001"
-                },
-                {
-                    "title": "Core Set",
-                    "code": "04041"
-                },
-                {
-                    "title": "2015 Regionals",
-                    "code": "04041-alt1"
-                },
-                {
-                    "title": "2018 Nationals",
-                    "code": "04041-alt2"
-                },
-                {
-                    "title": "2018 Nationals Top 4",
-                    "code": "04041-alt3"
-                },
-                {
-                    "title": "Magnum Opus",
-                    "code": "04041-alt4"
-                }
-            ]
+            "alts": ["20001", "04041", "04041-alt1", "04041-alt2", "04041-alt3", "04041-alt4"]
         },
         {
             "code": "25001",
-            "alts": [
-                {
-                    "title": "Reina Roja: Freedom Fighter",
-                    "code": "25001"
-                },
-                {
-                    "title": "Core Set",
-                    "code": "04041"
-                },
-                {
-                    "title": "2015 Regionals",
-                    "code": "04041-alt1"
-                },
-                {
-                    "title": "2018 Nationals",
-                    "code": "04041-alt2"
-                },
-                {
-                    "title": "2018 Nationals Top 4",
-                    "code": "04041-alt3"
-                },
-                {
-                    "title": "Magnum Opus",
-                    "code": "04041-alt4"
-                }
-            ]
+            "alts": ["25001", "04041", "04041-alt1", "04041-alt2", "04041-alt3", "04041-alt4"]
         }
     ],
-    "backCodes": {
-        "04041-alt2": "04041-alt2a",
-        "04041-alt3": "04041-alt3a",
-        "04041-alt4": "04041-alt4a"
-    }
+    "altArtCards": [
+        {
+            "code": "01055-alt1",
+            "title": "World Champ 2015",
+            "back_code": false,  
+            "side_code": "corp"
+        },
+        {
+            "code": "08025-alt1",
+            "title": "2016 Summer GNK",
+            "back_code": false,
+            "side_code": "runner"
+        },
+        {
+            "code": "08025-alt2",
+            "title": "2018 National Champ",
+            "back_code": false,
+            "side_code": "runner"
+        },
+        {
+            "code": "08025-alt3",
+            "title": "2017 World Champ Deck",
+            "back_code": false,
+            "side_code": "runner"
+        },
+        {
+            "code": "04041-alt1",
+            "title": "2015 Regionals",
+            "back_code": false,
+            "side_code": "runner"
+        },
+        {
+            "code": "04041-alt2",
+            "title": "2018 Nationals",
+            "back_code": "04041-alt2a",
+            "side_code": "runner"
+        },
+        {
+            "code": "04041-alt3",
+            "title": "2018 Nationals Top 4",
+            "back_code": "04041-alt3a",
+            "side_code": "runner"
+        },
+        {
+            "code": "04041-alt4",
+            "title": "Magnum Opus",
+            "back_code": "04041-alt4a",
+            "side_code": "runner"
+        } 
+    ]
 }
 
