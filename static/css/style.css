@@ -140,9 +140,6 @@ a.anchor {
 @media screen {
   #cardPreview {
     margin-top: 1rem;
-    max-height: 800px;
-    min-height: 350px;
-    overflow-y: scroll;
   }
   #cardPreview > * {
     display: inline-block;

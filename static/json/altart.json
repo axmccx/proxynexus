@@ -25,31 +25,31 @@
         {
             "code": "01055-alt1",
             "title": "World Champ 2015",
-            "back_code": false,  
+            "back_code": "",  
             "side_code": "corp"
         },
         {
             "code": "08025-alt1",
             "title": "2016 Summer GNK",
-            "back_code": false,
+            "back_code": "",
             "side_code": "runner"
         },
         {
             "code": "08025-alt2",
             "title": "2018 National Champ",
-            "back_code": false,
+            "back_code": "",
             "side_code": "runner"
         },
         {
             "code": "08025-alt3",
             "title": "2017 World Champ Deck",
-            "back_code": false,
+            "back_code": "",
             "side_code": "runner"
         },
         {
             "code": "04041-alt1",
             "title": "2015 Regionals",
-            "back_code": false,
+            "back_code": "",
             "side_code": "runner"
         },
         {

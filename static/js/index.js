@@ -5,10 +5,8 @@ var _deckURLText;
 var _setSelection;
 var _cardPreview;
 var _playsetSelection = "Single Set";
-var _cardListHtml     = '';
 var _cardList;
 var _altArtSelector;
-var _altArtSelectorHTML = '';
 var _artSelectors = {};
 var _imgCount;
 var _selectedTab = "Card List";
@@ -223,6 +221,7 @@ function buildFromCardList() {
 
                 if ("alts" in card) {
                     if (artSelectorHTML === '') {
+                        $("#alt-art-selector-hide-btn").show();
                         artSelectorHTML += '<h6>Alt Arts</h6>';
                     }
                     artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
@@ -236,11 +235,10 @@ function buildFromCardList() {
     if (unfound > 0) {
         html += '<p class="no-print text-muted">' + unfound + ' not found</p>';
     }
-  
-    if (_cardListHtml != html) {
-        _cardListHtml = html;
-        _cardPreview.html(_cardListHtml);
-        _altArtSelector.html(artSelectorHTML);
+    _cardPreview.html(html);
+    _altArtSelector.html(artSelectorHTML);
+    if (artSelectorHTML === '') {
+        $("#alt-art-selector-hide-btn").hide();
     }
 }
 
@@ -290,19 +288,18 @@ function makeCardHTML(response) {
 
                 if ("alts" in card) {
                     if (artSelectorHTML === '') {
+                        $("#alt-art-selector-hide-btn").show();
                         artSelectorHTML += '<h6>Alt Arts</h6>';
                     }
                     artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
                 }
-
             }
         }
     }
-
-    if (_cardListHtml != html) {
-        _cardListHtml = html;
-        _cardPreview.html(_cardListHtml);
-        _altArtSelector.html(artSelectorHTML);
+    _cardPreview.html(html);
+    _altArtSelector.html(artSelectorHTML);
+    if (artSelectorHTML === '') {
+        $("#alt-art-selector-hide-btn").hide();
     }
 }
 
@@ -342,17 +339,17 @@ function buildFromSet() {
 
                 if ("alts" in localCard) {
                     if (artSelectorHTML === '') {
+                        $("#alt-art-selector-hide-btn").show();
                         artSelectorHTML += '<h6>Alt Arts</h6>';
                     }
                     artSelectorHTML += addAltArtSelector(card.code, localCard.alts, imgID);
                 }
             }
         });
-
-        if (_cardListHtml != html) {
-            _cardListHtml = html;
-            _cardPreview.html(_cardListHtml);
-            _altArtSelector.html(artSelectorHTML);
+        _cardPreview.html(html);
+        _altArtSelector.html(artSelectorHTML);
+        if (artSelectorHTML === '') {
+            $("#alt-art-selector-hide-btn").hide();
         }
     });
 }
@@ -449,6 +446,7 @@ function makePDF() {
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
     };
 
+    $("#PDFStatus").html("Connecting...");
     $('#PDFGenerateBtn').hide();
     $('#PDFDownloadSpinner').show();
 
@@ -456,6 +454,9 @@ function makePDF() {
     xhr.open("POST", "/api/makePDF", true);
     xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhr.responseType = 'json';
+    xhr.onerror = function () {
+        $("#PDFStatus").html("Error, try refreshing the page");
+    };
     const data = JSON.stringify(downloadOptions);
     xhr.send(data);
 }
@@ -483,7 +484,6 @@ function resetPDFDownload() {
 }
 
 function getZip() {
-
     // split cards in _cardList
     var corpCodes = [];
     var runnerCodes = [];
@@ -505,8 +505,8 @@ function getZip() {
         "runnerCodes": runnerCodes,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
     };
-    const data = JSON.stringify(downloadOptions);
 
+    $("#ZipStatus").html("Connecting...");
     $('#ZipGenerateBtn').hide();
     $('#ZipDownloadSpinner').show();
 
@@ -514,6 +514,10 @@ function getZip() {
     xhr.open("POST", "/api/makeMpcZip", true);
     xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhr.responseType = 'json';
+    xhr.onerror = function () {
+        $("#ZipStatus").html("Error, try refreshing the page");
+    };
+    const data = JSON.stringify(downloadOptions);
     xhr.send(data);
 }
 
@@ -564,6 +568,12 @@ function assignEvents() {
     $("#ZipResetBtn").click(function(e) {
         resetZipDownload();
     })
+
+    $("#alt-art-selector-hide-btn").click(function(e) {
+        $(this).text(function(i, prev){
+            return prev=='Show Alt-Art Selection' ?  'Hide Alt-Art Selection' : 'Show Alt-Art Selection';
+        });
+    });
 
     _cardListTextArea.on('input',function(e){
         buildFromCardList();

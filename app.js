@@ -21,7 +21,7 @@ const cardheight = 8.80;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
 const storagePath = "https://proxynexus.blob.core.windows.net/";
-const altArtBacks = JSON.parse(fs.readFileSync('static/json/altart.json')).backCodes; 
+const altArtCards = JSON.parse(fs.readFileSync('static/json/altart.json')).altArtCards; 
 
 // setInterval(function() {
 // 	const used = process.memoryUsage();
@@ -361,9 +361,11 @@ function addAltArtBacks(codes) {
 	var updateCodes = [];
 	codes.forEach(code => {
 		updateCodes.push(code);
-		if (code in altArtBacks) {
-			updateCodes.push(altArtBacks[code]);
-		}
+		altArtCards.forEach(altCard => {
+			if (altCard.code === code && altCard.back_code) {
+				updateCodes.push(altCard.back_code);
+			}
+		})
 	});
 	return updateCodes;
 }

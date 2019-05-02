@@ -53,10 +53,10 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-8 order-3 order-md-1">
+            <div class="col-md-8 order-2 order-md-1">
                 <div id="cardPreview"></div>
             </div>
-            <div class="col-md-4 order-1">
+            <div class="col-md-4 order 1 order-md-2">
                 <nav>
                     <div class="nav nav-pills nav-fill" id="nav-tab" role="tablist">
                         <a class="nav-item nav-link active" id="nav-cardlist-tab" data-toggle="tab" href="#nav-cardlist" role="tab" aria-controls="nav-cardlist" aria-selected="true">Card List</a>
@@ -124,10 +124,9 @@
                         </form>
                     </div>
                 </div>
-                <ul class="list-group py-3" id="alt-art-selector">
+                <button type="button" class="btn btn-primary btn-sm initHide" id="alt-art-selector-hide-btn" data-toggle="collapse" data-target="#alt-art-selector">Hide Alt-Art Selection</button>
+                <ul class="list-group collapse show py-3" id="alt-art-selector">
                 </ul>
-            </div>
-            <div class="col-md-6 mr-auto order-2">
                 <div class="row pt-3">
                     <form>
                         <div class="d-flex align-items-center">
@@ -208,10 +207,6 @@
                 <div class="row pl-3">
                     <div class="errorMsg" id="ZipDownloadErrorMsg"></div>
                 </div>
-            </div>
-            <div class="col-auto order-4">
-                <!-- <ul class="list-group py-3" id="alt-art-selector">
-                </ul> -->
             </div>
         </div>
     </div>
