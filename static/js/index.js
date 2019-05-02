@@ -11,6 +11,7 @@ var _altArtCodes = {};
 var _altArtSelector;
 var _altArtSelectorHTML = '';
 var _artSelectors = {};
+var _backCodes;
 var _imgCount;
 var _selectedTab = "Card List";
 var _socket;
@@ -53,6 +54,15 @@ class AltSelector {
         _cardList[replaceIndex] = code;
         $("#"+this.imgID).attr("src", IMAGE_BASE_DIR + IMAGE_CONTAINER + code + ".jpg");
         this.selectedCode = code;
+
+        const backImgID = "#" + this.imgID + "backImg";
+        const backLink = "#" + this.imgID + "backLink";
+        if (code in _backCodes) {
+            $(backImgID).attr("src", IMAGE_BASE_DIR + IMAGE_CONTAINER + _backCodes[code] + ".jpg");
+            $(backLink).show();
+        } else {
+            $(backLink).hide();
+        }
     }
 }
 
@@ -151,6 +161,7 @@ function fetchAltArts() {
         $.each(response.data, function(key, item) {
             _altArtCodes[item.code] = item.alts;
         });
+        _backCodes = response.backCodes;
     });
 }
 
@@ -299,30 +310,38 @@ function buildFromSet() {
 
 function buildCardHTML(code, image, title) {
     var imgID = "cardPrev" + _imgCount++;
-    if (code in _altArtCodes) {
-        addAltArtSelector(code, imgID);
-    }
-
     var newCard = '';
+
     newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
     newCard += '<img class="card" id="' + imgID + '" src="' + image + '" alt="' + code + '" />';
     newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
     newCard += '</a>';
-    if (code == "08012") {
-        const extras = ["08012a", "08012", "08012b", "08012", "08012c"];
-        extras.forEach(function(extra) {
-        const img = IMAGE_BASE_DIR + IMAGE_CONTAINER + extra + '.jpg';
-        newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
-        newCard += '<img class="card" src="' + img + '" alt="' + code + '" />';
+
+    if (code in _altArtCodes) {
+        const backImgID = imgID + "backImg";
+        const backLink = imgID + "backLink";
+        addAltArtSelector(code, imgID);
+        newCard += '<a id="' + backLink + '" style="display: none;" href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+        newCard += '<img class="card" id="' + backImgID + '"/>';
         newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
         newCard += '</a>';
-        });
-    } else if (code == "09001") {
-        const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '09001a.jpg';
-        newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
-        newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
-        newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
-        newCard += '</a>';
+    } else {
+        if (code == "08012") {
+            const extras = ["08012a", "08012", "08012b", "08012", "08012c"];
+            extras.forEach(function(extra) {
+            const img = IMAGE_BASE_DIR + IMAGE_CONTAINER + extra + '.jpg';
+            newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+            newCard += '<img class="card" src="' + img + '" alt="' + code + '" />';
+            newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
+            newCard += '</a>';
+            });
+        } else if (code == "09001") {
+            const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '09001a.jpg';
+            newCard += '<a href="https://netrunnerdb.com/en/card/' + code + '" title="" target="NetrunnerCard">';
+            newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
+            newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
+            newCard += '</a>';
+        }
     }
     return newCard;
 }

@@ -21,6 +21,7 @@ const cardheight = 8.80;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
 const storagePath = "https://proxynexus.blob.core.windows.net/";
+const altArtBacks = JSON.parse(fs.readFileSync('static/json/altart.json')).backCodes; 
 
 // setInterval(function() {
 // 	const used = process.memoryUsage();
@@ -133,8 +134,8 @@ async function fetchImagesForPDF(opt) {
 	const leftMargin = opt.leftMargin;
 	const ws = opt.ws;
 
-	// Add back side art for flippable IDs
-	const imgCodes = addFlippedIds(requestedImages);
+	// Add back side art for flippable IDs and alt art
+	const imgCodes = addAltArtBacks(addFlippedIds(requestedImages));
 
 	// Strip duplicate and already downloaded image codes, to prevent downloading more than needed
 	const imgFileNames = imgCodes.map(code => {return code + ".jpg"});	// used for building document later, need to maintain img count
@@ -356,6 +357,17 @@ function addFlippedIds(requestedImages) {
 	return imgCodes;
 }
 
+function addAltArtBacks(codes) {
+	var updateCodes = [];
+	codes.forEach(code => {
+		updateCodes.push(code);
+		if (code in altArtBacks) {
+			updateCodes.push(altArtBacks[code]);
+		}
+	});
+	return updateCodes;
+}
+
 function cmToPt (cm) {
 	return cm * 28.3465;
 }
@@ -500,11 +512,11 @@ async function fetchImagesForZip(opt) {
 	const zipDir = opt.zipDir;
 	const zipPath = opt.zipPath;
 
-	const corpFilesNames = addFlippedIds(corpCodes).map( code => {
+	const corpFilesNames = 	addAltArtBacks(addFlippedIds(corpCodes)).map( code => {
 		return container.replace(/\/$/, "") + "-" + code + ".jpg";
 	})
 
-	const runnerFileNames = runnerCodes.map( code => {
+	const runnerFileNames = addAltArtBacks(runnerCodes).map( code => {
 		return container.replace(/\/$/, "") + "-" + code + ".jpg";
 	})
 

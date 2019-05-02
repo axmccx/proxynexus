@@ -4,12 +4,12 @@
             "code": "01055",
             "alts": [
                 {
-                    "code": "01055",
-                    "title": "Accelerated Beta Test"
+                    "title": "Accelerated Beta Test",
+                    "code": "01055"
                 },
                 {
-                    "code": "01055-alt1",
-                    "title": "World Champ 2015"
+                    "title": "World Champ 2015",
+                    "code": "01055-alt1"
                 }
             ]
         },
@@ -17,23 +17,115 @@
             "code": "08025",
             "alts": [
                 {
-                    "code": "08025",
-                    "title": "Hayley Kaplan: Universal Scholar"
+                    "title": "Hayley Kaplan: Universal Scholar",
+                    "code": "08025"
                 },
                 {
-                    "code": "08025-alt1",
-                    "title": "2016 Summer GNK"
+                    "title": "2016 Summer GNK",
+                    "code": "08025-alt1"
                 },
                 {
-                    "code": "08025-alt2",
-                    "title": "2018 National Champ"
+                    "title": "2018 National Champ",
+                    "code": "08025-alt2"
                 },
                 {
-                    "code": "08025-alt3",
-                    "title": "2017 World Champ Deck"
+                    "title": "2017 World Champ Deck",
+                    "code": "08025-alt3"
+                }
+            ]
+        },
+        {
+            "code": "04041",
+            "alts": [
+                {
+                    "title": "Reina Roja: Freedom Fighter",
+                    "code": "04041"
+                },
+                {
+                    "title": "Revised Core Set",
+                    "code": "20001"
+                },
+                {
+                    "title": "2015 Regionals",
+                    "code": "04041-alt1"
+                },
+                {
+                    "title": "2018 Nationals",
+                    "code": "04041-alt2"
+                },
+                {
+                    "title": "2018 Nationals Top 4",
+                    "code": "04041-alt3"
+                },
+                {
+                    "title": "Magnum Opus",
+                    "code": "04041-alt4"
+                }
+            ]
+        },
+        {
+            "code": "20001",
+            "alts": [
+                {
+                    "title": "Reina Roja: Freedom Fighter",
+                    "code": "20001"
+                },
+                {
+                    "title": "Core Set",
+                    "code": "04041"
+                },
+                {
+                    "title": "2015 Regionals",
+                    "code": "04041-alt1"
+                },
+                {
+                    "title": "2018 Nationals",
+                    "code": "04041-alt2"
+                },
+                {
+                    "title": "2018 Nationals Top 4",
+                    "code": "04041-alt3"
+                },
+                {
+                    "title": "Magnum Opus",
+                    "code": "04041-alt4"
+                }
+            ]
+        },
+        {
+            "code": "25001",
+            "alts": [
+                {
+                    "title": "Reina Roja: Freedom Fighter",
+                    "code": "25001"
+                },
+                {
+                    "title": "Core Set",
+                    "code": "04041"
+                },
+                {
+                    "title": "2015 Regionals",
+                    "code": "04041-alt1"
+                },
+                {
+                    "title": "2018 Nationals",
+                    "code": "04041-alt2"
+                },
+                {
+                    "title": "2018 Nationals Top 4",
+                    "code": "04041-alt3"
+                },
+                {
+                    "title": "Magnum Opus",
+                    "code": "04041-alt4"
                 }
             ]
         }
-    ]
+    ],
+    "backCodes": {
+        "04041-alt2": "04041-alt2a",
+        "04041-alt3": "04041-alt3a",
+        "04041-alt4": "04041-alt4a"
+    }
 }
 
