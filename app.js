@@ -35,6 +35,7 @@ app.post('/api/makePDF', function (req, res) {
 	const sessID = req.body.sessID;
 	const paperSize = req.body.paperSize;
 	const quality = req.body.quality;
+	const includeBackArt = req.body.includeBackArt;
 	const logInfo = req.body.logInfo;
 	const container = ((q) => {
 		switch(q) {
@@ -83,7 +84,7 @@ app.post('/api/makePDF', function (req, res) {
 	}
 
 	// request is good, make hash for request and pdf file name
-	const requestedPDFOptions = paperSize + quality + requestedImages + logInfo;
+	const requestedPDFOptions = paperSize + quality + includeBackArt + requestedImages + logInfo;
 	const hash = crypto.createHash('sha1').update(requestedPDFOptions).digest('hex');
 	const pdfFileName = hash + ".pdf";
 	const pdfPath = __dirname + "/static/tmp/" + pdfFileName;
@@ -110,6 +111,7 @@ app.post('/api/makePDF', function (req, res) {
 	const opt = {
 		container: container,
 		quality: quality,
+		includeBackArt: includeBackArt,
 		downloadID: downloadID,
 		pdfFileName: pdfFileName,
 		requestedImages: requestedImages,
@@ -125,6 +127,7 @@ app.post('/api/makePDF', function (req, res) {
 async function fetchImagesForPDF(opt) {	
 	const container = opt.container;
 	const quality = opt.quality;
+	const includeBackArt = opt.includeBackArt;
 	const downloadID = opt.downloadID;
 	const pdfFileName = opt.pdfFileName
 	const requestedImages = opt.requestedImages;
@@ -135,7 +138,10 @@ async function fetchImagesForPDF(opt) {
 	const ws = opt.ws;
 
 	// Add back side art for flippable IDs and alt art
-	const imgCodes = addAltArtBacks(addFlippedIds(requestedImages));
+	var imgCodes = addFlippedIds(requestedImages);
+	if (includeBackArt) {
+		imgCodes = addAltArtBacks(imgCodes);
+	}
 
 	// Strip duplicate and already downloaded image codes, to prevent downloading more than needed
 	const imgFileNames = imgCodes.map(code => {return code + ".jpg"});	// used for building document later, need to maintain img count
@@ -436,6 +442,7 @@ async function downloadFiles(fileNames, destination, baseUrl, downloadID) {
 app.post('/api/makeMpcZip', function (req, res) {
 	const sessID = req.body.sessID;
 	const imagePlacement = req.body.imagePlacement;
+	const includeBackArt = req.body.includeBackArt;
 	const logInfo = req.body.logInfo;
 	const container = ((q) => {
 		switch(q) {
@@ -469,7 +476,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		return;
 	}
 
-	const requestedZipOptions = imagePlacement + requestedImages + logInfo;
+	const requestedZipOptions = imagePlacement + includeBackArt + requestedImages + logInfo;
 	const hash = crypto.createHash('sha1').update(requestedZipOptions).digest('hex');
 	const zipFileName = hash + ".zip";
 	const zipPath = __dirname + "/static/tmp/" + zipFileName;
@@ -492,6 +499,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 
 	const opt = {
 		container: container,
+		includeBackArt: includeBackArt,
 		downloadID: downloadID,
 		corpCodes: corpCodes,
 		runnerCodes: runnerCodes,
@@ -506,6 +514,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 
 async function fetchImagesForZip(opt) {
 	const container = opt.container;
+	const includeBackArt = opt.includeBackArt;
 	const downloadID = opt.downloadID;
 	const corpCodes = opt.corpCodes;
 	const runnerCodes = opt.runnerCodes;
@@ -514,11 +523,18 @@ async function fetchImagesForZip(opt) {
 	const zipDir = opt.zipDir;
 	const zipPath = opt.zipPath;
 
-	const corpFilesNames = 	addAltArtBacks(addFlippedIds(corpCodes)).map( code => {
+	var corpFileCodes = addFlippedIds(corpCodes);
+	var runnerFileCodes = runnerCodes;
+	if (includeBackArt) {
+		corpFileCodes = addAltArtBacks(corpFileCodes);
+		runnerFileCodes = addAltArtBacks(runnerCodes);
+	}
+
+	const corpFilesNames = 	corpFileCodes.map( code => {
 		return container.replace(/\/$/, "") + "-" + code + ".jpg";
 	})
 
-	const runnerFileNames = addAltArtBacks(runnerCodes).map( code => {
+	const runnerFileNames = runnerFileCodes.map( code => {
 		return container.replace(/\/$/, "") + "-" + code + ".jpg";
 	})
 

@@ -56,8 +56,11 @@ class AltSelector {
         const backLink = "#" + this.imgID + "backLink";
         if (_cardDB_keyID[code].back_code) {
             $(backImgID).attr("src", _cardDB_keyID[code].back_img);
-            $(backLink).show();
+            if ($('#includeAltArtBacks').prop('checked')) {
+                $(backLink).show();
+            }
         } else {
+            $(backImgID).attr("src", "");
             $(backLink).hide();
         }
     }
@@ -222,6 +225,7 @@ function buildFromCardList() {
                 if ("alts" in card) {
                     if (artSelectorHTML === '') {
                         $("#alt-art-selector-hide-btn").show();
+                        $("#includeAltArtBacksCheckbox").show();
                         artSelectorHTML += '<h6>Alt Arts</h6>';
                     }
                     artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
@@ -239,6 +243,7 @@ function buildFromCardList() {
     _altArtSelector.html(artSelectorHTML);
     if (artSelectorHTML === '') {
         $("#alt-art-selector-hide-btn").hide();
+        $("#includeAltArtBacksCheckbox").hide();
     }
 }
 
@@ -289,6 +294,7 @@ function makeCardHTML(response) {
                 if ("alts" in card) {
                     if (artSelectorHTML === '') {
                         $("#alt-art-selector-hide-btn").show();
+                        $("#includeAltArtBacksCheckbox").show();
                         artSelectorHTML += '<h6>Alt Arts</h6>';
                     }
                     artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
@@ -300,6 +306,7 @@ function makeCardHTML(response) {
     _altArtSelector.html(artSelectorHTML);
     if (artSelectorHTML === '') {
         $("#alt-art-selector-hide-btn").hide();
+        $("#includeAltArtBacksCheckbox").hide();
     }
 }
 
@@ -340,6 +347,7 @@ function buildFromSet() {
                 if ("alts" in localCard) {
                     if (artSelectorHTML === '') {
                         $("#alt-art-selector-hide-btn").show();
+                        $("#includeAltArtBacksCheckbox").show();
                         artSelectorHTML += '<h6>Alt Arts</h6>';
                     }
                     artSelectorHTML += addAltArtSelector(card.code, localCard.alts, imgID);
@@ -350,6 +358,7 @@ function buildFromSet() {
         _altArtSelector.html(artSelectorHTML);
         if (artSelectorHTML === '') {
             $("#alt-art-selector-hide-btn").hide();
+            $("#includeAltArtBacksCheckbox").hide();
         }
     });
 }
@@ -364,7 +373,7 @@ function buildCardHTML(code, image, title, imgID) {
     if ("alts" in _cardDB_keyID[code]) {   
         const backImgID = imgID + "backImg";
         const backLink = imgID + "backLink";
-        newCard += '<a id="' + backLink + '" style="display: none;" href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
+        newCard += '<a class="backImgPreview" id="' + backLink + '" style="display: none;" href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
         newCard += '<img class="card" id="' + backImgID + '"/>';
         newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
         newCard += '</a>';
@@ -437,11 +446,13 @@ function getExtraInfo() {
 function makePDF() {
     const paperSize = $("input[type='radio'][name='paperSizeSelection']:checked").val();
     const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
+    const includeBackArt = $('#includeAltArtBacks').prop('checked');
 
     const downloadOptions = {
         "sessID": _sessID,
         "paperSize": paperSize,
         "quality": imageQuality,
+        "includeBackArt": includeBackArt,
         "requestedImages": _cardList,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
     };
@@ -498,9 +509,11 @@ function getZip() {
     });
 
     const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
+    const includeBackArt = $('#includeAltArtBacks').prop('checked');
     const downloadOptions = {
         "sessID": _sessID,
         "imagePlacement": imgPlacement,
+        "includeBackArt": includeBackArt,
         "corpCodes": corpCodes,
         "runnerCodes": runnerCodes,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
@@ -573,6 +586,19 @@ function assignEvents() {
         $(this).text(function(i, prev){
             return prev=='Show Alt-Art Selection' ?  'Hide Alt-Art Selection' : 'Show Alt-Art Selection';
         });
+    });
+
+    $('#includeAltArtBacks').change(function() {
+        const backImgPreviews = $(".backImgPreview");
+        if(this.checked) {
+            backImgPreviews.each(function(i) {
+                if ($(this).children('img').attr("src")) {
+                    $(this).show();
+                }
+            })
+        } else {
+            backImgPreviews.hide();
+        }
     });
 
     _cardListTextArea.on('input',function(e){

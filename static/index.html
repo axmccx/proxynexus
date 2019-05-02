@@ -124,9 +124,14 @@
                         </form>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm initHide" id="alt-art-selector-hide-btn" data-toggle="collapse" data-target="#alt-art-selector">Hide Alt-Art Selection</button>
-                <ul class="list-group collapse show py-3" id="alt-art-selector">
-                </ul>
+                <div class="row align-items-center pl-3" id="alt-art-selector-controls">
+                    <button type="button" class="btn btn-primary mr-3 btn-sm initHide" id="alt-art-selector-hide-btn" data-toggle="collapse" data-target="#alt-art-selector">Hide Alt-Art Selection</button>
+                    <div class="custom-control custom-checkbox mt-2 initHide" id="includeAltArtBacksCheckbox">
+                        <input class="custom-control-input" type="checkbox" id="includeAltArtBacks" checked>
+                        <label class="custom-control-label small" for="includeAltArtBacks">Include back side Alt-Art</label>
+                    </div>
+                </div>
+                <ul class="list-group collapse show py-3" id="alt-art-selector"></ul>
                 <div class="row pt-3">
                     <form>
                         <div class="d-flex align-items-center">
