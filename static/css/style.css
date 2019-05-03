@@ -120,6 +120,11 @@ a.anchor {
   top: -80px;
   visibility: hidden;
 }
+
+#alt-art-selector {
+  overflow-y: scroll;
+  max-height: 35vh; 
+}
   
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {
@@ -140,6 +145,9 @@ a.anchor {
 @media screen {
   #cardPreview {
     margin-top: 1rem;
+    overflow-y: scroll;
+    min-height: 400px;
+    max-height: 90vh;
   }
   #cardPreview > * {
     display: inline-block;

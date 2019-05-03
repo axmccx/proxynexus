@@ -360,6 +360,8 @@ function buildFromSet() {
             $("#alt-art-selector-hide-btn").hide();
             $("#includeAltArtBacksCheckbox").hide();
         }
+    }).fail(function() {
+        $("#HeadMsg").html("<h3>Error fetching set list, try refreshing the page...</h3>");
     });
 }
 
@@ -556,10 +558,16 @@ function resetZipDownload() {
     $("#ZipDownloadErrorMsg").html("");
 }
 
+function resetScroll() {
+    $('#cardPreview').animate({ scrollTop: 0 }, "fast");
+    $('#alt-art-selector').animate({ scrollTop: 0 }, "fast");
+}
+
 function assignEvents() {
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
         const currentTab = $(e.target).text();
         selectTab(currentTab);
+        resetScroll();
     });
 
     $(".playset-btn").click(function(e) {
@@ -588,6 +596,12 @@ function assignEvents() {
         });
     });
 
+    $("#setInfo-hide-btn").click(function(e) {
+        $(this).text(function(i, prev){
+            return prev=='Show Set Info' ?  'Hide Set Info' : 'Show Set Info';
+        });
+    });
+
     $('#includeAltArtBacks').change(function() {
         const backImgPreviews = $(".backImgPreview");
         if(this.checked) {
@@ -607,10 +621,12 @@ function assignEvents() {
 
     _deckURLText.on('input',function(e){
         buildFromDeckID(true);
+        resetScroll();
     });
 
     _setSelection.on('input',function(e){
         buildFromSet();
+        resetScroll();
     });
 }
 
