@@ -23,13 +23,6 @@ const cardheightPt = cmToPt(cardheight);
 const storagePath = "https://proxynexus.blob.core.windows.net/";
 const altArtCards = JSON.parse(fs.readFileSync('static/json/altart.json')).altArtCards; 
 
-// setInterval(function() {
-// 	const used = process.memoryUsage();
-// 	for (let key in used) {
-// 		console.log(`${key} ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
-// 	}
-// }, 100);
-
 app.post('/api/makePDF', function (req, res) {
 	// unpack request
 	const sessID = req.body.sessID;
@@ -568,6 +561,7 @@ async function fetchImagesForZip(opt) {
 	})
 
 	// buid an object of {fileName: {count: num, side: side}
+	// used for duplicating multiple copies of the same card
 	var imgCounts = {}
 	corpFilesNames.forEach( fileName => {
 		if (fileName in imgCounts) {
@@ -654,7 +648,7 @@ async function fetchImagesForZip(opt) {
 				await setRedPixel(originalImg, imgPath, j, msg);  // makes a copy
 			}
 		}
-    }
+  }
 
 	console.log("DownloadID " + downloadID + ": Duplicates Ready");
 	const allCorpFiles = corpFilesNames.concat(dupCorpFiles);
