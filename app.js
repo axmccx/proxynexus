@@ -684,6 +684,12 @@ async function fetchImagesForZip(opt) {
 	archive.finalize();
 }
 
+function noop() {}
+
+function heartbeat() {
+  this.isAlive = true;
+}
+
 const server = app.listen(port, () => {
 	console.log('listening on port ' + port);
 });
@@ -691,7 +697,18 @@ const server = app.listen(port, () => {
 const wss = new SocketServer({ server });
 wss.on("connection", (ws) => {
 	const id = sessCounter++;
-	sessions[id] = ws;
+	ws.isAlive = true;
 	console.log("Session " + id + " connected");
 	ws.send(JSON.stringify({ "sessID": id }));
+	ws.on('close', function(code) {
+		console.log("Session " + id + " disconnected with " + code);
+		clearInterval(ws.timer);
+	});
+	ws.on('pong', heartbeat);
+	ws.timer = setInterval(function() {
+		if (ws.isAlive === false) return ws.terminate();
+		ws.isAlive = false;
+		ws.ping(noop);
+	}, 1000);
+	sessions[id] = ws;
 });
