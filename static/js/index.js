@@ -556,6 +556,7 @@ function resetZipDownload() {
     $('#ZipDownloadBtn').hide();
     $('#ZipGenerateBtn').show();
     $("#ZipDownloadErrorMsg").html("");
+    $("#nisei-card-notice").hide();
 }
 
 function resetScroll() {
@@ -662,6 +663,9 @@ function setupWS() {
                 } else {
                     displayZipDownloadError(msg.errorMsg);
                 }
+            }
+            if ("niseiExceeded" in msg) {
+                $("#nisei-card-notice").show();
             }
             if ("status" in msg) {
                 $("#ZipStatus").html(msg.status);

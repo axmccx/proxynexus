@@ -452,9 +452,8 @@ app.post('/api/makeMpcZip', function (req, res) {
 				return 'fitted/';
 		}
 	})(imagePlacement);
-	const corpCodes = req.body.corpCodes;
-	const runnerCodes = req.body.runnerCodes;
-	const requestedImages = corpCodes.concat(runnerCodes);
+	var corpCodes = req.body.corpCodes;
+	var runnerCodes = req.body.runnerCodes;
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
 	const ws = sessions[sessID];
@@ -464,6 +463,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 	res.end();
 
 	// Catch empty image request, and return error message
+	const requestedImages = corpCodes.concat(runnerCodes);
 	if (requestedImages.length == 0) {
 		console.error("DownloadID " + downloadID + ": No images requested");
 		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested.", "reqType": "zip" }));
@@ -482,6 +482,35 @@ app.post('/api/makeMpcZip', function (req, res) {
 	const zipPath = __dirname + "/static/tmp/" + zipFileName;
 	const zipDir = __dirname + "/static/tmp/zip-cache/" + hash + "/";
 	console.log("DownloadID " + downloadID + ": Zip Name: " + zipFileName);
+
+	var niseiCount = 0;
+	corpCodes = corpCodes.filter(code => {
+		const pre = parseInt(code.substring(0,2));
+		if (pre >= 26) {
+			niseiCount++;
+			if (niseiCount > 10) {
+				ws.send(JSON.stringify({ "niseiExceeded": true, "reqType": "zip" }));
+				return false
+			} else {
+				return true;
+			}
+		}
+		return true;
+	});
+
+	runnerCodes = runnerCodes.filter(code => {
+		const pre = parseInt(code.substring(0,2));
+		if (pre >= 26) {
+			niseiCount++;
+			if (niseiCount > 10) {
+				ws.send(JSON.stringify({ "niseiExceeded": true, "reqType": "zip" }));
+				return false
+			} else {
+				return true;
+			}
+		}
+		return true;
+	});
 
 	if (fs.existsSync(zipPath)) {
 		const fileName = "/tmp/" + zipFileName;

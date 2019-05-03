@@ -125,6 +125,12 @@ a.anchor {
   overflow-y: scroll;
   max-height: 35vh; 
 }
+
+#nisei-card-notice {
+  display: none;
+  color: red;
+  font-weight: bold;
+}
   
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {
