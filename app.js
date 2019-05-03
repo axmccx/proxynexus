@@ -87,7 +87,7 @@ app.post('/api/makePDF', function (req, res) {
 	if (fs.existsSync(pdfPath)) {
 		const fileName = "/tmp/" + pdfFileName;
 		console.log("DownloadID " + downloadID + ": PDF already exists, don't generate");
-		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 		return;
 	}
@@ -96,7 +96,7 @@ app.post('/api/makePDF', function (req, res) {
 	if (fs.existsSync(zipPath)) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": PDFs in zip file already exists, don't generate");
-		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session "  + ws.id);
 		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 		return;
 	}
@@ -180,7 +180,7 @@ async function fetchImagesForPDF(opt) {
 		addImages(imgFileNames, doc, container, leftMargin, topMargin);
 		doc.end();
 		var fileName = "/tmp/" + pdfFileName;
-		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 		return;
 	} else {
@@ -230,7 +230,7 @@ async function fetchImagesForPDF(opt) {
 		zipFile.on('close', function() {
 			const fileName = "/tmp/" + zipFileName;
 			console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
-			console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+			console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 			ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
 			return;
 		});
@@ -508,7 +508,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 	if (fs.existsSync(zipPath)) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip already exists, don't generate");
-		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "zip" }));
 		return;
 	}
@@ -670,7 +670,7 @@ async function fetchImagesForZip(opt) {
 	zipFile.on('close', function() {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
-		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to client");
+		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "zip" }));
 		return;
 	});
@@ -680,7 +680,7 @@ async function fetchImagesForZip(opt) {
 	cardBacks.forEach(file => {
 		archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: file });
 	});
-	archive.file(__dirname + "/static/misc/README.txt", { name: "README.txt" });
+	archive.file(__dirname + "/misc/README.txt", { name: "README.txt" });
 	archive.finalize();
 }
 
@@ -697,6 +697,7 @@ const server = app.listen(port, () => {
 const wss = new SocketServer({ server });
 wss.on("connection", (ws) => {
 	const id = sessCounter++;
+	ws.id = id;
 	ws.isAlive = true;
 	console.log("Session " + id + " connected");
 	ws.send(JSON.stringify({ "sessID": id }));
