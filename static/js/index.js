@@ -256,7 +256,7 @@ function buildFromDeckID() {
     const publishedDeckIDRegex = /(\/en\/decklist\/)(\d+)/;
     const unpublishedDeckIDRegex = /(\/deck\/view\/)(\d+)/;
 
-    const match = publishedDeckIDRegex.exec(deckInput);
+    var match = publishedDeckIDRegex.exec(deckInput);
     var published = true;
     if (match == null) {
         match = unpublishedDeckIDRegex.exec(deckInput);
