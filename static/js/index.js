@@ -446,6 +446,10 @@ function getExtraInfo() {
 }
 
 function makePDF() {
+    if (_socket.readyState === WebSocket.CLOSED){
+        setupWS();
+    }
+
     const paperSize = $("input[type='radio'][name='paperSizeSelection']:checked").val();
     const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
@@ -497,6 +501,10 @@ function resetPDFDownload() {
 }
 
 function getZip() {
+    if (_socket.readyState === WebSocket.CLOSED){
+        setupWS();
+    }
+
     // split cards in _cardList
     var corpCodes = [];
     var runnerCodes = [];
