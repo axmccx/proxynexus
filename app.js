@@ -2,7 +2,7 @@ const port = process.env.PORT || 8000;
 const fs = require('fs');
 const fetch = require("node-fetch");
 const express = require("express");
-const SocketServer = require('ws').Server;
+const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const PDFDocument = require('pdfkit');
 const crypto = require('crypto');
@@ -51,7 +51,7 @@ app.post('/api/makePDF', function (req, res) {
 	if (requestedImages.length == 0) {
 		console.error("DownloadID " + downloadID + ": No images requested");
 		res.status(200);
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested.", "reqType": "pdf" }));
+		sendMsgToClient(ws, {"success": false, "errorMsg": "No images requested.", "reqType": "pdf" });
 		return;
 	}
 
@@ -65,14 +65,14 @@ app.post('/api/makePDF', function (req, res) {
 		var topMargin = 21;
 	} else {
 		console.error("DownloadID " + downloadID + ": Invalid paper size");
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" }));
+		sendMsgToClient(ws, { "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" })
 		return;
 	}
 
 	// Catch missing image selection. Container would be null since it won't hit either case in assignment
 	if (container == null) {
 		console.error("DownloadID " + downloadID + ": No image quality selected");
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" }));
+		sendMsgToClient(ws, { "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" });
 		return;
 	}
 
@@ -88,7 +88,7 @@ app.post('/api/makePDF', function (req, res) {
 		const fileName = "/tmp/" + pdfFileName;
 		console.log("DownloadID " + downloadID + ": PDF already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
 		return;
 	}
 	const zipPath = pdfPath.split(".")[0] + ".zip";
@@ -97,7 +97,7 @@ app.post('/api/makePDF', function (req, res) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": PDFs in zip file already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session "  + ws.id);
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
 		return;
 	}
 
@@ -147,7 +147,7 @@ async function fetchImagesForPDF(opt) {
 
 	// Download image files, and wait until all are ready
 	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
-	ws.send(JSON.stringify({ "status": "Fetching images...", "reqType": "pdf" }));
+	sendMsgToClient(ws, { "status": "Fetching images...", "reqType": "pdf" });
 	const imgPath = "./static/tmp/" + container;
 	const url = storagePath + container;
 	try {
@@ -155,12 +155,12 @@ async function fetchImagesForPDF(opt) {
 	}
 	catch(err) {
 		console.error("DownloadID " + downloadID + ": " + err.message);
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "pdf" }));
+		sendMsgToClient(ws, { "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "pdf" });
 		return;
 	}
 
 	console.log("DownloadID " + downloadID + ": Adding images to doc...");
-	ws.send(JSON.stringify({ "status": "Adding images to pdf...", "reqType": "pdf" }));
+	sendMsgToClient(ws, { "status": "Adding images to pdf...", "reqType": "pdf" });
 	const CARDS_PER_PDF = 144
 	if (imgFileNames.length <= CARDS_PER_PDF) {
 		const doc = new PDFDocument({
@@ -181,7 +181,7 @@ async function fetchImagesForPDF(opt) {
 		doc.end();
 		var fileName = "/tmp/" + pdfFileName;
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
 		return;
 	} else {
 		console.log("DownloadID " + downloadID + ": Large PDF, splitting it up...")
@@ -218,7 +218,7 @@ async function fetchImagesForPDF(opt) {
 			doc.end();
 		}
 
-		ws.send(JSON.stringify({ "status": "Adding pdfs to zip file...", "reqType": "pdf" }));
+		sendMsgToClient(ws, { "status": "Adding pdfs to zip file...", "reqType": "pdf" });
 		console.log("DownloadID " + downloadID + ": Zipping up pdfs...");
 
 		const zipPath = splitPDFPath[0] + ".zip";
@@ -231,7 +231,7 @@ async function fetchImagesForPDF(opt) {
 			const fileName = "/tmp/" + zipFileName;
 			console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
 			console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
-			ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "pdf" }));
+			sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
 			return;
 		});
 	
@@ -373,6 +373,18 @@ function cmToPt (cm) {
 	return cm * 28.3465;
 }
 
+function sendMsgToClient(ws, msg) {
+	if (ws !== null) {
+		if (ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify(msg));
+		} else {
+			console.log("Session " + ws.id + " NOT OPEN, tried to send: " + JSON.stringify(msg));
+		}
+	} else {
+		console.log("WebSocket missing, tried to send: " + JSON.stringify(msg));
+	}
+}
+
 // if the path does NOT exist, return true
 // if the path exists, print the message and return false
 function doesNotExists(path, onExistsMsg) {
@@ -459,13 +471,13 @@ app.post('/api/makeMpcZip', function (req, res) {
 	const requestedImages = corpCodes.concat(runnerCodes);
 	if (requestedImages.length == 0) {
 		console.error("DownloadID " + downloadID + ": No images requested");
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "No images requested.", "reqType": "zip" }));
+		sendMsgToClient(ws, { "success": false, "errorMsg": "No images requested.", "reqType": "zip" });
 		return;
 	}
 
 	if (container == null) {
 		console.error("DownloadID " + downloadID + ": No image placement method selected");
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "No image placement method selected", "reqType": "zip" }));
+		sendMsgToClient(ws, { "success": false, "errorMsg": "No image placement method selected", "reqType": "zip" });
 		return;
 	}
 
@@ -482,7 +494,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		if (pre >= 26) {
 			niseiCount++;
 			if (niseiCount > 10) {
-				ws.send(JSON.stringify({ "niseiExceeded": true, "reqType": "zip" }));
+				sendMsgToClient(ws, { "niseiExceeded": true, "reqType": "zip" });
 				return false
 			} else {
 				return true;
@@ -496,7 +508,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		if (pre >= 26) {
 			niseiCount++;
 			if (niseiCount > 10) {
-				ws.send(JSON.stringify({ "niseiExceeded": true, "reqType": "zip" }));
+				sendMsgToClient(ws, { "niseiExceeded": true, "reqType": "zip" });
 				return false
 			} else {
 				return true;
@@ -509,7 +521,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "zip" }));
+		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "zip" });
 		return;
 	}
 
@@ -591,7 +603,7 @@ async function fetchImagesForZip(opt) {
 
 	// Download image files, and wait until all are ready
 	console.log("DownloadID " + downloadID + ": Code list ready, Fetching images...");
-	ws.send(JSON.stringify({ "status": "Fetching images...", "reqType": "zip" }));
+	sendMsgToClient(ws, { "status": "Fetching images...", "reqType": "zip" });
 	const imgPath = "./static/tmp/" + container;
 	const url = storagePath + container;
 	try {
@@ -599,7 +611,7 @@ async function fetchImagesForZip(opt) {
 	}
 	catch(err) {
 		console.error("DownloadID " + downloadID + ": " + err.message);
-		ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "zip" }));
+		sendMsgToClient(ws, { "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "zip" });
 		return;
 	}
 
@@ -617,7 +629,7 @@ async function fetchImagesForZip(opt) {
 		}
 		catch(err) {
 			console.error("DownloadID " + downloadID + ": " + err.message);
-			ws.send(JSON.stringify({ "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "zip" }));
+			sendMsgToClient(ws, { "success": false, "errorMsg": "Error fetching images, try again.", "reqType": "zip" });
 			return;
 		}
 	}
@@ -625,7 +637,7 @@ async function fetchImagesForZip(opt) {
 	// For duplicate images, make a copy if not already cached and save the names
 	var dupCorpFiles = [];
 	var dupRunnerFiles = [];
-	ws.send(JSON.stringify({ "status": "Preparing images...", "reqType": "zip" }));
+	sendMsgToClient(ws, { "status": "Preparing images...", "reqType": "zip" });
 	console.log("DownloadID " + downloadID + ": Creating duplicate copies...");
 	for (var i=0; i<Object.keys(imgCounts).length; i++) {
 		const fileName = Object.keys(imgCounts)[i];
@@ -661,7 +673,7 @@ async function fetchImagesForZip(opt) {
 		fs.copyFileSync("./static/tmp/" + container + file, zipDir + "runner/" + file);
 	});
 
-	ws.send(JSON.stringify({ "status": "Adding images to zip file...", "reqType": "zip" }));
+	sendMsgToClient(ws, { "status": "Adding images to zip file...", "reqType": "zip" });
 	console.log("DownloadID " + downloadID + ": Zipping up images...");
 	var zipFile = fs.createWriteStream(zipPath);
 	var archive = archiver('zip', {
@@ -671,7 +683,7 @@ async function fetchImagesForZip(opt) {
 		const fileName = "/tmp/" + zipFileName;
 		console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
-		ws.send(JSON.stringify({ "success": true, "downloadLink": fileName, "reqType": "zip" }));
+		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "zip" });
 		return;
 	});
 
@@ -694,7 +706,7 @@ const server = app.listen(port, () => {
 	console.log('listening on port ' + port);
 });
 
-const wss = new SocketServer({ server });
+const wss = new WebSocket.Server({ server });
 wss.on("connection", (ws) => {
 	const id = sessCounter++;
 	ws.id = id;
