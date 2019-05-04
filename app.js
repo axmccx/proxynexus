@@ -405,15 +405,22 @@ function doesNotExists(path, onExistsMsg) {
 // Duplicates an image with a unique border pixel set to red
 // to make this copy unique as far as MPC can tell
 async function setRedPixel(orinalPath, dupPath, index, completeMsg) {
-	return sharp(orinalPath)
+	var promise = new Promise( function(resolve, reject) {
+		sharp(orinalPath)
 		.composite([{ input: 'misc/redDot.png', blend: 'over', top: index, left: 0 }])
 		.toFile(dupPath)
 		.then( () => { 
 			console.log(completeMsg)
+			resolve();
 		})
 		.catch(err => { 
 			console.log(err)
+			reject();
 		});
+
+	});
+	await promise;
+	promise = null;
 }
 
 // Download all files in fileNames to destination from the baseUrl
