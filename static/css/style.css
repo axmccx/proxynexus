@@ -131,6 +131,10 @@ a.anchor {
   color: red;
   font-weight: bold;
 }
+
+#HeadMsg {
+  color: red;
+}
   
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {

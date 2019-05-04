@@ -445,11 +445,22 @@ function getExtraInfo() {
     return extraInfo;
 }
 
-function makePDF() {
-    if (_socket.readyState === WebSocket.CLOSED){
+// check the websocket before making a request
+function makeRequest(request, attemptCount) {
+    if (attemptCount >= 5) {
+        console.error("Failed to connect to websocket 5 times.");
+        $("#HeadMsg").html("<h3>Error connecting to server, try refreshing the page...</h3>");
+    } else if (_sessID == 0 || _socket.readyState !== WebSocket.OPEN) {
         setupWS();
+        setTimeout(function(){ 
+            makeRequest(request, attemptCount+1); 
+        }, 500);
+    } else {
+        request();
     }
+}
 
+function makePDF() {
     const paperSize = $("input[type='radio'][name='paperSizeSelection']:checked").val();
     const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
@@ -501,14 +512,9 @@ function resetPDFDownload() {
 }
 
 function getZip() {
-    if (_socket.readyState === WebSocket.CLOSED){
-        setupWS();
-    }
-
     // split cards in _cardList
     var corpCodes = [];
     var runnerCodes = [];
-
     _cardList.forEach( code => {
         if (_cardDB_keyID[code].side === 'corp') {
             corpCodes.push(code);
@@ -584,7 +590,7 @@ function assignEvents() {
     })
 
     $("#PDFGenerateBtn").click(function(e) {
-        makePDF();
+        makeRequest(makePDF, 0);
     })
 
     $("#PDFResetBtn").click(function(e) {
@@ -592,7 +598,7 @@ function assignEvents() {
     })
 
     $("#ZipGenerateBtn").click(function(e) {
-        getZip();
+        makeRequest(getZip, 0);
     })
 
     $("#ZipResetBtn").click(function(e) {
@@ -645,6 +651,18 @@ function setupWS() {
 
     _socket.onopen = function (e) {
         console.log("connected");
+    };
+
+    _socket.onclose  = function (e) {
+        console.log("disconnected with " + e.code);
+        _sessID = 0;
+        const errorMsg = "Connection lost, try again."
+        if ($("#PDFDownloadSpinner").is(":visible")) {
+            displayPDFDownloadError(errorMsg)
+        }
+        if ($("#ZipDownloadSpinner").is(":visible")) {
+            displayZipDownloadError(errorMsg)
+        }
     };
 
     _socket.onmessage = (e) => {
