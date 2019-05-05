@@ -16,8 +16,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var IDCounter = 1;
 var sessCounter = 1;
 var sessions = {};
-const cardwidth = 6.35;
-const cardheight = 8.80;
+const cardwidth = 6.299;
+const cardheight = 8.788;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
 const storagePath = "https://proxynexus.blob.core.windows.net/";
@@ -370,7 +370,7 @@ function addAltArtBacks(codes) {
 }
 
 function cmToPt (cm) {
-	return cm * 28.3465;
+	return cm * 28.3464566929134;
 }
 
 function sendMsgToClient(ws, msg) {
