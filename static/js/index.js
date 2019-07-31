@@ -191,6 +191,7 @@ function buildFromCardList() {
     const input = _cardListTextArea.val().toLowerCase().split(/\n/);
     var html = '';
     var unfound = 0;
+    var unfoundCards = []
     var artSelectorHTML = '';
     _cardList = [];
     
@@ -233,11 +234,20 @@ function buildFromCardList() {
             }
         } else {
             unfound++;
+            unfoundCards.push(cardname);
         }
     }
   
     if (unfound > 0) {
-        html += '<p class="no-print text-muted">' + unfound + ' not found</p>';
+        var unfoundHtml = "";
+        for (var i = 0; i < unfoundCards.length; i++) {
+          unfoundHtml = unfoundHtml.concat('<li>' + unfoundCards[i] + '</li>');
+        }
+        unfoundHtml = '<ul>' + unfoundHtml + '</ul>';
+        html += '<div class="no-print text-muted" style="overflow:auto">' + unfound + ' not found: '
+        +
+          unfoundHtml 
+        + '</div>';
     }
     _cardPreview.html(html);
     _altArtSelector.html(artSelectorHTML);
