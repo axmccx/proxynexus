@@ -8,6 +8,7 @@ const PDFDocument = require('pdfkit');
 const crypto = require('crypto');
 const sharp = require('sharp');
 const archiver = require('archiver');
+const dovenv = require('dotenv').config();
 const app = express();
 app.use(express.static('static'));
 app.use(bodyParser.json());
@@ -42,7 +43,8 @@ app.post('/api/makePDF', function (req, res) {
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
 	const ws = sessions[sessID];
-	console.log("PDF Request! DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo);
+	const requestStr = "DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo;
+	console.log("PDF Request! " + requestStr);
 	
 	res.status(200);
 	res.end();
@@ -72,7 +74,7 @@ app.post('/api/makePDF', function (req, res) {
 	// Catch missing image selection. Container would be null since it won't hit either case in assignment
 	if (container == null) {
 		console.error("DownloadID " + downloadID + ": No image quality selected");
-		sendMsgToClient(ws, { "success": false, "errorMsg": "Invalid paper size", "reqType": "pdf" });
+		sendMsgToClient(ws, { "success": false, "errorMsg": "No image quality selected", "reqType": "pdf" });
 		return;
 	}
 
@@ -89,6 +91,7 @@ app.post('/api/makePDF', function (req, res) {
 		console.log("DownloadID " + downloadID + ": PDF already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
+		pushoverNotify(requestStr, fileName, ws.id, downloadID, "pdf");
 		return;
 	}
 	const zipPath = pdfPath.split(".")[0] + ".zip";
@@ -98,6 +101,7 @@ app.post('/api/makePDF', function (req, res) {
 		console.log("DownloadID " + downloadID + ": PDFs in zip file already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session "  + ws.id);
 		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
+		pushoverNotify(requestStr, fileName, ws.id, downloadID, "pdf");
 		return;
 	}
 
@@ -113,6 +117,7 @@ app.post('/api/makePDF', function (req, res) {
 		topMargin: topMargin,
 		leftMargin: leftMargin,
 		ws: ws,
+		requestStr: requestStr,
 	};
 	fetchImagesForPDF(opt);
 });
@@ -129,6 +134,7 @@ async function fetchImagesForPDF(opt) {
 	const topMargin = opt.topMargin;
 	const leftMargin = opt.leftMargin;
 	const ws = opt.ws;
+	const requestStr = opt.requestStr;
 
 	// Add back side art for flippable IDs and alt art
 	var imgCodes = addFlippedIds(requestedImages);
@@ -182,6 +188,7 @@ async function fetchImagesForPDF(opt) {
 		var fileName = "/tmp/" + pdfFileName;
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
+		pushoverNotify(requestStr, fileName, ws.id, downloadID, "pdf");
 		return;
 	} else {
 		console.log("DownloadID " + downloadID + ": Large PDF, splitting it up...")
@@ -232,6 +239,7 @@ async function fetchImagesForPDF(opt) {
 			console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
 			console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 			sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "pdf" });
+			pushoverNotify(requestStr, fileName, ws.id, downloadID, "pdf");
 			return;
 		});
 	
@@ -385,6 +393,32 @@ function sendMsgToClient(ws, msg) {
 	}
 }
 
+function pushoverNotify(msg, filename, sid, did, type) {
+	let title = "";
+	if (type === "pdf") {
+		title = "New PDF Download!";
+	}
+	if (type === "zip") {
+		title = "New Zip Download!";
+	}
+	const msgw = msg + "\nSent to Session " + sid;
+	const msgf = msgw.replace(/; /g, '\n').replace(/, /g, '\n').replace(/,/g, '\n             ');
+	const pushover_params = {
+		"token": process.env.PUSHOVER_TOKEN,
+		"user": process.env.PUSHOVER_USER,
+		"title": title,
+		"message": msgf,
+		"priority": -1,
+		"url_title": "Download File",
+		"url": "https://proxynexus.net" + filename,
+	}
+	fetch('https://api.pushover.net/1/messages.json', {
+		method: 'post',
+		body:    JSON.stringify(pushover_params),
+		headers: { 'Content-Type': 'application/json' },
+	}).then(() => console.log("DownloadID " + did + ": Sent pushover notification"));
+}
+
 // if the path does NOT exist, return true
 // if the path exists, print the message and return false
 function doesNotExists(path, onExistsMsg) {
@@ -469,7 +503,8 @@ app.post('/api/makeMpcZip', function (req, res) {
 	const downloadID = IDCounter;
 	IDCounter = IDCounter + 1;
 	const ws = sessions[sessID];
-	console.log("MPC-zip Request! DownloadID: " + downloadID + "; Image Placement: " + imagePlacement + ", " + logInfo);
+	const requestStr = "DownloadID: " + downloadID + "; Image Placement: " + imagePlacement + ", " + logInfo;
+	console.log("MPC-zip Request! " + requestStr);
 
 	res.status(200);
 	res.end();
@@ -529,6 +564,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 		console.log("DownloadID " + downloadID + ": Zip already exists, don't generate");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "zip" });
+		pushoverNotify(requestStr, fileName, ws.id, downloadID, "zip");
 		return;
 	}
 
@@ -547,7 +583,8 @@ app.post('/api/makeMpcZip', function (req, res) {
 		ws: ws,
 		zipFileName: zipFileName,
 		zipDir: zipDir,
-		zipPath: zipPath
+		zipPath: zipPath,
+		requestStr: requestStr
 	};
 
 	fetchImagesForZip(opt);
@@ -563,6 +600,7 @@ async function fetchImagesForZip(opt) {
 	const zipFileName = opt.zipFileName;
 	const zipDir = opt.zipDir;
 	const zipPath = opt.zipPath;
+	const requestStr = opt.requestStr;
 
 	var corpFileCodes = addFlippedIds(corpCodes);
 	var runnerFileCodes = runnerCodes;
@@ -691,6 +729,7 @@ async function fetchImagesForZip(opt) {
 		console.log("DownloadID " + downloadID + ": Zip file ready, " + archive.pointer() + " total bytes");
 		console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
 		sendMsgToClient(ws, { "success": true, "downloadLink": fileName, "reqType": "zip" });
+		pushoverNotify(requestStr, fileName, ws.id, downloadID, "zip");
 		return;
 	});
 

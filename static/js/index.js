@@ -178,6 +178,7 @@ function fetchAllCards() {
 
 function fetchSetList() {
     $.getJSON( "json/packs.json", function(response) {
+        response.data.reverse();
         $.each(response.data, function(key, item) {
             _setSelection.append('<option value=' + item.code + '>' + item.name + '</option>');
             if (item.code === "sc19") {
