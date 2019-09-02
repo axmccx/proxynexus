@@ -29,6 +29,7 @@ app.post('/api/makePDF', function (req, res) {
     const sessID = req.body.sessID;
     const paperSize = req.body.paperSize;
     const quality = req.body.quality;
+    const fullCutLines = req.body.fullCutLines;
     const includeBackArt = req.body.includeBackArt;
     const logInfo = req.body.logInfo;
     const container = ((q) => {
@@ -43,7 +44,7 @@ app.post('/api/makePDF', function (req, res) {
     const downloadID = IDCounter;
     IDCounter = IDCounter + 1;
     const ws = sessions[sessID];
-    const requestStr = "DownloadID: " + downloadID + "; Papersize: " + paperSize + ", Quality: " + quality + ", " + logInfo;
+    const requestStr = "DownloadID: "+downloadID+"; Papersize: "+paperSize+", Quality: "+quality+", CutLines: "+fullCutLines+", "+logInfo;
     console.log("PDF Request! " + requestStr);
 
     res.status(200);
@@ -79,7 +80,7 @@ app.post('/api/makePDF', function (req, res) {
     }
 
     // request is good, make hash for request and pdf file name
-    const requestedPDFOptions = paperSize + quality + includeBackArt + requestedImages + logInfo;
+    const requestedPDFOptions = paperSize + quality + fullCutLines + includeBackArt + requestedImages + logInfo;
     const hash = crypto.createHash('sha1').update(requestedPDFOptions).digest('hex');
     const pdfFileName = hash + ".pdf";
     const pdfPath = __dirname + "/static/tmp/" + pdfFileName;
@@ -114,6 +115,7 @@ app.post('/api/makePDF', function (req, res) {
         requestedImages: requestedImages,
         pdfPath: pdfPath,
         paperSize: paperSize,
+        fullCutLines: fullCutLines,
         topMargin: topMargin,
         leftMargin: leftMargin,
         ws: ws,
@@ -131,6 +133,7 @@ async function fetchImagesForPDF(opt) {
     const requestedImages = opt.requestedImages;
     const pdfPath = opt.pdfPath;
     const paperSize = opt.paperSize;
+    const fullCutLines = opt.fullCutLines;
     const topMargin = opt.topMargin;
     const leftMargin = opt.leftMargin;
     const ws = opt.ws;
@@ -182,8 +185,7 @@ async function fetchImagesForPDF(opt) {
         doc.pipe(fs.createWriteStream(pdfPath));
         makeFrontPage(doc, quality);
         doc.addPage();
-        drawCutLines(doc, leftMargin, topMargin);
-        addImages(imgFileNames, doc, container, leftMargin, topMargin);
+        addImages(imgFileNames, doc, container, leftMargin, topMargin, fullCutLines);
         doc.end();
         var fileName = "/tmp/" + pdfFileName;
         console.log("DownloadID " + downloadID + ": Sent " + fileName + " to Session " + ws.id);
@@ -220,8 +222,7 @@ async function fetchImagesForPDF(opt) {
             doc.pipe(fs.createWriteStream(splitPDF));
             makeFrontPage(doc, quality);
             doc.addPage();
-            drawCutLines(doc, leftMargin, topMargin);
-            addImages(imgFileNames.slice(lowerIndex, upperIndex), doc, container, leftMargin, topMargin);
+            addImages(imgFileNames.slice(lowerIndex, upperIndex), doc, container, leftMargin, topMargin, fullCutLines);
             doc.end();
         }
 
@@ -251,7 +252,7 @@ async function fetchImagesForPDF(opt) {
     }
 }
 
-function addImages(lst, doc, container, leftMargin, topMargin) {
+function addImages(lst, doc, container, leftMargin, topMargin, fullCutLines) {
     var rowCount = 0;
     var colCount = 0;
 
@@ -267,10 +268,21 @@ function addImages(lst, doc, container, leftMargin, topMargin) {
             rowCount = 0;
             colCount++;
         }
-        if (colCount > 2 && i+1<lst.length) {
+        if (i === lst.length - 1) {
+            if (fullCutLines) {
+                drawFullCutLines(doc, leftMargin, topMargin);
+            } else {
+                drawCutLines(doc, leftMargin, topMargin);
+            }
+        }
+        if (colCount > 2 && i < lst.length - 1) {
             colCount = 0;
+            if (fullCutLines) {
+                drawFullCutLines(doc, leftMargin, topMargin);
+            } else {
+                drawCutLines(doc, leftMargin, topMargin);
+            }
             doc.addPage();
-            drawCutLines(doc, leftMargin, topMargin);
         }
     });
     return;
@@ -322,6 +334,34 @@ function drawCutLines(doc, leftMargin, topMargin) {
     doc.moveTo(x, y)
         .lineTo(x, y+10)
         .stroke();
+    return;
+}
+
+function drawFullCutLines(doc, leftMargin, topMargin) {
+    doc.lineWidth(0.75);
+    const greyStroke = "#818181";
+
+    // draw vertical lines
+    var x = cardwidthPt + leftMargin;
+    var y = 0;
+    doc.moveTo(x, y)
+        .lineTo(x, y+1000)
+        .stroke(greyStroke);
+    x += cardwidthPt;
+    doc.moveTo(x, y)
+        .lineTo(x, y+1000)
+        .stroke(greyStroke);
+
+    // draw horizontal lines
+    x = 0;
+    y = cardheightPt + topMargin;
+    doc.moveTo(x, y)
+        .lineTo(x+1000, y)
+        .stroke(greyStroke);
+    y += cardheightPt;
+    doc.moveTo(x, y)
+        .lineTo(x+1000, y)
+        .stroke(greyStroke);
     return;
 }
 

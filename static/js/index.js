@@ -475,11 +475,13 @@ function makePDF() {
     const paperSize = $("input[type='radio'][name='paperSizeSelection']:checked").val();
     const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
+    const fullCutLines = $('#fullCutLines').prop('checked');
 
     const downloadOptions = {
         "sessID": _sessID,
         "paperSize": paperSize,
         "quality": imageQuality,
+        "fullCutLines": fullCutLines,
         "includeBackArt": includeBackArt,
         "requestedImages": _cardList,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
