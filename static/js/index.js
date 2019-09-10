@@ -23,7 +23,7 @@ class AltSelector {
         this.imgID = imgID;
         this.selectID = selectID;
         this.selectedCode = selectedCode;
-        this.altCodes = altCodes; 
+        this.altCodes = altCodes;
     }
 
     cycleRight() {
@@ -79,7 +79,7 @@ function selectTab(tabLabel) {
             if (_deckURLText.val() != "") {
                 buildFromDeckID(); 
             }
-        break;
+            break;
     }
 }
 
@@ -205,10 +205,10 @@ function buildFromCardList() {
         const match = cardInputRegex.exec(input[i]);
 
         var count = $.trim(match[1]).replace(/x/g, '');
-        const cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');	
+        const cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');
 
-        if (cardname == '') {		       
-            continue;		
+        if (cardname == '') {
+            continue;
         }
 
         if (cardname in _cardDB) {
@@ -245,10 +245,8 @@ function buildFromCardList() {
           unfoundHtml = unfoundHtml.concat('<li>' + unfoundCards[i] + '</li>');
         }
         unfoundHtml = '<ul>' + unfoundHtml + '</ul>';
-        html += '<div class="no-print text-muted" style="overflow:auto">' + unfound + ' not found: '
-        +
-          unfoundHtml 
-        + '</div>';
+        html += '<div class="no-print text-muted" style="overflow:auto">'
+            + unfound + ' not found: ' + unfoundHtml + '</div>';
     }
     _cardPreview.html(html);
     _altArtSelector.html(artSelectorHTML);
@@ -464,7 +462,7 @@ function makeRequest(request, attemptCount) {
     } else if (_sessID == 0 || _socket.readyState !== WebSocket.OPEN) {
         setupWS();
         setTimeout(function(){ 
-            makeRequest(request, attemptCount+1); 
+            makeRequest(request, attemptCount+1);
         }, 500);
     } else {
         request();
@@ -511,7 +509,7 @@ function displayPDFDownloadError(msg) {
 
 function displayPDFDownload(pdfPath) {
     $("#PDFStatus").html("");
-    $('#PDFDownloadBtn').attr('href', pdfPath); 
+    $('#PDFDownloadBtn').attr('href', pdfPath);
     $('#PDFDownloadBtn').show();
     $('#PDFDownloadSpinner').hide();
     $('#PDFResetBtn').show();
@@ -572,7 +570,7 @@ function displayZipDownloadError(msg) {
 
 function displayZipDownload(ZipPath) {
     $("#ZipStatus").html("");
-    $('#ZipDownloadBtn').attr('href', ZipPath); 
+    $('#ZipDownloadBtn').attr('href', ZipPath);
     $('#ZipDownloadBtn').show();
     $('#ZipDownloadSpinner').hide();
     $('#ZipResetBtn').show();
