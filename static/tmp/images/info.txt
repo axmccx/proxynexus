@@ -1,1 +1,0 @@
-Required directory for keeping cached high quality images. 

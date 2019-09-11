@@ -505,6 +505,15 @@
             "ffg_id": 56
         },
         {
+            "code": "sc19-german",
+            "cycle_code": "sc19-german",
+            "date_release": "2018-12-21",
+            "name": "System Core 2019 Deutsche",
+            "position": 1,
+            "size": 147,
+            "ffg_id": null
+        },
+        {
             "code": "sc19",
             "cycle_code": "sc19",
             "date_release": "2018-12-21",

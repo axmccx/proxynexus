@@ -29,17 +29,27 @@ app.post('/api/makePDF', function (req, res) {
     const sessID = req.body.sessID;
     const paperSize = req.body.paperSize;
     const quality = req.body.quality;
-    const fullCutLines = req.body.fullCutLines;
     const includeBackArt = req.body.includeBackArt;
+    const fullCutLines = req.body.fullCutLines;
+    const selectedSet = req.body.selectedSet;
     const logInfo = req.body.logInfo;
-    const container = ((q) => {
-        switch(q) {
-            case 'High':
-                return 'images/';
-            case 'Medium':
-                return 'med-images/';
+    const container = ((q, set) => {
+        if (set === "sc19-german") {
+            switch(q) {
+                case 'High':
+                    return 'german-images/';
+                case 'Medium':
+                    return 'german-med-images/';
+            }
+        } else {
+            switch(q) {
+                case 'High':
+                    return 'images/';
+                case 'Medium':
+                    return 'med-images/';
+            }
         }
-    })(quality);
+    })(quality, selectedSet);
     const requestedImages = req.body.requestedImages;
     const downloadID = IDCounter;
     IDCounter = IDCounter + 1;
@@ -500,6 +510,7 @@ async function setRedPixel(orinalPath, dupPath, index, completeMsg) {
 // Download all files in fileNames to destination from the baseUrl
 // Needs to be called from within a try-catch block!!
 async function downloadFiles(fileNames, destination, baseUrl, downloadID) {
+    if (!fs.existsSync(destination)){ fs.mkdirSync(destination); }
     const promises = fileNames.map( async fileName => {
         const filePath = destination + fileName;
         const url = baseUrl + fileName;
@@ -529,8 +540,26 @@ app.post('/api/makeMpcZip', function (req, res) {
     const sessID = req.body.sessID;
     const imagePlacement = req.body.imagePlacement;
     const includeBackArt = req.body.includeBackArt;
+    const selectedSet = req.body.selectedSet;
     const logInfo = req.body.logInfo;
-    const container = ((q) => {
+    const container = ((q, set) => {
+        if (set === "sc19-german") {
+            switch(q) {
+                case 'Scale':
+                    return 'german-scaled/';
+                case 'Fit':
+                    return 'german-fitted/';
+            }
+        } else {
+            switch(q) {
+                case 'Scale':
+                    return 'scaled/';
+                case 'Fit':
+                    return 'fitted/';
+            }
+        }
+    })(imagePlacement, selectedSet);
+    const fileNamePrefix = ((q) => {
         switch(q) {
             case 'Scale':
                 return 'scaled/';
@@ -557,7 +586,7 @@ app.post('/api/makeMpcZip', function (req, res) {
         return;
     }
 
-    if (container == null) {
+    if (imagePlacement == null) {
         console.error("DownloadID " + downloadID + ": No image placement method selected");
         sendMsgToClient(ws, { "success": false, "errorMsg": "No image placement method selected", "reqType": "zip" });
         return;
@@ -608,6 +637,10 @@ app.post('/api/makeMpcZip', function (req, res) {
         return;
     }
 
+    if (!fs.existsSync(__dirname + "/static/tmp/zip-cache/")){
+        fs.mkdirSync(__dirname + "/static/tmp/zip-cache/");
+    }
+
     if (!fs.existsSync(zipDir)) {
         fs.mkdirSync(zipDir);
         fs.mkdirSync(zipDir + "corp/");
@@ -616,6 +649,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 
     const opt = {
         container: container,
+        fileNamePrefix: fileNamePrefix,
         includeBackArt: includeBackArt,
         downloadID: downloadID,
         corpCodes: corpCodes,
@@ -632,6 +666,7 @@ app.post('/api/makeMpcZip', function (req, res) {
 
 async function fetchImagesForZip(opt) {
     const container = opt.container;
+    const fileNamePrefix = opt.fileNamePrefix;
     const includeBackArt = opt.includeBackArt;
     const downloadID = opt.downloadID;
     const corpCodes = opt.corpCodes;
@@ -650,11 +685,11 @@ async function fetchImagesForZip(opt) {
     }
 
     const corpFilesNames = 	corpFileCodes.map( code => {
-        return container.replace(/\/$/, "") + "-" + code + ".jpg";
+        return fileNamePrefix.replace(/\/$/, "") + "-" + code + ".jpg";
     })
 
     const runnerFileNames = runnerFileCodes.map( code => {
-        return container.replace(/\/$/, "") + "-" + code + ".jpg";
+        return fileNamePrefix.replace(/\/$/, "") + "-" + code + ".jpg";
     })
 
     // buid an object of {fileName: {count: num, side: side}

@@ -1,1 +1,1 @@
-Required directory for keeping generated PDFs. 
+Required directory for keeping temporary files.

@@ -321,7 +321,7 @@ function makeCardHTML(response) {
 
 function buildFromSet() {
     const selectedSet = _setSelection.val();
-    const coreSets = ["core", "core2", "sc19"];
+    const coreSets = ["core", "core2", "sc19", "sc19-german"];
     var html = '';
     var artSelectorHTML = '';
     _cardList = [];
@@ -336,6 +336,13 @@ function buildFromSet() {
     } else {
         playsetDisplay.style.display = "none";
     }
+
+    let modImageContainer;
+    if (selectedSet === "sc19-german") {
+        modImageContainer = "german-" + IMAGE_CONTAINER;
+    } else {
+        modImageContainer = IMAGE_CONTAINER;
+    }
   
     $.getJSON( "json/pack/" + selectedSet + ".json", function(response) {
         response.forEach(function(card) {
@@ -346,14 +353,14 @@ function buildFromSet() {
             }
 
             for (var i = 0; i < quantity; i++) {
-                const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code + '.jpg';
+                const image = IMAGE_BASE_DIR + modImageContainer + card.code + '.jpg';
                 const imgID = "cardPrev" + _imgCount++;
                 const localCard = _cardDB_keyID[card.code];
 
                 _cardList.push(card.code);
                 html += buildCardHTML(card.code, image, card.title, imgID);
 
-                if ("alts" in localCard) {
+                if ("alts" in localCard && selectedSet !== "sc19-german") {
                     if (artSelectorHTML === '') {
                         $("#alt-art-selector-hide-btn").show();
                         $("#includeAltArtBacksCheckbox").show();
@@ -389,7 +396,7 @@ function buildCardHTML(code, image, title, imgID) {
         newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
         newCard += '</a>';
     } else {
-        if (code == "08012") {
+        if (code == "08012") {                  // Add backside image of "Jinteki Biotech: Life Imagined"
             const extras = ["08012a", "08012", "08012b", "08012", "08012c"];
             extras.forEach(function(extra) {
             const img = IMAGE_BASE_DIR + IMAGE_CONTAINER + extra + '.jpg';
@@ -398,7 +405,7 @@ function buildCardHTML(code, image, title, imgID) {
             newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
             newCard += '</a>';
             });
-        } else if (code == "09001") {
+        } else if (code == "09001") {           // Add backside image of "SYNC: Everything, Everywhere"
             const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '09001a.jpg';
             newCard += '<a href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
             newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
@@ -475,12 +482,20 @@ function makePDF() {
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
     const fullCutLines = $('#fullCutLines').prop('checked');
 
+    let selectedSet;
+    if (_selectedTab === "Set") {
+        selectedSet = $('#setSelection').val()
+    } else {
+        selectedSet = null;
+    }
+
     const downloadOptions = {
         "sessID": _sessID,
         "paperSize": paperSize,
         "quality": imageQuality,
-        "fullCutLines": fullCutLines,
         "includeBackArt": includeBackArt,
+        "fullCutLines": fullCutLines,
+        "selectedSet": selectedSet,
         "requestedImages": _cardList,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
     };
@@ -537,10 +552,19 @@ function getZip() {
 
     const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
+
+    let selectedSet;
+    if (_selectedTab === "Set") {
+        selectedSet = $('#setSelection').val()
+    } else {
+        selectedSet = null;
+    }
+
     const downloadOptions = {
         "sessID": _sessID,
         "imagePlacement": imgPlacement,
         "includeBackArt": includeBackArt,
+        "selectedSet": selectedSet,
         "corpCodes": corpCodes,
         "runnerCodes": runnerCodes,
         "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
