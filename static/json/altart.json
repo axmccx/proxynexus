@@ -2211,6 +2211,48 @@
             ]
         },
         {
+            "code": "23001",
+            "alts": [
+                "23001",
+                "23001-alt1"
+            ]
+        },
+        {
+            "code": "23011",
+            "alts": [
+                "23011",
+                "23011-alt1"
+            ]
+        },
+        {
+            "code": "23013",
+            "alts": [
+                "23013",
+                "23013-alt1"
+            ]
+        },
+        {
+            "code": "23027",
+            "alts": [
+                "23027",
+                "23027-alt1"
+            ]
+        },
+        {
+            "code": "23045",
+            "alts": [
+                "23045",
+                "23045-alt1"
+            ]
+        },
+        {
+            "code": "23054",
+            "alts": [
+                "23054",
+                "23054-alt1"
+            ]
+        },
+        {
             "code": "24001",
             "alts": [
                 "24001",
@@ -4276,6 +4318,42 @@
           "title": "Magnum Opus",
           "back_code": "",
           "side_code": "runner"
+        },
+        {
+          "code": "23001-alt1",
+          "title": "FFG Art",
+          "back_code": "",
+          "side_code": "runner"
+        },
+        {
+          "code": "23011-alt1",
+          "title": "FFG Art",
+          "back_code": "",
+          "side_code": "corp"
+        },
+        {
+            "code": "23013-alt1",
+            "title": "FFG Art",
+            "back_code": "",
+            "side_code": "runner"
+        },
+        {
+            "code": "23027-alt1",
+            "title": "FFG Art",
+            "back_code": "",
+            "side_code": "corp"
+        },
+        {
+            "code": "23045-alt1",
+            "title": "FFG Art",
+            "back_code": "",
+            "side_code": "corp"
+        },
+        {
+            "code": "23054-alt1",
+            "title": "FFG Art",
+            "back_code": "",
+            "side_code": "corp"
         },
         {
           "code": "24001-alt1",
