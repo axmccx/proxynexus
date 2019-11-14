@@ -2214,42 +2214,42 @@
             "code": "23001",
             "alts": [
                 "23001",
-                "23001-alt1"
+                "28001"
             ]
         },
         {
             "code": "23011",
             "alts": [
                 "23011",
-                "23011-alt1"
+                "28003"
             ]
         },
         {
             "code": "23013",
             "alts": [
                 "23013",
-                "23013-alt1"
+                "28002"
             ]
         },
         {
             "code": "23027",
             "alts": [
                 "23027",
-                "23027-alt1"
+                "26006"
             ]
         },
         {
             "code": "23045",
             "alts": [
                 "23045",
-                "23045-alt1"
+                "28004"
             ]
         },
         {
             "code": "23054",
             "alts": [
                 "23054",
-                "23054-alt1"
+                "28005"
             ]
         },
         {
@@ -2827,6 +2827,48 @@
             "alts": [
                 "25147",
                 "13057-alt1"
+            ]
+        },
+        {
+            "code": "28001",
+            "alts": [
+                "28001",
+                "23001"
+            ]
+        },
+        {
+            "code": "28002",
+            "alts": [
+                "28002",
+                "23013"
+            ]
+        },
+        {
+            "code": "28003",
+            "alts": [
+                "28003",
+                "23011"
+            ]
+        },
+        {
+            "code": "28004",
+            "alts": [
+                "28004",
+                "23045"
+            ]
+        },
+        {
+            "code": "28005",
+            "alts": [
+                "28005",
+                "23054"
+            ]
+        },
+        {
+            "code": "28006",
+            "alts": [
+                "28006",
+                "23027"
             ]
         }
     ],
@@ -4318,42 +4360,6 @@
           "title": "Magnum Opus",
           "back_code": "",
           "side_code": "runner"
-        },
-        {
-          "code": "23001-alt1",
-          "title": "FFG Art",
-          "back_code": "",
-          "side_code": "runner"
-        },
-        {
-          "code": "23011-alt1",
-          "title": "FFG Art",
-          "back_code": "",
-          "side_code": "corp"
-        },
-        {
-            "code": "23013-alt1",
-            "title": "FFG Art",
-            "back_code": "",
-            "side_code": "runner"
-        },
-        {
-            "code": "23027-alt1",
-            "title": "FFG Art",
-            "back_code": "",
-            "side_code": "corp"
-        },
-        {
-            "code": "23045-alt1",
-            "title": "FFG Art",
-            "back_code": "",
-            "side_code": "corp"
-        },
-        {
-            "code": "23054-alt1",
-            "title": "FFG Art",
-            "back_code": "",
-            "side_code": "corp"
         },
         {
           "code": "24001-alt1",
