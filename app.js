@@ -411,6 +411,14 @@ function addFlippedIds(requestedImages) {
     if (syncIndex >= 0) {
         imgCodes.splice(syncIndex + 1, 0, "09001a");
     }
+    const hoshikoIndex = imgCodes.indexOf("26066");
+    if (hoshikoIndex >= 0) {
+        imgCodes.splice(hoshikoIndex + 1, 0, "26066a");
+    }
+    const earthStationIndex = imgCodes.indexOf("26120");
+    if (earthStationIndex >= 0) {
+        imgCodes.splice(earthStationIndex + 1, 0, "26120a");
+    }
     return imgCodes;
 }
 
@@ -678,10 +686,10 @@ async function fetchImagesForZip(opt) {
     const requestStr = opt.requestStr;
 
     var corpFileCodes = addFlippedIds(corpCodes);
-    var runnerFileCodes = runnerCodes;
+    var runnerFileCodes = addFlippedIds(runnerCodes);
     if (includeBackArt) {
         corpFileCodes = addAltArtBacks(corpFileCodes);
-        runnerFileCodes = addAltArtBacks(runnerCodes);
+        runnerFileCodes = addAltArtBacks(runnerFileCodes);
     }
 
     const corpFilesNames = 	corpFileCodes.map( code => {

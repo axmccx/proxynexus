@@ -411,6 +411,18 @@ function buildCardHTML(code, image, title, imgID) {
             newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
             newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
             newCard += '</a>';
+        } else if (code == "26066") {           // Add backside image of "Hoshiko Shiro: Untold Protagonist"
+            const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '26066a.jpg';
+            newCard += '<a href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
+            newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
+            newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
+            newCard += '</a>';
+        } else if (code == "26120") {           // Add backside image of "Earth Station: SEA Headquarters"
+            const syncBack = IMAGE_BASE_DIR + IMAGE_CONTAINER + '26120a.jpg';
+            newCard += '<a href="' + NRDB_CARD_DIR + code + '" title="" target="NetrunnerCard">';
+            newCard += '<img class="card" src="' + syncBack + '" alt="' + code + '" />';
+            newCard += '<span class="label">' + code + ' ' + title + '</span>'; 
+            newCard += '</a>';
         }
     }
     return newCard;
