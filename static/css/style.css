@@ -126,12 +126,6 @@ a.anchor {
   max-height: 35vh; 
 }
 
-#nisei-card-notice {
-  display: none;
-  color: red;
-  font-weight: bold;
-}
-
 #HeadMsg {
   color: red;
 }
