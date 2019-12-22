@@ -34,7 +34,7 @@ app.post('/api/makePDF', function (req, res) {
     const selectedSet = req.body.selectedSet;
     const logInfo = req.body.logInfo;
     const container = ((q, set) => {
-        if (set === "sc19-german") {
+        if (set === "sc19-german" || set === "rar-german") {
             switch(q) {
                 case 'High':
                     return 'german-images/';
@@ -551,7 +551,7 @@ app.post('/api/makeMpcZip', function (req, res) {
     const selectedSet = req.body.selectedSet;
     const logInfo = req.body.logInfo;
     const container = ((q, set) => {
-        if (set === "sc19-german") {
+        if (set === "sc19-german" || set === "rar-german") {
             switch(q) {
                 case 'Scale':
                     return 'german-scaled/';

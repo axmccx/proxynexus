@@ -338,7 +338,7 @@ function buildFromSet() {
     }
 
     let modImageContainer;
-    if (selectedSet === "sc19-german") {
+    if (selectedSet === "sc19-german" || selectedSet === "rar-german") {
         modImageContainer = "german-" + IMAGE_CONTAINER;
     } else {
         modImageContainer = IMAGE_CONTAINER;
@@ -360,7 +360,7 @@ function buildFromSet() {
                 _cardList.push(card.code);
                 html += buildCardHTML(card.code, image, card.title, imgID);
 
-                if ("alts" in localCard && selectedSet !== "sc19-german") {
+                if ("alts" in localCard && selectedSet !== "sc19-german" && selectedSet != "rar-german") {
                     if (artSelectorHTML === '') {
                         $("#alt-art-selector-hide-btn").show();
                         $("#includeAltArtBacksCheckbox").show();

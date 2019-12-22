@@ -496,6 +496,15 @@
             "ffg_id": 55
         },
         {
+            "code": "rar-german",
+            "cycle_code": "reign-and-reverie",
+            "date_release": "2018-06-28",
+            "name": "Herrschaft und Traum",
+            "position": 1,
+            "size": 58,
+            "ffg_id": 56
+        },
+        {
             "code": "rar",
             "cycle_code": "reign-and-reverie",
             "date_release": "2018-06-28",
@@ -508,7 +517,7 @@
             "code": "sc19-german",
             "cycle_code": "sc19-german",
             "date_release": "2018-12-21",
-            "name": "System Core 2019 Deutsche",
+            "name": "Systemkern 2019",
             "position": 1,
             "size": 147,
             "ffg_id": null
