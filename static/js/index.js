@@ -10,6 +10,7 @@ var _altArtSelector;
 var _artSelectors = {};
 var _imgCount;
 var _selectedTab = "Card List";
+var _bacs;
 var _socket;
 var _sessID;
 
@@ -188,6 +189,26 @@ function fetchSetList() {
     });
 }
 
+function fetchBacs() {
+    $.getJSON("json/bac.json", function(response) {
+        _bacs = response;
+    });
+}
+
+function makeBac() {
+    var bacHtml = '';
+    _bacs.forEach(function(card) {
+        const imgID = "cardPrev" + _imgCount++;
+        const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code + '.jpg';
+        _cardList.push(card.code);
+        bacHtml += '<a href="' + NRDB_CARD_DIR + '" title="" target="NetrunnerCard">';
+        bacHtml += '<img class="card" id="' + imgID + '" src="' + image + '" alt="' + card.code + '" />';
+        bacHtml += '<span class="label">' + card.title + '</span>';
+        bacHtml += '</a>';    
+    });
+    return bacHtml;
+}
+
 function buildFromCardList() {
     const input = _cardListTextArea.val().toLowerCase().split(/\n/);
     var html = '';
@@ -238,7 +259,11 @@ function buildFromCardList() {
             unfoundCards.push(cardname);
         }
     }
-  
+
+    if ($('#basicActionCard').prop('checked')) {
+        html += makeBac();
+    }
+
     if (unfound > 0) {
         var unfoundHtml = "";
         for (var i = 0; i < unfoundCards.length; i++) {
@@ -311,6 +336,11 @@ function makeCardHTML(response) {
             }
         }
     }
+
+    if ($('#basicActionCard').prop('checked')) {
+        html += makeBac();
+    }
+
     _cardPreview.html(html);
     _altArtSelector.html(artSelectorHTML);
     if (artSelectorHTML === '') {
@@ -370,6 +400,11 @@ function buildFromSet() {
                 }
             }
         });
+
+        if ($('#basicActionCard').prop('checked')) {
+            html += makeBac();
+        }
+
         _cardPreview.html(html);
         _altArtSelector.html(artSelectorHTML);
         if (artSelectorHTML === '') {
@@ -554,13 +589,20 @@ function getZip() {
     var corpCodes = [];
     var runnerCodes = [];
     _cardList.forEach( code => {
-        if (_cardDB_keyID[code].side === 'corp') {
-            corpCodes.push(code);
-        }
-        if (_cardDB_keyID[code].side === 'runner') {
-            runnerCodes.push(code);
+        if (_cardDB_keyID[code]) {
+            if (_cardDB_keyID[code].side === 'corp') {
+                corpCodes.push(code);
+            }
+            if (_cardDB_keyID[code].side === 'runner') {
+                runnerCodes.push(code);
+            }
         }
     });
+
+    if ($('#basicActionCard').prop('checked')) {
+        corpCodes.push('00001');
+        runnerCodes.push('00002');
+    }
 
     const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
@@ -676,6 +718,22 @@ function assignEvents() {
         }
     });
 
+    $('#basicActionCard').change(function() {
+        switch(_selectedTab) {
+            case "Card List":
+                buildFromCardList();
+                break;
+            case "Set":
+                buildFromSet();
+                break;
+            case "NetrunnerDB":
+                if (_deckURLText.val() != "") {
+                    buildFromDeckID(); 
+                }
+                break;
+        }
+    });
+
     _cardListTextArea.on('input',function(e){
         buildFromCardList();
     });
@@ -754,6 +812,7 @@ $(function() {
     assignEvents();
     loadCards();
     fetchSetList();
+    fetchBacs();
     setupWS();
 
     if (!_cardDB) {

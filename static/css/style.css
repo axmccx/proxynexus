@@ -150,7 +150,7 @@ a.anchor {
   #cardPreview {
     margin-top: 1rem;
     overflow-y: scroll;
-    min-height: 400px;
+    min-height: 950px;
     max-height: 90vh;
   }
   #cardPreview > * {
