@@ -528,6 +528,7 @@ function makePDF() {
     const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
     const fullCutLines = $('#fullCutLines').prop('checked');
+    const includeBacs = $('#basicActionCard').prop('checked');
 
     let selectedSet;
     if (_selectedTab === "Set") {
@@ -544,7 +545,7 @@ function makePDF() {
         "fullCutLines": fullCutLines,
         "selectedSet": selectedSet,
         "requestedImages": _cardList,
-        "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
+        "logInfo": "Selected Tab: " + _selectedTab + ", Include BACs: " + includeBacs + ", " + getExtraInfo()
     };
 
     $("#PDFStatus").html("Connecting...");
@@ -599,13 +600,14 @@ function getZip() {
         }
     });
 
-    if ($('#basicActionCard').prop('checked')) {
+    const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
+    const includeBackArt = $('#includeAltArtBacks').prop('checked');
+    const includeBacs = $('#basicActionCard').prop('checked');
+
+    if (includeBacs) {
         corpCodes.push('00001');
         runnerCodes.push('00002');
     }
-
-    const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
-    const includeBackArt = $('#includeAltArtBacks').prop('checked');
 
     let selectedSet;
     if (_selectedTab === "Set") {
@@ -621,7 +623,7 @@ function getZip() {
         "selectedSet": selectedSet,
         "corpCodes": corpCodes,
         "runnerCodes": runnerCodes,
-        "logInfo": "Selected Tab: " + _selectedTab + ", " + getExtraInfo()
+        "logInfo": "Selected Tab: " + _selectedTab + ", Include BACs: " + includeBacs + ", " + getExtraInfo()
     };
 
     $("#ZipStatus").html("Connecting...");
