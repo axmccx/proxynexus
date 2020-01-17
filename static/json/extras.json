@@ -1,0 +1,34 @@
+[
+    {
+        "code": "00001",
+        "position": 1,
+        "quantity": 1,
+        "side_code": "corp",
+        "title": "Corp Actions",
+        "type_code": "basic_action"
+    },
+    {
+        "code": "00002",
+        "position": 1,
+        "quantity": 1,
+        "side_code": "runner",
+        "title": "Runner Actions",
+        "type_code": "basic_action"
+    },
+    {
+        "code": "00003",
+        "position": 1,
+        "quantity": 1,
+        "side_code": "corp",
+        "title": "Corp Click Tracker",
+        "type_code": "click_tracker"
+    },
+    {
+        "code": "00004",
+        "position": 1,
+        "quantity": 1,
+        "side_code": "runner",
+        "title": "Runner Click Tracker",
+        "type_code": "click_tracker"
+    }
+]

@@ -10,7 +10,7 @@ var _altArtSelector;
 var _artSelectors = {};
 var _imgCount;
 var _selectedTab = "Card List";
-var _bacs;
+var _extraCards;
 var _socket;
 var _sessID;
 
@@ -189,24 +189,25 @@ function fetchSetList() {
     });
 }
 
-function fetchBacs() {
-    $.getJSON("json/bac.json", function(response) {
-        _bacs = response;
+function fetchExtraCards() {
+    $.getJSON("json/extras.json", function(response) {
+        _extraCards = response;
     });
 }
 
-function makeBac() {
-    var bacHtml = '';
-    _bacs.forEach(function(card) {
+function makeExtraCardHtml(type) {
+    var extraHtml = '';
+    const extras = _extraCards.filter(card => card.type_code === type)
+    extras.forEach(function(card) {
         const imgID = "cardPrev" + _imgCount++;
         const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code + '.jpg';
         _cardList.push(card.code);
-        bacHtml += '<a href="' + NRDB_CARD_DIR + '" title="" target="NetrunnerCard">';
-        bacHtml += '<img class="card" id="' + imgID + '" src="' + image + '" alt="' + card.code + '" />';
-        bacHtml += '<span class="label">' + card.title + '</span>';
-        bacHtml += '</a>';    
+        extraHtml += '<a href="' + NRDB_CARD_DIR + '" title="" target="NetrunnerCard">';
+        extraHtml += '<img class="card" id="' + imgID + '" src="' + image + '" alt="' + card.code + '" />';
+        extraHtml += '<span class="label">' + card.title + '</span>';
+        extraHtml += '</a>';    
     });
-    return bacHtml;
+    return extraHtml;
 }
 
 function buildFromCardList() {
@@ -261,7 +262,11 @@ function buildFromCardList() {
     }
 
     if ($('#basicActionCard').prop('checked')) {
-        html += makeBac();
+        html += makeExtraCardHtml("basic_action");
+    }
+
+    if ($('#clickTrackerCard').prop('checked')) {
+        html += makeExtraCardHtml("click_tracker");
     }
 
     if (unfound > 0) {
@@ -338,7 +343,11 @@ function makeCardHTML(response) {
     }
 
     if ($('#basicActionCard').prop('checked')) {
-        html += makeBac();
+        html += makeExtraCardHtml("basic_action");
+    }
+
+    if ($('#clickTrackerCard').prop('checked')) {
+        html += makeExtraCardHtml("click_tracker");
     }
 
     _cardPreview.html(html);
@@ -402,7 +411,11 @@ function buildFromSet() {
         });
 
         if ($('#basicActionCard').prop('checked')) {
-            html += makeBac();
+            html += makeExtraCardHtml("basic_action");
+        }
+
+        if ($('#clickTrackerCard').prop('checked')) {
+            html += makeExtraCardHtml("click_tracker");
         }
 
         _cardPreview.html(html);
@@ -529,6 +542,7 @@ function makePDF() {
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
     const fullCutLines = $('#fullCutLines').prop('checked');
     const includeBacs = $('#basicActionCard').prop('checked');
+    const includeTrackers = $('#clickTrackerCard').prop('checked');
 
     let selectedSet;
     if (_selectedTab === "Set") {
@@ -545,7 +559,7 @@ function makePDF() {
         "fullCutLines": fullCutLines,
         "selectedSet": selectedSet,
         "requestedImages": _cardList,
-        "logInfo": "Selected Tab: " + _selectedTab + ", Include BACs: " + includeBacs + ", " + getExtraInfo()
+        "logInfo": "Selected Tab: " + _selectedTab + ", BACs: " + includeBacs + ", Trackers: " + includeTrackers + ", " + getExtraInfo()
     };
 
     $("#PDFStatus").html("Connecting...");
@@ -603,10 +617,16 @@ function getZip() {
     const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
     const includeBackArt = $('#includeAltArtBacks').prop('checked');
     const includeBacs = $('#basicActionCard').prop('checked');
+    const includeTrackers = $('#clickTrackerCard').prop('checked');
 
     if (includeBacs) {
         corpCodes.push('00001');
         runnerCodes.push('00002');
+    }
+
+    if (includeTrackers) {
+        corpCodes.push('00003');
+        runnerCodes.push('00004');
     }
 
     let selectedSet;
@@ -623,7 +643,7 @@ function getZip() {
         "selectedSet": selectedSet,
         "corpCodes": corpCodes,
         "runnerCodes": runnerCodes,
-        "logInfo": "Selected Tab: " + _selectedTab + ", Include BACs: " + includeBacs + ", " + getExtraInfo()
+        "logInfo": "Selected Tab: " + _selectedTab + ", BACs: " + includeBacs + ", Trackers: " + includeTrackers + ", " + getExtraInfo()
     };
 
     $("#ZipStatus").html("Connecting...");
@@ -736,6 +756,22 @@ function assignEvents() {
         }
     });
 
+    $('#clickTrackerCard').change(function() {
+        switch(_selectedTab) {
+            case "Card List":
+                buildFromCardList();
+                break;
+            case "Set":
+                buildFromSet();
+                break;
+            case "NetrunnerDB":
+                if (_deckURLText.val() != "") {
+                    buildFromDeckID(); 
+                }
+                break;
+        }
+    });
+
     _cardListTextArea.on('input',function(e){
         buildFromCardList();
     });
@@ -814,7 +850,7 @@ $(function() {
     assignEvents();
     loadCards();
     fetchSetList();
-    fetchBacs();
+    fetchExtraCards();
     setupWS();
 
     if (!_cardDB) {
