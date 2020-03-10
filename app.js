@@ -21,7 +21,7 @@ const cardwidth = 6.299;
 const cardheight = 8.788;
 const cardwidthPt = cmToPt(cardwidth);
 const cardheightPt = cmToPt(cardheight);
-const storagePath = "https://proxynexus.blob.core.windows.net/";
+const storagePath = "https://proxynexus2.blob.core.windows.net/";
 const altArtCards = JSON.parse(fs.readFileSync('static/json/altart.json')).altArtCards; 
 
 app.post('/api/makePDF', function (req, res) {
