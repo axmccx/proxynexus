@@ -128,17 +128,19 @@ function fetchAllCards() {
             const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code + '.jpg';
             const cardDBKey = item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__');
 
-            _cardDB[cardDBKey] = {
-            code: item.code,
-            title: item.title,
-            image: image
+            if (item.code < 31000) {  // Prioritize FFG over NISEI
+                _cardDB[cardDBKey] = {
+                    code: item.code,
+                    title: item.title,
+                    image: image
+                }
             }
 
             _cardDB_keyID[item.code] = {
-            code: item.code,
-            side: item.side_code,
-            title: item.title,
-            image: image
+                code: item.code,
+                side: item.side_code,
+                title: item.title,
+                image: image
             }
         });
 
