@@ -479,6 +479,7 @@ function sendMsgToClient(ws, msg) {
 
 // if the path does NOT exist, return true
 // if the path exists, print the message and return false
+
 function doesNotExists(path, onExistsMsg) {
     try {
         fs.statSync(path);

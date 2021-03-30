@@ -9,3 +9,4 @@ static/tmp/zip-cache/*
 !static/tmp/zip-cache/info.txt
 *.zip
 .env
+.idea/*
