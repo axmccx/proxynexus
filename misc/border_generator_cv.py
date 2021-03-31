@@ -5,8 +5,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Assuming 600 dpi
-CUT = (1488, 2076)      # Cut dimmension (weight, height) according to MPC
-BLEED = (1632, 2220)    # Bleed dimmension (weight, height) according to MPC
+CUT = (1488, 2076)      # Cut dimmension (width, height) according to MPC
+BLEED = (1632, 2220)    # Bleed dimmension (width, height) according to MPC
 
 # Constants to tweak
 BORDER_BLEED = 72       # Probably doesn't need to change
@@ -139,7 +139,6 @@ if __name__ == '__main__':
             plt.savefig(f"{args.output}/{os.path.splitext(filename)[0]}_plots.jpg", bbox_inches='tight', dpi=600)
             cv2.imwrite(f"{args.output}/{os.path.splitext(filename)[0]}_INPAINT_NS.jpg", img1)
             cv2.imwrite(f"{args.output}/{os.path.splitext(filename)[0]}_INPAINT_TELEA.jpg", img2)
-            cv2.imwrite(f"{args.output}/{os.path.splitext(filename)[0]}_COMBO.jpg", img2)
+            cv2.imwrite(f"{args.output}/{os.path.splitext(filename)[0]}_COMBO.jpg", img3)
         else:
             plt.show()
-
