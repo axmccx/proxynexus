@@ -128,7 +128,7 @@ function fetchAllCards() {
             const image = IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code + '.jpg';
             const cardDBKey = item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__');
 
-            if ((item.code < 28000 ) || (item.code < 31000 && item.code > 30000)) {  // Prioritize FFG over NISEI
+            if ((item.code < 28000) || ((item.code < 31000 && item.code > 30000) && item.code != 30075 && item.code != 30030)) {  // Prioritize FFG over NISEI
                 _cardDB[cardDBKey] = {
                     code: item.code,
                     title: item.title,
@@ -237,8 +237,8 @@ function buildFromCardList() {
 
         if (cardname in _cardDB) {
             const card = _cardDB[cardname];
-            if (count > 6) {
-                count = 6;
+            if (count > 9) {
+                count = 9;
             } else if (count < 1) {
                 count = 1;
             }

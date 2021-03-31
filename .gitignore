@@ -10,3 +10,5 @@ static/tmp/zip-cache/*
 *.zip
 .env
 .idea/*
+misc/test_borders/*
+misc/test_images/*
