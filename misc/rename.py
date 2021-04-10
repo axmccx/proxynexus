@@ -1,13 +1,19 @@
 from os import listdir, rename
-from os.path import isfile, join
+from os.path import isfile, join, basename
 from natsort import natsorted, ns
+from shutil import move
 
-path = "C:\\Users\\alexm\\Downloads\\Data and Destiny-NoCurves\\"
+
+path = "C:\\Users\\alexm\\Downloads\\Netrunner\\2. Genesis\\"
+altart_path = "C:\\Users\\alexm\\Downloads\\Netrunner\\Alt Art\\"
+count = 2001
 
 onlyfiles = [f"{path}{f}" for f in listdir(path) if isfile(join(path, f))]
 onlyfiles = natsorted(onlyfiles, alg=ns.IGNORECASE)
-count = 9003
 
 for f in onlyfiles:
-    rename(f, f"{path}0{count}.png")
-    count += 1
+    if '_' in f:
+        move(f, f"{altart_path}{basename(f)}")
+    else:
+        rename(f, f"{path}0{count}.png")
+        count += 1
