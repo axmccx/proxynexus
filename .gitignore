@@ -12,3 +12,6 @@ static/tmp/zip-cache/*
 .idea/*
 misc/test_borders/*
 misc/test_images/*
+public/node_modules
+coverage
+yarn-error.log
