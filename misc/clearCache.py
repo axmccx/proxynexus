@@ -1,7 +1,7 @@
 import os, sys, glob, shutil
 
 os.chdir(sys.path[0] + "/..")
-all_files_and_dirs = [s for s in glob.glob("static/tmp/*") if ".txt" not in s]
+all_files_and_dirs = [s for s in glob.glob("public/tmp/*") if ".txt" not in s]
 if (len(all_files_and_dirs) > 0):
     print("Deleting the following cached files and directories:")
     for e in all_files_and_dirs:

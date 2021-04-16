@@ -1,10 +1,10 @@
 {
   "name": "proxynexus",
-  "version": "1.0.0",
-  "description": "Make high quality Netrunner proxies. Generates ready to print PDFs from a NetrunnerDB deck list, a retail set, or a custom card list.",
-  "main": "app.js",
+  "version": "2.0.0",
+  "description": "Make high quality Netrunner proxies.",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -18,15 +18,37 @@
   },
   "homepage": "https://github.com/axmccx/proxynexus#readme",
   "dependencies": {
-    "archiver": "^3.1.1",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/register": "^7.4.4",
+    "@babel/runtime": "^7.4.5",
+    "archiver": "^5.3.0",
+    "babel-loader": "^8.0.0-beta.0",
+    "body-parser": "^1.19.0",
+    "chalk": "^4.1.0",
+    "cluster": "^0.7.7",
+    "core-js": "^3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
-    "pdfkit": "^0.9.1",
-    "sharp": "^0.22.1",
-    "ws": "^6.2.1"
+    "nodemon": "^2.0.7",
+    "os": "^0.1.1",
+    "pdfkit": "^0.12.1",
+    "pg": "^8.6.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.15.1",
+    "sequelize-cli": "^5.4.0",
+    "sharp": "^0.28.1",
+    "ws": "^7.4.4"
+  },
+  "devDependencies": {
+    "eslint": "^7.24.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
   },
   "engines": {
-    "node": "10.x"
+    "node": "14.x"
   }
 }
