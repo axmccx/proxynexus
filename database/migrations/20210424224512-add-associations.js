@@ -25,7 +25,7 @@ module.exports = {
     },
   )).then(() => queryInterface.addColumn(
     'card_printings',
-    'card_file_id',
+    'lm_card_file_id',
     {
       type: Sequelize.INTEGER,
       references: {
@@ -35,7 +35,32 @@ module.exports = {
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },
-  )),
+  )).then(() => queryInterface.addColumn(
+    'card_printings',
+    'pt_card_file_id',
+    {
+      type: Sequelize.INTEGER,
+      references: {
+        model: 'card_files',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+    },
+  ))
+    .then(() => queryInterface.addColumn(
+      'card_printings',
+      'de_card_file_id',
+      {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'card_files',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
+    )),
   down: (queryInterface, _) => queryInterface.removeColumn(
     'card_printings',
     'card_id',
@@ -44,6 +69,12 @@ module.exports = {
     'pack_id',
   )).then(() => queryInterface.removeColumn(
     'card_printings',
-    'card_file_id',
+    'lm_card_file_id',
+  )).then(() => queryInterface.removeColumn(
+    'card_printings',
+    'pt_card_file_id',
+  )).then(() => queryInterface.removeColumn(
+    'card_printings',
+    'de_card_file_id',
   )),
 };
