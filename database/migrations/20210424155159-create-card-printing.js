@@ -1,6 +1,6 @@
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable(
-    'cards',
+    'card_printings',
     {
       id: {
         allowNull: false,
@@ -8,14 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      title: {
-        type: Sequelize.STRING,
-      },
-      side: {
+      code: {
         type: Sequelize.STRING,
       },
     },
   ),
   // eslint-disable-next-line no-unused-vars
-  down: (queryInterface, Sequelize) => queryInterface.dropTable('cards'),
+  down: (queryInterface, Sequelize) => queryInterface.dropTable('card_printings'),
 };

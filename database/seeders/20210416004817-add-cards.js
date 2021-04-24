@@ -1,7 +1,7 @@
 module.exports = {
   // eslint-disable-next-line no-unused-vars
   up: (queryInterface, Sequelize) => queryInterface.bulkInsert(
-    'Cards',
+    'cards',
     [
       {
         title: 'The Shadow: Pulling the Strings',
@@ -6599,5 +6599,5 @@ module.exports = {
     {},
   ),
   // eslint-disable-next-line no-unused-vars
-  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('Cards', null, {}),
+  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('cards', null, {}),
 };

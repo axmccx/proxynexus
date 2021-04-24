@@ -1,14 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
-  const CardFile = sequelize.define('CardFile', {
-    code: DataTypes.STRING,
-    fileName: DataTypes.STRING,
-    rearFileName: DataTypes.STRING,
-    scanSource: DataTypes.STRING,
-    quantity: DataTypes.INTEGER,
+  const CardFile = sequelize.define('card_file', {
+    front: DataTypes.STRING,
+    rear: DataTypes.STRING,
+    preview: DataTypes.STRING,
+    preview_rear: DataTypes.STRING,
+    scan_source: DataTypes.STRING,
   }, { timestamps: false });
   CardFile.associate = (models) => {
-    CardFile.belongsTo(models.Card);
-    CardFile.belongsTo(models.Pack);
+    CardFile.hasMany(models.CardPrinting);
   };
   return CardFile;
 };
