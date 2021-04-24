@@ -8,19 +8,28 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      front: {
+      pdf: {
         type: Sequelize.STRING,
       },
-      rear: {
+      pdf_back: {
+        type: Sequelize.STRING,
+      },
+      mpc_fitted: {
+        type: Sequelize.STRING,
+      },
+      mpc_fitted_back: {
+        type: Sequelize.STRING,
+      },
+      mpc_scaled: {
+        type: Sequelize.STRING,
+      },
+      mpc_scaled_back: {
         type: Sequelize.STRING,
       },
       preview: {
         type: Sequelize.STRING,
       },
-      preview_rear: {
-        type: Sequelize.STRING,
-      },
-      scan_source: {
+      preview_back: {
         type: Sequelize.STRING,
       },
     },
