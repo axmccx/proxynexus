@@ -1,6 +1,6 @@
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable(
-    'Packs',
+    'packs',
     {
       id: {
         allowNull: false,
@@ -8,14 +8,22 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      cycleCode: {
+      pack_code: {
         type: Sequelize.STRING,
       },
       name: {
         type: Sequelize.STRING,
       },
+      is_core: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+      },
+      is_visible: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+      },
     },
   ),
   // eslint-disable-next-line no-unused-vars
-  down: (queryInterface, Sequelize) => queryInterface.dropTable('Packs'),
+  down: (queryInterface, Sequelize) => queryInterface.dropTable('packs'),
 };

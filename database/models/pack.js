@@ -1,11 +1,12 @@
 module.exports = (sequelize, DataTypes) => {
-  const Pack = sequelize.define('Pack', {
-    cycleCode: DataTypes.STRING,
+  const Pack = sequelize.define('pack', {
+    pack_code: DataTypes.STRING,
     name: DataTypes.STRING,
-    type: DataTypes.STRING,
+    is_core: DataTypes.BOOL,
+    is_visible: DataTypes.BOOL,
   }, { timestamps: false });
   Pack.associate = (models) => {
-    Pack.hasMany(models.CardFile);
+    Pack.hasMany(models.CardPrinting);
   };
   return Pack;
 };
