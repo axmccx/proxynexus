@@ -3,9 +3,11 @@ module.exports = (sequelize, DataTypes) => {
     code: DataTypes.STRING,
   }, { timestamps: false });
   CardPrinting.associate = (models) => {
-    CardPrinting.belongsTo(models.Card);
-    CardPrinting.belongsTo(models.CardFile);
     CardPrinting.belongsTo(models.Pack);
+    CardPrinting.belongsTo(models.Card);
+    CardPrinting.belongsTo(models.CardFile, { as: 'lm_card_file_id' });
+    CardPrinting.belongsTo(models.CardFile, { as: 'pt_card_file_id' });
+    CardPrinting.belongsTo(models.CardFile, { as: 'de_card_file_id' });
   };
   return CardPrinting;
 };
