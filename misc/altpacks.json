@@ -1,0 +1,326 @@
+[
+  {
+    "pack_code": "altpack1",
+    "name": "2013 Regional Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack2",
+    "name": "2014 National Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack3",
+    "name": "2016 World Champ Deck",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack4",
+    "name": "2017 World Champ Deck",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack5",
+    "name": "Winter 2015 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack6",
+    "name": "Season Three 2013 GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack7",
+    "name": "2014 Season One GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack8",
+    "name": "2013 Plugged-in Tour",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack9",
+    "name": "Magnum Opus",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack10",
+    "name": "Magnum Opus (Corrected)",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack11",
+    "name": "2015 World Champ Deck",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack12",
+    "name": "Summer 2015 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack13",
+    "name": "Summer 2016 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack14",
+    "name": "Season Two 2013 GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack15",
+    "name": "Spring 2015 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack16",
+    "name": "2017 Icebreaker Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack17",
+    "name": "Summer 2014 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack18",
+    "name": "Season One 2013 GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack19",
+    "name": "2014 Regional Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack20",
+    "name": "2017 Quarter 4 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack21",
+    "name": "Chronos Protocol Tour",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack22",
+    "name": "2017 Quarter 2 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack23",
+    "name": "Winter 2014 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack24",
+    "name": "2013 NA Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack25",
+    "name": "2016 Store Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack26",
+    "name": "2016 World Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack27",
+    "name": "2016 NA Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack28",
+    "name": "2018 Season Two GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack29",
+    "name": "2015 Store Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack30",
+    "name": "2018 Euro/NA Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack31",
+    "name": "2014 Store Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack32",
+    "name": "2013 World Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack33",
+    "name": "2014 World Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack34",
+    "name": "2016 Regional Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack35",
+    "name": "2016 Store Championships",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack36",
+    "name": "2015 Regional Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack37",
+    "name": "2018 National Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack38",
+    "name": "2018 National Champ (Top 4)",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack39",
+    "name": "2015 World Championship ",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack40",
+    "name": "2017 Quarter 1 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack41",
+    "name": "2015 National Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack42",
+    "name": "2015 PAX Prime",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack43",
+    "name": "Spring 2016 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack44",
+    "name": "2018 World Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack45",
+    "name": "2017 Store Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack46",
+    "name": "2017 Quarter 3 Tournament Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack47",
+    "name": "2017 NA Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack48",
+    "name": "2018 Season One GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack49",
+    "name": "2018 Season Three GNK",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack50",
+    "name": "2017 National Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack51",
+    "name": "2017 Regional Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack52",
+    "name": "Terminal Directive Event Kit",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack53",
+    "name": "2017 World Championship",
+    "is_core": false,
+    "is_visible": false
+  },
+  {
+    "pack_code": "altpack54",
+    "name": "2018 Regional Championship",
+    "is_core": false,
+    "is_visible": false
+  }
+]
