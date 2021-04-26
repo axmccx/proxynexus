@@ -8,9 +8,12 @@ module.exports = (sequelize, DataTypes) => {
     mpc_scaled_back: DataTypes.STRING,
     preview: DataTypes.STRING,
     preview_back: DataTypes.STRING,
-  }, { timestamps: false });
-  CardFile.associate = (models) => {
-    CardFile.hasMany(models.CardPrinting);
-  };
+  }, {
+    timestamps: false,
+    underscored: true,
+  });
+  // CardFile.associate = (models) => {
+  //   CardFile.hasMany(models.card_printing);
+  // };
   return CardFile;
 };

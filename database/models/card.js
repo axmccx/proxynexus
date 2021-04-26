@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     side: DataTypes.STRING,
   }, { timestamps: false });
   Card.associate = (models) => {
-    Card.hasMany(models.CardPrinting);
+    Card.hasMany(models.card_printing);
   };
   return Card;
 };
