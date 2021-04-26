@@ -7,10 +7,13 @@ path = "C:\\Users\\alexm\\Downloads\\proxynexus_images\\version2\\"
 files_list = [f"{path}{f}" for f in listdir(path) if isfile(join(path, f))]
 store = []
 
+count = 0
+
 for f in files_list:
     if 'pdf' not in f:
         continue
 
+    count += 1
     base = basename(f)
 
     split_f = base.split('_')
@@ -28,14 +31,12 @@ for f in files_list:
         "preview_back": ""
     }
 
-    def check_and_add(suffixes):
-        for key, suffix in zip(new_entry.keys(), suffixes):
-            if f"{path}{code}_{source}_{suffix}.jpg" in files_list:
-                new_entry[key] = f"{code}_{source}_{suffix}.jpg"
-
     suffixes = ["pdf", "pdf_back", "fitted", "fitted_back", "scaled", "scaled_back", "prev", "prev_back"]
-    check_and_add(suffixes)
+    for key, suffix in zip(new_entry.keys(), suffixes):
+        if f"{path}{code}_{source}_{suffix}.jpg" in files_list:
+            new_entry[key] = f"{code}_{source}_{suffix}.jpg"
 
+    new_entry["id"] = count
     store.append(new_entry)
 
 
