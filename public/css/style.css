@@ -1,58 +1,64 @@
-.navbar-default {
-  background-color: #011f4c;
-  border-color: #385887;
+@import url('https://fonts.cdnfonts.com/css/sony-sketch-ef');
+
+/*.navbar-default {*/
+/*  background-color: #011f4c;*/
+/*  border-color: #385887;*/
+/*}*/
+
+/*.navbar-default {*/
+/*  color: #9d9d9d;*/
+/*}*/
+
+.navbar-brand {
+  color: #ffffff;
+  font-family: 'Sony Sketch EF', sans-serif;
+  font-size: 2.25rem;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-.navbar-default {
-  color: #9d9d9d;
-}
-
-.navbar-default .navbar-brand {
-  color: #ffffff;
-}
-
-.navbar-default .navbar-text {
-  color: #9d9d9d;
-}
-.navbar-default .navbar-nav > li > a {
-  color: #9d9d9d;
-}
-.navbar-default .navbar-nav > li > a:hover,
-.navbar-default .navbar-nav > li > a:focus {
-  color: #ffffff;
-}
-.navbar-default .navbar-nav > .active > a,
-.navbar-default .navbar-nav > .active > a:hover,
-.navbar-default .navbar-nav > .active > a:focus {
-  color: #ffffff;
-  background-color: #385887;
-}
-.navbar-default .navbar-nav > .open > a,
-.navbar-default .navbar-nav > .open > a:hover,
-.navbar-default .navbar-nav > .open > a:focus {
-  color: #ffffff;
-  background-color: #385887;
-}
-.navbar-default .navbar-toggle {
-  border-color: #385887;
-}
-.navbar-default .navbar-toggle:hover,
-.navbar-default .navbar-toggle:focus {
-  background-color: #385887;
-}
-.navbar-default .navbar-toggle .icon-bar {
-  background-color: #9d9d9d;
-}
-.navbar-default .navbar-collapse,
-.navbar-default .navbar-form {
-  border-color: #9d9d9d;
-}
-.navbar-default .navbar-link {
-  color: #9d9d9d;
-}
-.navbar-default .navbar-link:hover {
-  color: #ffffff;
-}
+/*.navbar-default .navbar-text {*/
+/*  color: #9d9d9d;*/
+/*}*/
+/*.navbar-default .navbar-nav > li > a {*/
+/*  color: #9d9d9d;*/
+/*}*/
+/*.navbar-default .navbar-nav > li > a:hover,*/
+/*.navbar-default .navbar-nav > li > a:focus {*/
+/*  color: #ffffff;*/
+/*}*/
+/*.navbar-default .navbar-nav > .active > a,*/
+/*.navbar-default .navbar-nav > .active > a:hover,*/
+/*.navbar-default .navbar-nav > .active > a:focus {*/
+/*  color: #ffffff;*/
+/*  background-color: #385887;*/
+/*}*/
+/*.navbar-default .navbar-nav > .open > a,*/
+/*.navbar-default .navbar-nav > .open > a:hover,*/
+/*.navbar-default .navbar-nav > .open > a:focus {*/
+/*  color: #ffffff;*/
+/*  background-color: #385887;*/
+/*}*/
+/*.navbar-default .navbar-toggle {*/
+/*  border-color: #385887;*/
+/*}*/
+/*.navbar-default .navbar-toggle:hover,*/
+/*.navbar-default .navbar-toggle:focus {*/
+/*  background-color: #385887;*/
+/*}*/
+/*.navbar-default .navbar-toggle .icon-bar {*/
+/*  background-color: #9d9d9d;*/
+/*}*/
+/*.navbar-default .navbar-collapse,*/
+/*.navbar-default .navbar-form {*/
+/*  border-color: #9d9d9d;*/
+/*}*/
+/*.navbar-default .navbar-link {*/
+/*  color: #9d9d9d;*/
+/*}*/
+/*.navbar-default .navbar-link:hover {*/
+/*  color: #ffffff;*/
+/*}*/
 
 .demo-content.bg-alt{
     padding: 15px;
@@ -130,21 +136,21 @@ a.anchor {
   color: red;
 }
   
-@media (max-width: 767px) {
-  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
-    color: #9d9d9d;
-  }
-  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
-  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
-    color: #ffffff;
-  }
-  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
-  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
-  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
-    color: #ffffff;
-    background-color: #385887;
-  }
-}
+/*@media (max-width: 767px) {*/
+/*  .navbar-default .navbar-nav .open .dropdown-menu > li > a {*/
+/*    color: #9d9d9d;*/
+/*  }*/
+/*  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,*/
+/*  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {*/
+/*    color: #ffffff;*/
+/*  }*/
+/*  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,*/
+/*  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,*/
+/*  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {*/
+/*    color: #ffffff;*/
+/*    background-color: #385887;*/
+/*  }*/
+/*}*/
 
 @media screen {
   #cardPreview {

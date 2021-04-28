@@ -4,43 +4,53 @@
     <meta charset="utf-8">
     <title>Proxy Nexus</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+    <link href="https://fonts.cdnfonts.com/css/sony-sketch-ef" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-137348308-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'UA-137348308-1');
-    </script>
+<!--    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-137348308-1"></script>-->
+<!--    <script>-->
+<!--        window.dataLayer = window.dataLayer || [];-->
+<!--        function gtag(){dataLayer.push(arguments);}-->
+<!--        gtag('js', new Date());-->
+<!--        gtag('config', 'UA-137348308-1');-->
+<!--    </script>-->
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>    
-
-    <nav class="navbar navbar-default navbar-expand-md navbar-dark fixed-top">
-        <a class="navbar-brand" href="/">
-            <img class="home-button" src="logo.jpg">
-            Proxy Nexus
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarToggler">
-            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+    <script src="js/index.js"></script>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                Proxy Nexus
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-md-end" id="navbarToggler">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="instructions.html">Instructions</a>
                     </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="about.html">About</a>
-                </li>
-            </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="statistics.html">Statistics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="blog.html">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">Settings</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
     <div class="container">
@@ -77,9 +87,9 @@
                         <h5>January 16, 2020</h5>
                         <p>
                             New feature:
-                            <ul>
-                                <li>Options to include Basic Action cards or Click Tracker cards. Thanks to /u/CryOFrustration for the suggestion!</li>
-                            </ul>
+                        <ul>
+                            <li>Options to include Basic Action cards or Click Tracker cards. Thanks to /u/CryOFrustration for the suggestion!</li>
+                        </ul>
                         </p>
                         <p>
                             If you'd like to support Proxy Nexus and help cover some of the hosting fees, consider making a donation to <a href="https://www.paypal.me/proxynexus" target="_blank" rel="noopener">paypal.me/proxynexus</a>.
@@ -94,12 +104,12 @@
                         <h5>December 21, 2019</h5>
                         <p>
                             Added the following:
-                            <ul>
-                                <li>Image files for the new Uprising set and the link to the NISEI info page. The back side image for the two new flippable IDs are also included.</li>
-                                <li>German Reign and Reverie 2019 scans in the set tab.</li>
-                                <li>Alt art selection for cards reprinted in Uprising.</li>
-                                <li>Removed the 10 NISEI card limit.</li>
-                            </ul>
+                        <ul>
+                            <li>Image files for the new Uprising set and the link to the NISEI info page. The back side image for the two new flippable IDs are also included.</li>
+                            <li>German Reign and Reverie 2019 scans in the set tab.</li>
+                            <li>Alt art selection for cards reprinted in Uprising.</li>
+                            <li>Removed the 10 NISEI card limit.</li>
+                        </ul>
                         </p>
                         <p>
                             A heartfelt thank you to everyone who has donated in support.
@@ -117,13 +127,13 @@
                         <h5>September 10, 2019</h5>
                         <p>
                             New features:
-                            <ul>
-                                <li>Added the German System Core 2019 scans, however they're only accessible by choosing the set.</li>
-                                <li>Added image files for the Uprising booster pack, the Magnum Opus Reprint and links to the new NISEI products.</li>
-                                <li>Card preview shows the names of cards that aren't found. Submitted by nlscng on github.</li>
-                                <li>Added an option to draw grey cut lines across the whole PDF page. Suggestion from /u/Captain_Sca.</li>
-                                <li>Improved a handful of small visual details of the website.</li>
-                            </ul>
+                        <ul>
+                            <li>Added the German System Core 2019 scans, however they're only accessible by choosing the set.</li>
+                            <li>Added image files for the Uprising booster pack, the Magnum Opus Reprint and links to the new NISEI products.</li>
+                            <li>Card preview shows the names of cards that aren't found. Submitted by nlscng on github.</li>
+                            <li>Added an option to draw grey cut lines across the whole PDF page. Suggestion from /u/Captain_Sca.</li>
+                            <li>Improved a handful of small visual details of the website.</li>
+                        </ul>
                         </p>
                         <p>
                             If you'd like to support Proxy Nexus and help cover some of the hosting fees, consider making a donation to <a href="https://www.paypal.me/proxynexus" target="_blank" rel="noopener">paypal.me/proxynexus</a>.
@@ -141,21 +151,21 @@
                         <h5>May 3, 2019</h5>
                         <p>
                             New features:
-                            <ul>
-                                <li><strong>Print proxies at MPC (makeplayingcards.com).</strong> Generate a set of images ready for printing at MPC. Includes <a href="https://www.reddit.com/r/Netrunner/comments/beu869/announcing_system_backup_proxy_backs/" target="_blank" rel="noopener">the System Backup card back images </a> provided by Spencer Wharton. (/u/SpencerDub). I find that most decks don't contain more than 10 NISEI cards, so to prevent people from printing the entire set themselves, <u>only 10 copies of any NISEI card will be included in MPC exports.</u> <a href="http://nisei.net/products">Please support NISEI by buying a set from them instead</a>, the card quality will far exceed what Proxy Nexus can produce anyways.</li>
-                                <li><strong>Alternate/Promo Art Selection.</strong> On any input method, if an alternate art version of a card exists, a selector appears allowing you to select of any of the alternatives. Certain alt art cards have different backs, (eg, the Magnum Opus cards) The images for these are also included on PDFs and in MPC exports but can be excluded if desired.</li>
-                                <li>Instructions Page. Details on how to make paper and MPC proxies.</li>
-                                <li>Large PDF requests are split into smaller PDFs and zipped. I know the self-serve printers at Staples have a 80mb file limit.</li>
-                                <li>Improved UI, better options selection and status display.</li>
-                            </ul>
+                        <ul>
+                            <li><strong>Print proxies at MPC (makeplayingcards.com).</strong> Generate a set of images ready for printing at MPC. Includes <a href="https://www.reddit.com/r/Netrunner/comments/beu869/announcing_system_backup_proxy_backs/" target="_blank" rel="noopener">the System Backup card back images </a> provided by Spencer Wharton. (/u/SpencerDub). I find that most decks don't contain more than 10 NISEI cards, so to prevent people from printing the entire set themselves, <u>only 10 copies of any NISEI card will be included in MPC exports.</u> <a href="http://nisei.net/products">Please support NISEI by buying a set from them instead</a>, the card quality will far exceed what Proxy Nexus can produce anyways.</li>
+                            <li><strong>Alternate/Promo Art Selection.</strong> On any input method, if an alternate art version of a card exists, a selector appears allowing you to select of any of the alternatives. Certain alt art cards have different backs, (eg, the Magnum Opus cards) The images for these are also included on PDFs and in MPC exports but can be excluded if desired.</li>
+                            <li>Instructions Page. Details on how to make paper and MPC proxies.</li>
+                            <li>Large PDF requests are split into smaller PDFs and zipped. I know the self-serve printers at Staples have a 80mb file limit.</li>
+                            <li>Improved UI, better options selection and status display.</li>
+                        </ul>
                         </P>
                         <p>
                             Technical Details:
-                            <ul>
-                                <li>Both types of MPC images have been pre-generated by a python script I wrote. Details on the differences of scaled and fitted images are on <a href="/instructions.html">the instructions page.</a> I thought of having Proxy Nexus generate them on the fly, but I'm worried about memory usage on Heroku. </li>
-                                <li>As pointed out to me by /u/robahu, when uploading images to MPC, it will consider multiple identical images as the same one, even if they have different file names. I used <a href="https://sharp.dimens.io/en/stable/">npm package Sharp</a> to mark duplicate copies of the same image with a tiny 1x1 red square along the left border of the image. This boarder gets cut anyways and allows us to trick MPC into seeing the same images as a different one. Why bother? To make use of their super convenient "Help me autofill images!" button. </li>
-                                <li>Using web sockets to pass the server's processing status and download link to the browser. Zip creation was taking more time than PDF generation, and the API calls would timeout on big requests. Also seems appropriate to send feedback while people wait.</li>
-                            </ul>
+                        <ul>
+                            <li>Both types of MPC images have been pre-generated by a python script I wrote. Details on the differences of scaled and fitted images are on <a href="/instructions.html">the instructions page.</a> I thought of having Proxy Nexus generate them on the fly, but I'm worried about memory usage on Heroku. </li>
+                            <li>As pointed out to me by /u/robahu, when uploading images to MPC, it will consider multiple identical images as the same one, even if they have different file names. I used <a href="https://sharp.dimens.io/en/stable/">npm package Sharp</a> to mark duplicate copies of the same image with a tiny 1x1 red square along the left border of the image. This boarder gets cut anyways and allows us to trick MPC into seeing the same images as a different one. Why bother? To make use of their super convenient "Help me autofill images!" button. </li>
+                            <li>Using web sockets to pass the server's processing status and download link to the browser. Zip creation was taking more time than PDF generation, and the API calls would timeout on big requests. Also seems appropriate to send feedback while people wait.</li>
+                        </ul>
                         </p>
                     </div>
                 </div>
@@ -167,20 +177,20 @@
                         <h5>April 25, 2019</h5>
                         <p>
                             New features:
-                            <ul>
-                                <li>Faster PDF generation using cached PDFs and image files. </li>
-                                <li>Reduced pdf file size with no quality loss.</li>
-                                <li>Separate Generate PDF and Download buttons.</li>
-                            </ul>
+                        <ul>
+                            <li>Faster PDF generation using cached PDFs and image files. </li>
+                            <li>Reduced pdf file size with no quality loss.</li>
+                            <li>Separate Generate PDF and Download buttons.</li>
+                        </ul>
                         </P>
                         <p>
                             Technical Improvements:
-                            <ul>
-                                <li>Moved from Azure to Heroku. Simply a better service.</li>
-                                <li>Improved image fetching process. Instead of using the Azure SDK to download images into JavaScript buffers, now downloads image files using <a href="https://www.npmjs.com/package/fetch/" target="_blank" rel="noopener">fetch</a>.</li>
-                                <li>Reduced pdf file size. When PDFkit adds images to a document from files instead of buffers, it appears to not increase the pdf file size when adding duplicate images.</li>
-                                <li>Fixed Memory Leak. The removal of JavaScript buffers appears to have fixed a memory leak, which was causing the website to crash at Heroku's 1GB hard limit.</li>
-                            </ul>
+                        <ul>
+                            <li>Moved from Azure to Heroku. Simply a better service.</li>
+                            <li>Improved image fetching process. Instead of using the Azure SDK to download images into JavaScript buffers, now downloads image files using <a href="https://www.npmjs.com/package/fetch/" target="_blank" rel="noopener">fetch</a>.</li>
+                            <li>Reduced pdf file size. When PDFkit adds images to a document from files instead of buffers, it appears to not increase the pdf file size when adding duplicate images.</li>
+                            <li>Fixed Memory Leak. The removal of JavaScript buffers appears to have fixed a memory leak, which was causing the website to crash at Heroku's 1GB hard limit.</li>
+                        </ul>
                         </p>
                     </div>
                 </div>
@@ -192,23 +202,23 @@
                         <h5>April 19, 2019</h5>
                         <p>
                             New features:
-                            <ul>
-                                <li>Rebuilt website appearance using <a href="https://getbootstrap.com/" target="_blank" rel="noopener">Bootstrap</a>. The website should now work better with all browsers, including mobile.</li>
-                                <li>PDF is now generated on server using <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> and <a href="http://pdfkit.org/" target="_blank" rel="noopener">PDFKit</a> instead of using Google Chrome's print menu. Choose between letter and A4 paper sizes, as well as quality of images.</li>
-                                <li>PDF includes cut lines to make cutting prints easier.</li>
-                                <li>Preview images on website are smaller to improve load times.</li>
-                                <li>Blog page for announcing new features.</li>
-                            </ul>
+                        <ul>
+                            <li>Rebuilt website appearance using <a href="https://getbootstrap.com/" target="_blank" rel="noopener">Bootstrap</a>. The website should now work better with all browsers, including mobile.</li>
+                            <li>PDF is now generated on server using <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> and <a href="http://pdfkit.org/" target="_blank" rel="noopener">PDFKit</a> instead of using Google Chrome's print menu. Choose between letter and A4 paper sizes, as well as quality of images.</li>
+                            <li>PDF includes cut lines to make cutting prints easier.</li>
+                            <li>Preview images on website are smaller to improve load times.</li>
+                            <li>Blog page for announcing new features.</li>
+                        </ul>
                         </P>
                         <p>
                             Planned improvements:
-                            <ul>
-                                <li>Option to generate images for <a href="https://www.makeplayingcards.com/" target="_blank" rel="noopener">makeplayingcards.com</a>, packaged in a zip file. Will be including <a href="https://www.reddit.com/r/Netrunner/comments/beu869/announcing_system_backup_proxy_backs/" target="_blank" rel="noopener">/u/SpencerDub's new proxy back designs.</a></li>
-                                <li>Option to select alternate art for cards that have it.</li>
-                                <li>Users can submit pictures of their proxying results to be published on the website blog page.</lil>
-                                <li>General UI improvements.</li>
-                                <li>Other language support. /u/5N00P1 had asked about adding German card scans.</li>
-                            </ul>
+                        <ul>
+                            <li>Option to generate images for <a href="https://www.makeplayingcards.com/" target="_blank" rel="noopener">makeplayingcards.com</a>, packaged in a zip file. Will be including <a href="https://www.reddit.com/r/Netrunner/comments/beu869/announcing_system_backup_proxy_backs/" target="_blank" rel="noopener">/u/SpencerDub's new proxy back designs.</a></li>
+                            <li>Option to select alternate art for cards that have it.</li>
+                            <li>Users can submit pictures of their proxying results to be published on the website blog page.</lil>
+                            <li>General UI improvements.</li>
+                            <li>Other language support. /u/5N00P1 had asked about adding German card scans.</li>
+                        </ul>
                         </p>
                         <p>
                             Thank you all for your support and using this website. As always, I appreciate all feedback and suggestions. I can be reached on reddit at <a href="https://www.reddit.com/user/axmccx/" target="_blank" rel="noopener">/u/axmccx</a>, on various Netrunner Discord Channels, and at alexmccx[at]gmail[dot]com.
@@ -230,20 +240,20 @@
                             You can enter a card list, a decklist URL from NetrunnerDB or select an official set. When picking any of the three Core sets, you can choose between single set or a full playset. Also, whenever a flippable ID is selected (Sync and Biotech), the back images are also included.
                         </p>
                         <p>
-                            Clicking "Download PDF" currently brings up the browser's print panel, which lets you save to PDF or print directly. Make sure all the cards have loaded beforehand and that the margins are narrow enough so that 9 cards fit per game.                
+                            Clicking "Download PDF" currently brings up the browser's print panel, which lets you save to PDF or print directly. Make sure all the cards have loaded beforehand and that the margins are narrow enough so that 9 cards fit per game.
                         </p>
                         <p>
                             I've made some enhancements to the scanned images. First, I applied the despeckle enhancement from Gimp to all images. I also use ImageMagick's mogrify tool to slightly brighten and enhance the colors of the cards. The command I used: "mogrify -modulate 105,105". <a href="https://imgur.com/a/sGu4rih" target="_blank" rel="noopener">Have a look here for comparison.</a> I believe these enhancements improve the print quality significantly, but I'm open to feedback.
                         </p>
                         <p>
                             My exams are coming soon, so I've gotta take a break, but I plan on adding the following improvements
-                            <ul>
-                                <li>Generate PDF on server end.</li>
-                                <li>Reduce image sizes with minimal quality loss.</li>
-                                <li>Provide option to select available alt art for cards that have it.</li>
-                                <li>Provide option to download a zip file of image files ready for printing at MPC (makeplayingcards.com). The images will include a black border. I will also NOT include any NISEI cards selected in this option, and will prompt users to buy a set from the NISEI marketplaces to support them.</li>
-                                <li>Make suggestions when printing certain cards to include others. Eg, when printing Rebirth, ask whether to include other IDs in the same faction. Similar idea with DJ Fenris. When printing Adam, ask whether to include copies of the directives.</li>
-                            </ul>
+                        <ul>
+                            <li>Generate PDF on server end.</li>
+                            <li>Reduce image sizes with minimal quality loss.</li>
+                            <li>Provide option to select available alt art for cards that have it.</li>
+                            <li>Provide option to download a zip file of image files ready for printing at MPC (makeplayingcards.com). The images will include a black border. I will also NOT include any NISEI cards selected in this option, and will prompt users to buy a set from the NISEI marketplaces to support them.</li>
+                            <li>Make suggestions when printing certain cards to include others. Eg, when printing Rebirth, ask whether to include other IDs in the same faction. Similar idea with DJ Fenris. When printing Adam, ask whether to include copies of the directives.</li>
+                        </ul>
                         </p>
                         <p>
                             I'm open to suggestions on functionality and style.
