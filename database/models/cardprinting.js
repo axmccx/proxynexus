@@ -1,6 +1,8 @@
 module.exports = (sequelize, DataTypes) => {
   const CardPrinting = sequelize.define('card_printing', {
     code: DataTypes.STRING,
+    position: DataTypes.INTEGER,
+    quantity: DataTypes.INTEGER,
   }, {
     timestamps: false,
     underscored: true,

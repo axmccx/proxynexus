@@ -2,16 +2,26 @@
 let cardTitleDB;
 let cardCodeDB;
 let packList;
-// let cardListTextArea;
-// let deckURLText;
-// let setSelection;
+let cardListTextArea;
+let setSelection;
+let deckURLText;
 let cardManager;
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
+const NRDB_API_DIR = 'https://netrunnerdb.com/api/2.0/public/';
 const NRDB_CARD_DIR = 'https://netrunnerdb.com/en/card/';
 
 function t2key(t) {
   return t.trim().toLowerCase().replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const message = `An error has occurred fetching from ${url}: ${response.status}`;
+    throw new Error(message);
+  }
+  return response.json();
 }
 
 function getCardImgs(code) {
@@ -61,19 +71,9 @@ class Card {
 
 class CardManager {
   constructor() {
-    this.cardListTextArea = document.querySelector('#cardListTextArea');
     this.cardPreview = document.querySelector('#cardPreview');
     this.cardList = [];
     // all art component
-
-    this.cardListTextArea.addEventListener('input', () => {
-      this.updateCardList();
-      this.buildCardPreviewHTML();
-    });
-  }
-
-  setCardList(newText) {
-    this.cardListTextArea.value = newText;
   }
 
   setCardPreviewHTML(html) {
@@ -88,8 +88,8 @@ class CardManager {
     this.setCardPreviewHTML(newHtml);
   }
 
-  updateCardList() {
-    const input = this.cardListTextArea.value.split(/\n/);
+  updateCardListFromTextArea(cardListText) {
+    const input = cardListText.split(/\n/);
     const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
     const cardTitles = this.cardList.map((c) => c.title);
     const newCardTitles = [];
@@ -135,18 +135,53 @@ class CardManager {
       const [code] = cardTitleDB[t2key(title)].codes;
       this.cardList.splice(i, 0, new Card(code));
     });
-  }
-  // method to make entire alt art selector html
-}
 
-// eslint-disable-next-line consistent-return
-async function fetchOptions() {
-  const response = await fetch(`${window.location.origin}/api/getOptions`);
-  if (!response.ok) {
-    const message = `An error has occurred: ${response.status}`;
-    throw new Error(message);
+    this.buildCardPreviewHTML();
   }
-  return response.json();
+
+  // method to make entire alt art selector html
+
+  setCardList(newCards) {
+    this.cardList = [];
+    newCards.forEach((card) => {
+      for (let i = 0; i < card.quantity; i += 1) {
+        this.cardList.push(new Card(card.code));
+      }
+    });
+    this.buildCardPreviewHTML();
+  }
+
+  updateCardListFromSetSelection(packCode) {
+    fetchJson(`${window.location.origin}/api/getPack/${packCode}`)
+      .then((res) => {
+        // TODO use full set selection and card type to control quantity
+        this.setCardList(res.data);
+      });
+  }
+
+  updateCardListFromDecklistURL(url) {
+    const publishedDeckIDRegex = /(\/en\/decklist\/)(\d+)/;
+    const unpublishedDeckIDRegex = /(\/deck\/view\/)(\d+)/;
+    const publishedMatch = publishedDeckIDRegex.exec(url);
+    const unpublishedMatch = unpublishedDeckIDRegex.exec(url);
+    let deckId;
+    let apiOption;
+
+    if (publishedMatch) {
+      [, , deckId] = publishedMatch;
+      apiOption = 'decklist/';
+    } else if (unpublishedMatch) {
+      [, , deckId] = unpublishedMatch;
+      apiOption = 'deck/';
+    }
+
+    fetchJson(`${NRDB_API_DIR}${apiOption}${deckId}`)
+      .then((res) => {
+        const newCards = Object.entries(res.data[0].cards)
+          .map(([code, quantity]) => ({ code, quantity }));
+        this.setCardList(newCards);
+      });
+  }
 }
 
 function loadThreeCards() {
@@ -158,9 +193,18 @@ function loadThreeCards() {
     const cardCode = cardTitleDB[cardTitle].codes[0];
     chosenCards.push(cardCodeDB[cardCode].title);
   }
-  cardManager.setCardList(`${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`);
-  cardManager.updateCardList();
-  cardManager.buildCardPreviewHTML();
+  cardListTextArea.value = `${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`;
+  cardManager.updateCardListFromTextArea(cardListTextArea.value);
+}
+
+function populateSetSelection() {
+  packList.forEach((pack) => {
+    const option = document.createElement('option');
+    option.setAttribute('value', pack.pack_code);
+    option.innerHTML = pack.name;
+    setSelection.appendChild(option);
+  });
+  setSelection.value = packList[0].pack_code;
 }
 
 function loadOptions() {
@@ -173,34 +217,46 @@ function loadOptions() {
     localStorage.removeItem('cardCodeDB');
     localStorage.removeItem('packList');
     cardManager.setCardPreviewHTML('<span class="text-muted" data-loading>LOADING CARDS...</span>');
-    fetchOptions()
+    fetchJson(`${window.location.origin}/api/getOptions`)
       .then((resJson) => {
-        if (resJson.code === 200) {
-          cardTitleDB = resJson.data.cardTitleDB;
-          cardCodeDB = resJson.data.cardCodeDB;
-          packList = resJson.data.packList;
-          localStorage.setItem('cardTitleDB', JSON.stringify(cardTitleDB));
-          localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
-          localStorage.setItem('packList', JSON.stringify(packList));
-          loadThreeCards();
-        }
+        cardTitleDB = resJson.data.cardTitleDB;
+        cardCodeDB = resJson.data.cardCodeDB;
+        packList = resJson.data.packList;
+        localStorage.setItem('cardTitleDB', JSON.stringify(cardTitleDB));
+        localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
+        localStorage.setItem('packList', JSON.stringify(packList));
+        loadThreeCards();
+        populateSetSelection();
       })
       .catch((err) => {
         console.log(err.message);
       });
   } else {
     loadThreeCards();
+    populateSetSelection();
   }
 }
 
-// function assignEvents() {
-// }
+function assignEvents() {
+  cardListTextArea.addEventListener('input', (e) => {
+    cardManager.updateCardListFromTextArea(e.target.value);
+  });
+
+  setSelection.addEventListener('input', (e) => {
+    cardManager.updateCardListFromSetSelection(e.target.value);
+  });
+
+  deckURLText.addEventListener('input', (e) => {
+    cardManager.updateCardListFromDecklistURL(e.target.value);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   cardManager = new CardManager();
-  // deckURLText = document.querySelector('#deckURLText');
-  // setSelection = document.querySelector('#setSelection');
+  cardListTextArea = document.querySelector('#cardListTextArea');
+  setSelection = document.querySelector('#setSelection');
+  deckURLText = document.querySelector('#deckURLText');
 
-  // assignEvents();
+  assignEvents();
   loadOptions();
 });
