@@ -1,865 +1,143 @@
-let _cardDB = {};
-let _cardDB_keyID = {}; // same as _cardDB, but keyed by card code instead of name
-let _cardListTextArea;
-let _deckURLText;
-let _setSelection;
-let _cardPreview;
-let _playsetSelection = 'Single Set';
-let _cardList;
-let _altArtSelector;
-const _artSelectors = {};
-let _imgCount;
-let _selectedTab = 'Card List';
-let _extraCards;
-let _socket;
-let _sessID;
+let cardTitleDB;
+let cardCodeDB;
+let packList;
+let cardListTextArea;
+let deckURLText;
+let setSelection;
+let cardPreview;
+let cardCodes = [];
 
-const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/';
-const NRDB_API_DIR = 'https://netrunnerdb.com/api/2.0/public/';
+const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 const NRDB_CARD_DIR = 'https://netrunnerdb.com/en/card/';
-const IMAGE_CONTAINER = 'low-images/';
 
-class AltSelector {
-  constructor(imgID, selectID, selectedCode, altCodes) {
-    this.imgID = imgID;
-    this.selectID = selectID;
-    this.selectedCode = selectedCode;
-    this.altCodes = altCodes;
-  }
+function t2key(t) {
+  return t.trim().toLowerCase().replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');
+}
 
-  cycleRight() {
-    const index = this.altCodes.indexOf(this.selectedCode);
-    const newIndex = (index + 1) % this.altCodes.length;
-    const newCode = this.altCodes[newIndex];
-    this.switchArt(newCode);
-    $(`#${this.selectID}`).val(newCode);
-  }
+function updateCodesFromCardList() {
+  cardCodes = [];
+  const input = cardListTextArea.value.split(/\n/);
+  const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
 
-  cycleLeft() {
-    const index = this.altCodes.indexOf(this.selectedCode);
-    const newIndex = index - 1;
-    if (newIndex < 0) {
-      var newCode = this.altCodes[this.altCodes.length - 1];
-    } else {
-      var newCode = this.altCodes[newIndex];
-    }
-    this.switchArt(newCode);
-    $(`#${this.selectID}`).val(newCode);
-  }
+  input.forEach((entry) => {
+    const match = cardInputRegex.exec(entry);
+    const count = (match[1] === undefined) ? 1 : parseInt(match[1], 10);
+    const cardKey = t2key(match[2]);
 
-  switchArt(code) {
-    const replaceIndex = _cardList.indexOf(this.selectedCode);
-    _cardList[replaceIndex] = code;
-    $(`#${this.imgID}`).attr('src', _cardDB_keyID[code].image);
-    this.selectedCode = code;
-
-    const backImgID = `#${this.imgID}backImg`;
-    const backLink = `#${this.imgID}backLink`;
-    if (_cardDB_keyID[code].back_code) {
-      $(backImgID).attr('src', _cardDB_keyID[code].back_img);
-      if ($('#includeAltArtBacks').prop('checked')) {
-        $(backLink).show();
+    if (cardKey !== '' && cardKey in cardTitleDB) {
+      for (let i = 0; i < count; i += 1) {
+        cardCodes.push(cardTitleDB[cardKey].codes[0]);
       }
-    } else {
-      $(backImgID).attr('src', '');
-      $(backLink).hide();
+    }
+  });
+  console.log(cardCodes);
+}
+
+function getCardImgs(code) {
+  const card = cardCodeDB[code];
+  const sourcePriority = ['pt', 'lm', 'de']; // temporary, should be loaded from settings/cookie
+  let source;
+  for (let i = 0; i < sourcePriority.length; i += 1) {
+    const s = sourcePriority[i];
+    if (card.availableSources.includes(s)) {
+      source = `${s}Preview`;
+      break;
     }
   }
+  // TODO if current code isn't available, try another code of the same image, if available...
+  return [card[source].front, card[source].back];
 }
 
-function selectTab(tabLabel) {
-  _selectedTab = tabLabel;
-  switch (tabLabel) {
-    case 'Card List':
-      buildFromCardList();
-      break;
-    case 'Set':
-      buildFromSet();
-      break;
-    case 'NetrunnerDB':
-      if (_deckURLText.val() != '') {
-        buildFromDeckID();
-      }
-      break;
+function buildCardPreviewHTML(codes) {
+  let newHtml = '';
+  codes.forEach((code) => {
+    const [frontImg, backImg] = getCardImgs(code);
+    const { title } = cardCodeDB[code];
+    const frontImgURL = `${IMAGE_BASE_DIR}${frontImg}`;
+    newHtml += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
+    newHtml += `<img class="card" id="prev${code}" src="${frontImgURL}" alt="${code}" />`;
+    newHtml += `<span class="label">${code} ${title}</span>`;
+    newHtml += '</a>';
+    if (backImg !== '') {
+      const backImgURL = `${IMAGE_BASE_DIR}${backImg}`;
+      newHtml += `<a class="backImgPreview" id="prev${code}backLink" style="display: none;" href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
+      newHtml += `<img class="card" id="prev${code}backImg" src=${backImgURL} alt=${code}back"/>`;
+      newHtml += `<span class="label">${code} ${title}</span>`;
+      newHtml += '</a>';
+    }
+  });
+  cardPreview.innerHTML = newHtml;
+}
+
+// eslint-disable-next-line consistent-return
+async function fetchOptions() {
+  const response = await fetch(`${window.location.origin}/api/getOptions`);
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
   }
+  return response.json();
 }
 
-function selectPlayset(tabLabel) {
-  let i; let
-    tabsets;
-  tabsets = document.getElementsByClassName('tabsets');
-  for (i = 0; i < tabsets.length; i++) {
-    tabsets[i].className = tabsets[i].className.replace(' active', '');
+function loadThreeCards() {
+  const chosenCards = [];
+  for (let i = 0; i < 3; i += 1) {
+    const randIndex = Math.floor(Math.random() * Object.keys(cardTitleDB).length);
+    const cardTitleList = Object.keys(cardTitleDB);
+    const cardTitle = cardTitleList[randIndex];
+    const cardCode = cardTitleDB[cardTitle].codes[0];
+    chosenCards.push(cardCodeDB[cardCode].title);
   }
-  _playsetSelection = tabLabel;
-  buildFromSet();
+  cardListTextArea.value = `${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`;
 }
 
-function loadCards() {
-  _cardDB = localStorage.getItem('cardsDB');
-  _cardDB = JSON.parse(_cardDB);
+function loadOptions() {
+  cardTitleDB = JSON.parse(localStorage.getItem('cardTitleDB'));
+  cardCodeDB = JSON.parse(localStorage.getItem('cardCodeDB'));
+  packList = JSON.parse(localStorage.getItem('packList'));
 
-  _cardDB_keyID = localStorage.getItem('cardDB_keyID');
-  _cardDB_keyID = JSON.parse(_cardDB_keyID);
-
-  if (!_cardDB) {
-    fetchAllCards();
-  } else if (!('title' in _cardDB) || !('side' in _cardDB)) {
-    fetchAllCards();
-  } else {
-    buildFromCardList();
-  }
-}
-
-function saveCards() {
-  localStorage.setItem('cardsDB', JSON.stringify(_cardDB));
-  localStorage.setItem('cardDB_keyID', JSON.stringify(_cardDB_keyID));
-}
-
-function fetchAllCards() {
-  localStorage.removeItem('cardsDB');
-  localStorage.removeItem('cardDB_keyID');
-  _cardPreview.html('<span class="text-muted" data-loading>loading cards ...</span>');
-
-  $.getJSON(`${NRDB_API_DIR}cards`, (response) => {
-    _cardDB = {};
-    _cardDB_keyID = {};
-
-    $.each(response.data, (key, item) => {
-      const image = `${IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code}.jpg`;
-      const cardDBKey = item.title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__');
-
-      if ((item.code < 28000) || ((item.code < 31000 && item.code > 30000) && item.code != 30075 && item.code != 30030)) { // Prioritize FFG over NISEI
-        _cardDB[cardDBKey] = {
-          code: item.code,
-          title: item.title,
-          image,
-        };
-      }
-
-      _cardDB_keyID[item.code] = {
-        code: item.code,
-        side: item.side_code,
-        title: item.title,
-        image,
-      };
-    });
-
-    $.getJSON('json/altart.json', (response) => {
-      // add alt art codes
-      $.each(response.altArtRelations, (key, item) => {
-        _cardDB_keyID[item.code].alts = item.alts;
-
-        const cardDBKey = _cardDB_keyID[item.code].title.toLowerCase().replace(/:/g, '').replace(/\s/g, '__');
-        _cardDB[cardDBKey].alts = item.alts;
+  if (!cardTitleDB) {
+    localStorage.removeItem('cardTitleDB');
+    localStorage.removeItem('cardCodeDB');
+    localStorage.removeItem('packList');
+    cardPreview.innerHTML = '<span class="text-muted" data-loading>LOADING CARDS...</span>';
+    fetchOptions()
+      .then((resJson) => {
+        if (resJson.code === 200) {
+          cardTitleDB = resJson.data.cardTitleDB;
+          cardCodeDB = resJson.data.cardCodeDB;
+          packList = resJson.data.packList;
+          localStorage.setItem('cardTitleDB', JSON.stringify(cardTitleDB));
+          localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
+          localStorage.setItem('packList', JSON.stringify(packList));
+          loadThreeCards();
+          updateCodesFromCardList();
+          buildCardPreviewHTML(cardCodes);
+        }
+      })
+      .catch((err) => {
+        console.log(err.message);
       });
-
-      // add entries for alt art codes, to store their side_code, title, and back code if it exists
-      $.each(response.altArtCards, (key, item) => {
-        const image = `${IMAGE_BASE_DIR + IMAGE_CONTAINER + item.code}.jpg`;
-        if (item.back_code) {
-          var back_img = `${IMAGE_BASE_DIR + IMAGE_CONTAINER + item.back_code}.jpg`;
-        } else {
-          var back_img = null;
-        }
-
-        _cardDB_keyID[item.code] = {
-          code: item.code,
-          back_code: item.back_code,
-          back_img,
-          side: item.side_code,
-          title: item.title,
-          image,
-        };
-      });
-    });
-
-    saveCards();
-    buildFromCardList();
-  });
-}
-
-function fetchSetList() {
-  $.getJSON('json/packs.json', (response) => {
-    response.data.reverse();
-    $.each(response.data, (key, item) => {
-      _setSelection.append(`<option value=${item.code}>${item.name}</option>`);
-      if (item.code === 'sc19') {
-        _setSelection.val(item.code);
-      }
-    });
-  });
-}
-
-function fetchExtraCards() {
-  $.getJSON('json/extras.json', (response) => {
-    _extraCards = response;
-  });
-}
-
-function makeExtraCardHtml(type) {
-  let extraHtml = '';
-  const extras = _extraCards.filter((card) => card.type_code === type);
-  extras.forEach((card) => {
-    const imgID = `cardPrev${_imgCount++}`;
-    const image = `${IMAGE_BASE_DIR + IMAGE_CONTAINER + card.code}.jpg`;
-    _cardList.push(card.code);
-    extraHtml += `<a href="${NRDB_CARD_DIR}" title="" target="NetrunnerCard">`;
-    extraHtml += `<img class="card" id="${imgID}" src="${image}" alt="${card.code}" />`;
-    extraHtml += `<span class="label">${card.title}</span>`;
-    extraHtml += '</a>';
-  });
-  return extraHtml;
-}
-
-function buildFromCardList() {
-  const input = _cardListTextArea.val().toLowerCase().split(/\n/);
-  let html = '';
-  let unfound = 0;
-  const unfoundCards = [];
-  let artSelectorHTML = '';
-  _cardList = [];
-
-  if (!_cardDB) {
-    return false;
-  }
-
-  for (var i = 0; i < input.length; i++) {
-    const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
-    const match = cardInputRegex.exec(input[i]);
-
-    let count = $.trim(match[1]).replace(/x/g, '');
-    const cardname = $.trim(match[2]).replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');
-
-    if (cardname == '') {
-      continue;
-    }
-
-    if (cardname in _cardDB) {
-      const card = _cardDB[cardname];
-      if (count > 9) {
-        count = 9;
-      } else if (count < 1) {
-        count = 1;
-      }
-      for (let j = 0; j < count; j++) {
-        const imgID = `cardPrev${_imgCount++}`;
-
-        _cardList.push(card.code);
-        html += buildCardHTML(card.code, card.image, card.title, imgID);
-
-        if ('alts' in card) {
-          if (artSelectorHTML === '') {
-            $('#alt-art-selector-hide-btn').show();
-            $('#includeAltArtBacksCheckbox').show();
-            artSelectorHTML += '<h6>Alt Arts</h6>';
-          }
-          artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
-        }
-      }
-    } else {
-      unfound++;
-      unfoundCards.push(cardname);
-    }
-  }
-
-  if ($('#basicActionCard').prop('checked')) {
-    html += makeExtraCardHtml('basic_action');
-  }
-
-  if ($('#clickTrackerCard').prop('checked')) {
-    html += makeExtraCardHtml('click_tracker');
-  }
-
-  if (unfound > 0) {
-    let unfoundHtml = '';
-    for (var i = 0; i < unfoundCards.length; i++) {
-      unfoundHtml = unfoundHtml.concat(`<li>${unfoundCards[i]}</li>`);
-    }
-    unfoundHtml = `<ul>${unfoundHtml}</ul>`;
-    html += `<div class="no-print text-muted" style="overflow:auto">${
-      unfound} not found: ${unfoundHtml}</div>`;
-  }
-  _cardPreview.html(html);
-  _altArtSelector.html(artSelectorHTML);
-  if (artSelectorHTML === '') {
-    $('#alt-art-selector-hide-btn').hide();
-    $('#includeAltArtBacksCheckbox').hide();
-  }
-}
-
-function buildFromDeckID() {
-  if (!_cardDB_keyID) {
-    return false;
-  }
-
-  const deckInput = _deckURLText.val().toLowerCase();
-  const publishedDeckIDRegex = /(\/en\/decklist\/)(\d+)/;
-  const unpublishedDeckIDRegex = /(\/deck\/view\/)(\d+)/;
-
-  let match = publishedDeckIDRegex.exec(deckInput);
-  let published = true;
-  if (match == null) {
-    match = unpublishedDeckIDRegex.exec(deckInput);
-    published = false;
-    if (match == null) return;
-  }
-
-  const deckid = match[2];
-  if (published) {
-    $.getJSON(`${NRDB_API_DIR}decklist/${deckid}`, (response) => {
-      makeCardHTML(response);
-    });
   } else {
-    $.getJSON(`${NRDB_API_DIR}deck/${deckid}`, (response) => {
-      makeCardHTML(response);
-    });
+    loadThreeCards();
+    updateCodesFromCardList();
+    buildCardPreviewHTML(cardCodes);
   }
-}
-
-function makeCardHTML(response) {
-  const input = response.data[0].cards;
-  const keys = Object.keys(input);
-  let html = '';
-  let artSelectorHTML = '';
-  _cardList = [];
-  for (let i = 0; i < keys.length; i++) {
-    if (keys[i] in _cardDB_keyID) {
-      const card = _cardDB_keyID[keys[i]];
-      for (let j = 0; j < input[keys[i]]; j++) {
-        const imgID = `cardPrev${_imgCount++}`;
-
-        _cardList.push(card.code);
-        html += buildCardHTML(card.code, card.image, card.title, imgID);
-
-        if ('alts' in card) {
-          if (artSelectorHTML === '') {
-            $('#alt-art-selector-hide-btn').show();
-            $('#includeAltArtBacksCheckbox').show();
-            artSelectorHTML += '<h6>Alt Arts</h6>';
-          }
-          artSelectorHTML += addAltArtSelector(card.code, card.alts, imgID);
-        }
-      }
-    }
-  }
-
-  if ($('#basicActionCard').prop('checked')) {
-    html += makeExtraCardHtml('basic_action');
-  }
-
-  if ($('#clickTrackerCard').prop('checked')) {
-    html += makeExtraCardHtml('click_tracker');
-  }
-
-  _cardPreview.html(html);
-  _altArtSelector.html(artSelectorHTML);
-  if (artSelectorHTML === '') {
-    $('#alt-art-selector-hide-btn').hide();
-    $('#includeAltArtBacksCheckbox').hide();
-  }
-}
-
-function buildFromSet() {
-  const selectedSet = _setSelection.val();
-  const coreSets = ['core', 'core2', 'sc19', 'sc19-german'];
-  let html = '';
-  let artSelectorHTML = '';
-  _cardList = [];
-
-  if (!_cardDB_keyID || !selectedSet) {
-    return false;
-  }
-
-  const playsetDisplay = document.getElementById('playsetDisplay');
-  if (coreSets.indexOf(selectedSet) > -1) {
-    playsetDisplay.style.display = 'block';
-  } else {
-    playsetDisplay.style.display = 'none';
-  }
-
-  let modImageContainer;
-  if (selectedSet === 'sc19-german' || selectedSet === 'rar-german') {
-    modImageContainer = `german-${IMAGE_CONTAINER}`;
-  } else {
-    modImageContainer = IMAGE_CONTAINER;
-  }
-
-  $.getJSON(`json/pack/${selectedSet}.json`, (response) => {
-    response.forEach((card) => {
-      let { quantity } = card;
-
-      if (coreSets.indexOf(selectedSet) > -1 && _playsetSelection == 'Playset') {
-        quantity = 3;
-      }
-
-      for (let i = 0; i < quantity; i++) {
-        const image = `${IMAGE_BASE_DIR + modImageContainer + card.code}.jpg`;
-        const imgID = `cardPrev${_imgCount++}`;
-        const localCard = _cardDB_keyID[card.code];
-
-        _cardList.push(card.code);
-        html += buildCardHTML(card.code, image, card.title, imgID);
-
-        if ('alts' in localCard && selectedSet !== 'sc19-german' && selectedSet != 'rar-german') {
-          if (artSelectorHTML === '') {
-            $('#alt-art-selector-hide-btn').show();
-            $('#includeAltArtBacksCheckbox').show();
-            artSelectorHTML += '<h6>Alt Arts</h6>';
-          }
-          artSelectorHTML += addAltArtSelector(card.code, localCard.alts, imgID);
-        }
-      }
-    });
-
-    if ($('#basicActionCard').prop('checked')) {
-      html += makeExtraCardHtml('basic_action');
-    }
-
-    if ($('#clickTrackerCard').prop('checked')) {
-      html += makeExtraCardHtml('click_tracker');
-    }
-
-    _cardPreview.html(html);
-    _altArtSelector.html(artSelectorHTML);
-    if (artSelectorHTML === '') {
-      $('#alt-art-selector-hide-btn').hide();
-      $('#includeAltArtBacksCheckbox').hide();
-    }
-  }).fail(() => {
-    $('#HeadMsg').html('<h3>Error fetching set list, try refreshing the page...</h3>');
-  });
-}
-
-function buildCardHTML(code, image, title, imgID) {
-  let newCard = '';
-  newCard += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-  newCard += `<img class="card" id="${imgID}" src="${image}" alt="${code}" />`;
-  newCard += `<span class="label">${code} ${title}</span>`;
-  newCard += '</a>';
-
-  if ('alts' in _cardDB_keyID[code]) {
-    const backImgID = `${imgID}backImg`;
-    const backLink = `${imgID}backLink`;
-    newCard += `<a class="backImgPreview" id="${backLink}" style="display: none;" href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-    newCard += `<img class="card" id="${backImgID}"/>`;
-    newCard += `<span class="label">${code} ${title}</span>`;
-    newCard += '</a>';
-  } else if (code == '08012') { // Add backside image of "Jinteki Biotech: Life Imagined"
-    const extras = ['08012a', '08012', '08012b', '08012', '08012c'];
-    extras.forEach((extra) => {
-      const img = `${IMAGE_BASE_DIR + IMAGE_CONTAINER + extra}.jpg`;
-      newCard += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-      newCard += `<img class="card" src="${img}" alt="${code}" />`;
-      newCard += `<span class="label">${code} ${title}</span>`;
-      newCard += '</a>';
-    });
-  } else if (code == '09001') { // Add backside image of "SYNC: Everything, Everywhere"
-    const syncBack = `${IMAGE_BASE_DIR + IMAGE_CONTAINER}09001a.jpg`;
-    newCard += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-    newCard += `<img class="card" src="${syncBack}" alt="${code}" />`;
-    newCard += `<span class="label">${code} ${title}</span>`;
-    newCard += '</a>';
-  } else if (code == '26066') { // Add backside image of "Hoshiko Shiro: Untold Protagonist"
-    const syncBack = `${IMAGE_BASE_DIR + IMAGE_CONTAINER}26066a.jpg`;
-    newCard += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-    newCard += `<img class="card" src="${syncBack}" alt="${code}" />`;
-    newCard += `<span class="label">${code} ${title}</span>`;
-    newCard += '</a>';
-  } else if (code == '26120') { // Add backside image of "Earth Station: SEA Headquarters"
-    const syncBack = `${IMAGE_BASE_DIR + IMAGE_CONTAINER}26120a.jpg`;
-    newCard += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-    newCard += `<img class="card" src="${syncBack}" alt="${code}" />`;
-    newCard += `<span class="label">${code} ${title}</span>`;
-    newCard += '</a>';
-  }
-  return newCard;
-}
-
-function addAltArtSelector(code, alts, imgID) {
-  const selectID = `selector${_imgCount}`;
-  _artSelectors[imgID] = new AltSelector(imgID, selectID, code, alts);
-
-  const switchArtCall = `_artSelectors['${imgID}'].switchArt(this.value)`;
-  const cycleLeftCall = `_artSelectors['${imgID}'].cycleLeft()`;
-  const cycleRightCall = `_artSelectors['${imgID}'].cycleRight()`;
-
-  let selectorEntry = '<li class="list-group-item">';
-  selectorEntry += '<div class="row">';
-  selectorEntry += `<button type="button" class="btn btn-default btn-sm" onclick="${cycleLeftCall}">`;
-  selectorEntry += '<span class="fas fa-chevron-left"></span>';
-  selectorEntry += '</button>';
-  selectorEntry += `<select id="${selectID}" class="form-control form-control-sm" onchange="${switchArtCall}" style="width:auto;">`;
-
-  for (let i = 0; i < alts.length; i++) {
-    const altCode = alts[i];
-    const { title } = _cardDB_keyID[altCode];
-    selectorEntry += `<option value="${altCode}">${title}</option>`;
-  }
-  selectorEntry += '</select>';
-  selectorEntry += `<button type="button" class="btn btn-default btn-sm" onclick="${cycleRightCall}">`;
-  selectorEntry += '<span class="fas fa-chevron-right"></span>';
-  selectorEntry += '</button>';
-  selectorEntry += '</div></li>';
-
-  return selectorEntry;
-}
-
-function getExtraInfo() {
-  let extraInfo;
-  switch (_selectedTab) {
-    case 'Card List':
-      extraInfo = `Cards: ${_cardListTextArea.val().replace(/\n/g, ',')}`;
-      break;
-    case 'Set':
-      extraInfo = `Set: ${_setSelection.val()}, playset: ${_playsetSelection}`;
-      break;
-    case 'NetrunnerDB':
-      extraInfo = `URL: ${_deckURLText.val()}`;
-      break;
-  }
-  return extraInfo;
-}
-
-// check the websocket before making a request
-function makeRequest(request, attemptCount) {
-  if (attemptCount >= 5) {
-    console.error('Failed to connect to websocket 5 times.');
-    $('#HeadMsg').html('<h3>Error connecting to server, try refreshing the page...</h3>');
-  } else if (_sessID == 0 || _socket.readyState !== WebSocket.OPEN) {
-    setupWS();
-    setTimeout(() => {
-      makeRequest(request, attemptCount + 1);
-    }, 500);
-  } else {
-    request();
-  }
-}
-
-function makePDF() {
-  const paperSize = $("input[type='radio'][name='paperSizeSelection']:checked").val();
-  const imageQuality = $("input[type='radio'][name='imageQualitySelection']:checked").val();
-  const includeBackArt = $('#includeAltArtBacks').prop('checked');
-  const fullCutLines = $('#fullCutLines').prop('checked');
-  const includeBacs = $('#basicActionCard').prop('checked');
-  const includeTrackers = $('#clickTrackerCard').prop('checked');
-
-  let selectedSet;
-  if (_selectedTab === 'Set') {
-    selectedSet = $('#setSelection').val();
-  } else {
-    selectedSet = null;
-  }
-
-  const downloadOptions = {
-    sessID: _sessID,
-    paperSize,
-    quality: imageQuality,
-    includeBackArt,
-    fullCutLines,
-    selectedSet,
-    requestedImages: _cardList,
-    logInfo: `Selected Tab: ${_selectedTab}, BACs: ${includeBacs}, Trackers: ${includeTrackers}, ${getExtraInfo()}`,
-  };
-
-  $('#PDFStatus').html('Connecting...');
-  $('#PDFGenerateBtn').hide();
-  $('#PDFDownloadSpinner').show();
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', '/api/makePDF', true);
-  xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-  xhr.responseType = 'json';
-  xhr.onerror = function () {
-    $('#PDFStatus').html('Error, try refreshing the page');
-  };
-  const data = JSON.stringify(downloadOptions);
-  xhr.send(data);
-}
-
-function displayPDFDownloadError(msg) {
-  $('#PDFStatus').html('');
-  $('#PDFDownloadSpinner').hide();
-  $('#PDFResetBtn').show();
-  $('#PDFDownloadErrorMsg').html(msg);
-}
-
-function displayPDFDownload(pdfPath) {
-  $('#PDFStatus').html('');
-  $('#PDFDownloadBtn').attr('href', pdfPath);
-  $('#PDFDownloadBtn').show();
-  $('#PDFDownloadSpinner').hide();
-  $('#PDFResetBtn').show();
-}
-
-function resetPDFDownload() {
-  $('#PDFResetBtn').hide();
-  $('#PDFDownloadBtn').hide();
-  $('#PDFGenerateBtn').show();
-  $('#PDFDownloadErrorMsg').html('');
-}
-
-function getZip() {
-  // split cards in _cardList
-  const corpCodes = [];
-  const runnerCodes = [];
-  _cardList.forEach((code) => {
-    if (_cardDB_keyID[code]) {
-      if (_cardDB_keyID[code].side === 'corp') {
-        corpCodes.push(code);
-      }
-      if (_cardDB_keyID[code].side === 'runner') {
-        runnerCodes.push(code);
-      }
-    }
-  });
-
-  const imgPlacement = $("input[type='radio'][name='imgPlacement']:checked").val();
-  const includeBackArt = $('#includeAltArtBacks').prop('checked');
-  const includeBacs = $('#basicActionCard').prop('checked');
-  const includeTrackers = $('#clickTrackerCard').prop('checked');
-
-  if (includeBacs) {
-    corpCodes.push('00001');
-    runnerCodes.push('00002');
-  }
-
-  if (includeTrackers) {
-    corpCodes.push('00003');
-    runnerCodes.push('00004');
-  }
-
-  let selectedSet;
-  if (_selectedTab === 'Set') {
-    selectedSet = $('#setSelection').val();
-  } else {
-    selectedSet = null;
-  }
-
-  const downloadOptions = {
-    sessID: _sessID,
-    imagePlacement: imgPlacement,
-    includeBackArt,
-    selectedSet,
-    corpCodes,
-    runnerCodes,
-    logInfo: `Selected Tab: ${_selectedTab}, BACs: ${includeBacs}, Trackers: ${includeTrackers}, ${getExtraInfo()}`,
-  };
-
-  $('#ZipStatus').html('Connecting...');
-  $('#ZipGenerateBtn').hide();
-  $('#ZipDownloadSpinner').show();
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', '/api/makeMpcZip', true);
-  xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-  xhr.responseType = 'json';
-  xhr.onerror = function () {
-    $('#ZipStatus').html('Error, try refreshing the page');
-  };
-  const data = JSON.stringify(downloadOptions);
-  xhr.send(data);
-}
-
-function displayZipDownloadError(msg) {
-  $('#ZipStatus').html('');
-  $('#ZipDownloadSpinner').hide();
-  $('#ZipResetBtn').show();
-  $('#ZipDownloadErrorMsg').html(msg);
-}
-
-function displayZipDownload(ZipPath) {
-  $('#ZipStatus').html('');
-  $('#ZipDownloadBtn').attr('href', ZipPath);
-  $('#ZipDownloadBtn').show();
-  $('#ZipDownloadSpinner').hide();
-  $('#ZipResetBtn').show();
-}
-
-function resetZipDownload() {
-  $('#ZipResetBtn').hide();
-  $('#ZipDownloadBtn').hide();
-  $('#ZipGenerateBtn').show();
-  $('#ZipDownloadErrorMsg').html('');
-}
-
-function resetScroll() {
-  $('#cardPreview').animate({ scrollTop: 0 }, 'fast');
-  $('#alt-art-selector').animate({ scrollTop: 0 }, 'fast');
 }
 
 function assignEvents() {
-  $('a[data-toggle="tab"]').on('shown.bs.tab', (e) => {
-    const currentTab = $(e.target).text();
-    selectTab(currentTab);
-    resetScroll();
-  });
-
-  $('.playset-btn').click((e) => {
-    selectPlayset(e.target.value);
-  });
-
-  $('#PDFGenerateBtn').click((e) => {
-    makeRequest(makePDF, 0);
-  });
-
-  $('#PDFResetBtn').click((e) => {
-    resetPDFDownload();
-  });
-
-  $('#ZipGenerateBtn').click((e) => {
-    makeRequest(getZip, 0);
-  });
-
-  $('#ZipResetBtn').click((e) => {
-    resetZipDownload();
-  });
-
-  $('#alt-art-selector-hide-btn').click(function (e) {
-    $(this).text((i, prev) => (prev == 'Show Alt-Art Selection' ? 'Hide Alt-Art Selection' : 'Show Alt-Art Selection'));
-  });
-
-  $('#setInfo-hide-btn').click(function (e) {
-    $(this).text((i, prev) => (prev == 'Show Set Info' ? 'Hide Set Info' : 'Show Set Info'));
-  });
-
-  $('#includeAltArtBacks').change(function () {
-    const backImgPreviews = $('.backImgPreview');
-    if (this.checked) {
-      backImgPreviews.each(function (i) {
-        if ($(this).children('img').attr('src')) {
-          $(this).show();
-        }
-      });
-    } else {
-      backImgPreviews.hide();
-    }
-  });
-
-  $('#basicActionCard').change(() => {
-    switch (_selectedTab) {
-      case 'Card List':
-        buildFromCardList();
-        break;
-      case 'Set':
-        buildFromSet();
-        break;
-      case 'NetrunnerDB':
-        if (_deckURLText.val() != '') {
-          buildFromDeckID();
-        }
-        break;
-    }
-  });
-
-  $('#clickTrackerCard').change(() => {
-    switch (_selectedTab) {
-      case 'Card List':
-        buildFromCardList();
-        break;
-      case 'Set':
-        buildFromSet();
-        break;
-      case 'NetrunnerDB':
-        if (_deckURLText.val() != '') {
-          buildFromDeckID();
-        }
-        break;
-    }
-  });
-
-  _cardListTextArea.on('input', (e) => {
-    buildFromCardList();
-  });
-
-  _deckURLText.on('input', (e) => {
-    buildFromDeckID(true);
-    resetScroll();
-  });
-
-  _setSelection.on('input', (e) => {
-    buildFromSet();
-    resetScroll();
+  cardListTextArea.addEventListener('input', () => {
+    updateCodesFromCardList();
+    buildCardPreviewHTML(cardCodes);
   });
 }
 
-function setupWS() {
-  const HOST = location.origin.replace(/^http/, 'ws');
-  _socket = new WebSocket(HOST);
-
-  _socket.onopen = function (e) {
-    console.log('connected');
-  };
-
-  _socket.onclose = function (e) {
-    console.log(`disconnected with ${e.code}`);
-    _sessID = 0;
-    const errorMsg = 'Connection lost, try again.';
-    if ($('#PDFDownloadSpinner').is(':visible')) {
-      displayPDFDownloadError(errorMsg);
-    }
-    if ($('#ZipDownloadSpinner').is(':visible')) {
-      displayZipDownloadError(errorMsg);
-    }
-  };
-
-  _socket.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    if ('sessID' in msg) {
-      _sessID = msg.sessID;
-    }
-    if (msg.reqType === 'pdf') {
-      if ('success' in msg) {
-        if (msg.success) {
-          displayPDFDownload(msg.downloadLink);
-        } else {
-          displayPDFDownloadError(msg.errorMsg);
-        }
-      }
-      if ('status' in msg) {
-        $('#PDFStatus').html(msg.status);
-      }
-    }
-    if (msg.reqType === 'zip') {
-      if ('success' in msg) {
-        if (msg.success) {
-          displayZipDownload(msg.downloadLink);
-        } else {
-          displayZipDownloadError(msg.errorMsg);
-        }
-      }
-      if ('status' in msg) {
-        $('#ZipStatus').html(msg.status);
-      }
-    }
-  };
-}
-
-$(() => {
-  _cardListTextArea = $('#cardListTextArea');
-  _deckURLText = $('#deckURLText');
-  _setSelection = $('#setSelection');
-  _cardPreview = $('#cardPreview');
-  _altArtSelector = $('#alt-art-selector');
-  _imgCount = 0;
+document.addEventListener('DOMContentLoaded', (event) => {
+  cardListTextArea = document.querySelector('#cardListTextArea');
+  deckURLText = document.querySelector('#deckURLText');
+  setSelection = document.querySelector('#setSelection');
+  cardPreview = document.querySelector('#cardPreview');
 
   assignEvents();
-  loadCards();
-  fetchSetList();
-  fetchExtraCards();
-  setupWS();
-
-  if (!_cardDB) {
-    _cardListTextArea.val('MKUltra\nParagon\nHayley Kaplan: Universal Scholar');
-  } else {
-    // if cardDB has been loaded, pick 3 random cards for home page
-    const chosenCards = [];
-    for (let i = 0; i < 3; i++) {
-      const rand_index = Math.floor(Math.random() * Object.keys(_cardDB).length);
-      const cards = Object.values(_cardDB);
-      const card = cards[rand_index];
-      chosenCards[i] = card.title;
-    }
-    _cardListTextArea.val(`${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`);
-  }
+  loadOptions();
 });
