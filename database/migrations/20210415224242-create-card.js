@@ -13,6 +13,9 @@ module.exports = {
       side: {
         type: Sequelize.STRING,
       },
+      type: {
+        type: Sequelize.STRING,
+      },
     },
   ),
   // eslint-disable-next-line no-unused-vars

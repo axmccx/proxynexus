@@ -10,6 +10,12 @@ module.exports = {
       code: {
         type: Sequelize.STRING,
       },
+      position: {
+        type: Sequelize.INTEGER,
+      },
+      quantity: {
+        type: Sequelize.INTEGER,
+      },
     },
   ),
   // eslint-disable-next-line no-unused-vars

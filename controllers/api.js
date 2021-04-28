@@ -75,6 +75,26 @@ export const getOptions = async (req, res) => {
   return successResponse(req, res, response);
 };
 
+export const getPack = async (req, res) => {
+  const cardsInPack = await card_printing.findAll({
+    attributes: ['code', 'quantity'],
+    include: [
+      {
+        model: card,
+        attributes: ['type'],
+      },
+      {
+        model: pack,
+        attributes: [],
+        where: { pack_code: req.params.pack },
+      }],
+    order: [
+      ['position', 'ASC'],
+    ],
+  });
+  return successResponse(req, res, cardsInPack);
+};
+
 export const getCompletedRequest = async (req, res) => {
   return successResponse(req, res, 'getCompletedRequest!');
 };

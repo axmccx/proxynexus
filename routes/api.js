@@ -4,6 +4,7 @@ import * as apiController from '../controllers/api';
 const router = express.Router();
 
 router.get('/getOptions', apiController.getOptions);
+router.get('/getPack/:pack', apiController.getPack);
 router.get('/getCompletedRequest/:id', apiController.getCompletedRequest);
 router.post('/generate');
 module.exports = router;

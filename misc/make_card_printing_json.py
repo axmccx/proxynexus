@@ -24,6 +24,8 @@ for card in cards['data']:
     new_entry = {
         "id": id_count,
         "code": card["code"],
+        "position": card["position"] if "position" in card else None,
+        "quantity": card["quantity"] if "quantity" in card else None,
         "card_id": "",
         "pack_id": "",
         "lm_card_file_id": None,
@@ -60,6 +62,8 @@ for altcard in altcards:
     new_entry = {
         "id": id_count,
         "code": altcode,
+        "position": None,
+        "quantity": None,
         "card_id": "",
         "pack_id": "",
         "lm_card_file_id": None,

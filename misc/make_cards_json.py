@@ -10,7 +10,8 @@ for card in cards:
         card_seed[card['title']] = {
             "id": counter,
             "title": card['title'],
-            "side": card['side_code']
+            "side": card['side_code'],
+            "type": card['type_code'],
         }
         counter += 1
 
