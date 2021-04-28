@@ -1,36 +1,17 @@
+// eslint-disable-next-line max-classes-per-file
 let cardTitleDB;
 let cardCodeDB;
 let packList;
-let cardListTextArea;
-let deckURLText;
-let setSelection;
-let cardPreview;
-let cardCodes = [];
+// let cardListTextArea;
+// let deckURLText;
+// let setSelection;
+let cardManager;
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 const NRDB_CARD_DIR = 'https://netrunnerdb.com/en/card/';
 
 function t2key(t) {
   return t.trim().toLowerCase().replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');
-}
-
-function updateCodesFromCardList() {
-  cardCodes = [];
-  const input = cardListTextArea.value.split(/\n/);
-  const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
-
-  input.forEach((entry) => {
-    const match = cardInputRegex.exec(entry);
-    const count = (match[1] === undefined) ? 1 : parseInt(match[1], 10);
-    const cardKey = t2key(match[2]);
-
-    if (cardKey !== '' && cardKey in cardTitleDB) {
-      for (let i = 0; i < count; i += 1) {
-        cardCodes.push(cardTitleDB[cardKey].codes[0]);
-      }
-    }
-  });
-  console.log(cardCodes);
 }
 
 function getCardImgs(code) {
@@ -48,25 +29,114 @@ function getCardImgs(code) {
   return [card[source].front, card[source].back];
 }
 
-function buildCardPreviewHTML(codes) {
-  let newHtml = '';
-  codes.forEach((code) => {
-    const [frontImg, backImg] = getCardImgs(code);
-    const { title } = cardCodeDB[code];
+class Card {
+  constructor(code) {
+    this.code = code;
+    this.title = cardCodeDB[code].title;
+    this.allCodes = cardTitleDB[t2key(this.title)].codes;
+    // this.scanSource
+    // get pack codes for each code in allCodes
+  }
+
+  getPreviewHTML() {
+    let newHtml = '';
+    const [frontImg, backImg] = getCardImgs(this.code);
     const frontImgURL = `${IMAGE_BASE_DIR}${frontImg}`;
-    newHtml += `<a href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-    newHtml += `<img class="card" id="prev${code}" src="${frontImgURL}" alt="${code}" />`;
-    newHtml += `<span class="label">${code} ${title}</span>`;
+    newHtml += `<a href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
+    newHtml += `<img class="card" id="prev${this.code}" src="${frontImgURL}" alt="${this.code}" />`;
+    newHtml += `<span class="label">${this.code} ${this.title}</span>`;
     newHtml += '</a>';
     if (backImg !== '') {
       const backImgURL = `${IMAGE_BASE_DIR}${backImg}`;
-      newHtml += `<a class="backImgPreview" id="prev${code}backLink" style="display: none;" href="${NRDB_CARD_DIR}${code}" title="" target="NetrunnerCard">`;
-      newHtml += `<img class="card" id="prev${code}backImg" src=${backImgURL} alt=${code}back"/>`;
-      newHtml += `<span class="label">${code} ${title}</span>`;
+      newHtml += `<a class="backImgPreview" id="prev${this.code}backLink" style="display: none;" href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
+      newHtml += `<img class="card" id="prev${this.code}backImg" src=${backImgURL} alt=${this.code}back"/>`;
+      newHtml += `<span class="label">${this.code} ${this.title}</span>`;
       newHtml += '</a>';
     }
-  });
-  cardPreview.innerHTML = newHtml;
+    return newHtml;
+  }
+  // make alt art selector html
+  // alt art change methods
+}
+
+class CardManager {
+  constructor() {
+    this.cardListTextArea = document.querySelector('#cardListTextArea');
+    this.cardPreview = document.querySelector('#cardPreview');
+    this.cardList = [];
+    // all art component
+
+    this.cardListTextArea.addEventListener('input', () => {
+      this.updateCardList();
+      this.buildCardPreviewHTML();
+    });
+  }
+
+  setCardList(newText) {
+    this.cardListTextArea.value = newText;
+  }
+
+  setCardPreviewHTML(html) {
+    this.cardPreview.innerHTML = html;
+  }
+
+  buildCardPreviewHTML() {
+    let newHtml = '';
+    this.cardList.forEach((card) => {
+      newHtml += card.getPreviewHTML();
+    });
+    this.setCardPreviewHTML(newHtml);
+  }
+
+  updateCardList() {
+    const input = this.cardListTextArea.value.split(/\n/);
+    const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
+    const cardTitles = this.cardList.map((c) => c.title);
+    const newCardTitles = [];
+
+    input.forEach((entry) => {
+      const match = cardInputRegex.exec(entry);
+      const count = (match[1] === undefined) ? 1 : parseInt(match[1], 10);
+      const cardKey = t2key(match[2]);
+
+      if (cardKey !== '' && cardKey in cardTitleDB) {
+        for (let i = 0; i < count; i += 1) {
+          const cardTitle = cardTitleDB[cardKey].title;
+          newCardTitles.push(cardTitle);
+        }
+      }
+    });
+
+    const indicesOfCardsToRemove = [];
+    const temp = [...newCardTitles];
+    cardTitles.forEach((title, i) => {
+      if (temp.includes(title)) {
+        temp.splice(temp.indexOf(title), 1);
+      } else {
+        indicesOfCardsToRemove.push(i);
+      }
+    });
+
+    for (let i = indicesOfCardsToRemove.length - 1; i >= 0; i -= 1) {
+      this.cardList.splice(indicesOfCardsToRemove[i], 1);
+    }
+
+    const cardsToCreate = [];
+    const temp2 = [...cardTitles];
+    newCardTitles.forEach((title, i) => {
+      if (temp2.includes(title)) {
+        temp2.splice(temp2.indexOf(title), 1);
+      } else {
+        cardsToCreate.push({ title, i });
+      }
+    });
+
+    cardsToCreate.forEach(({ title, i }) => {
+      const [code] = cardTitleDB[t2key(title)].codes;
+      this.cardList.splice(i, 0, new Card(code));
+    });
+  }
+  // method to make entire alt art selector html
 }
 
 // eslint-disable-next-line consistent-return
@@ -88,7 +158,9 @@ function loadThreeCards() {
     const cardCode = cardTitleDB[cardTitle].codes[0];
     chosenCards.push(cardCodeDB[cardCode].title);
   }
-  cardListTextArea.value = `${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`;
+  cardManager.setCardList(`${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`);
+  cardManager.updateCardList();
+  cardManager.buildCardPreviewHTML();
 }
 
 function loadOptions() {
@@ -100,7 +172,7 @@ function loadOptions() {
     localStorage.removeItem('cardTitleDB');
     localStorage.removeItem('cardCodeDB');
     localStorage.removeItem('packList');
-    cardPreview.innerHTML = '<span class="text-muted" data-loading>LOADING CARDS...</span>';
+    cardManager.setCardPreviewHTML('<span class="text-muted" data-loading>LOADING CARDS...</span>');
     fetchOptions()
       .then((resJson) => {
         if (resJson.code === 200) {
@@ -111,8 +183,6 @@ function loadOptions() {
           localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
           localStorage.setItem('packList', JSON.stringify(packList));
           loadThreeCards();
-          updateCodesFromCardList();
-          buildCardPreviewHTML(cardCodes);
         }
       })
       .catch((err) => {
@@ -120,24 +190,17 @@ function loadOptions() {
       });
   } else {
     loadThreeCards();
-    updateCodesFromCardList();
-    buildCardPreviewHTML(cardCodes);
   }
 }
 
-function assignEvents() {
-  cardListTextArea.addEventListener('input', () => {
-    updateCodesFromCardList();
-    buildCardPreviewHTML(cardCodes);
-  });
-}
+// function assignEvents() {
+// }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  cardListTextArea = document.querySelector('#cardListTextArea');
-  deckURLText = document.querySelector('#deckURLText');
-  setSelection = document.querySelector('#setSelection');
-  cardPreview = document.querySelector('#cardPreview');
+document.addEventListener('DOMContentLoaded', () => {
+  cardManager = new CardManager();
+  // deckURLText = document.querySelector('#deckURLText');
+  // setSelection = document.querySelector('#setSelection');
 
-  assignEvents();
+  // assignEvents();
   loadOptions();
 });
