@@ -6,6 +6,7 @@ let cardListTextArea;
 let setSelection;
 let deckURLText;
 let cardManager;
+// let selectedTab;
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 const NRDB_API_DIR = 'https://netrunnerdb.com/api/2.0/public/';
@@ -24,6 +25,7 @@ async function fetchJson(url) {
   return response.json();
 }
 
+// TODO move this function to Card class, so it can be aware of it's current source
 function getCardImgs(code) {
   const card = cardCodeDB[code];
   const sourcePriority = ['pt', 'lm', 'de']; // temporary, should be loaded from settings/cookie
@@ -74,6 +76,14 @@ class CardManager {
     this.cardPreview = document.querySelector('#cardPreview');
     this.cardList = [];
     // all art component
+  }
+
+  resetScroll() {
+    this.cardPreview.scroll({
+      top: 0,
+      behavior: 'auto',
+    });
+    // scroll alt art selector
   }
 
   setCardPreviewHTML(html) {
@@ -175,12 +185,14 @@ class CardManager {
       apiOption = 'deck/';
     }
 
-    fetchJson(`${NRDB_API_DIR}${apiOption}${deckId}`)
-      .then((res) => {
-        const newCards = Object.entries(res.data[0].cards)
-          .map(([code, quantity]) => ({ code, quantity }));
-        this.setCardList(newCards);
-      });
+    if (deckId) {
+      fetchJson(`${NRDB_API_DIR}${apiOption}${deckId}`)
+        .then((res) => {
+          const newCards = Object.entries(res.data[0].cards)
+            .map(([code, quantity]) => ({ code, quantity }));
+          this.setCardList(newCards);
+        });
+    }
   }
 }
 
@@ -237,17 +249,44 @@ function loadOptions() {
   }
 }
 
+function selectTab(tabLabel) {
+  // selectedTab = tabLabel;
+  switch (tabLabel) {
+    case 'Card List':
+      cardManager.updateCardListFromTextArea(cardListTextArea.value);
+      break;
+    case 'Set':
+      cardManager.updateCardListFromSetSelection(setSelection.value);
+      break;
+    case 'Decklist':
+      cardManager.updateCardListFromDecklistURL(deckURLText.value);
+      break;
+    default:
+      break;
+  }
+}
+
 function assignEvents() {
   cardListTextArea.addEventListener('input', (e) => {
     cardManager.updateCardListFromTextArea(e.target.value);
   });
 
   setSelection.addEventListener('input', (e) => {
+    cardManager.resetScroll();
     cardManager.updateCardListFromSetSelection(e.target.value);
   });
 
   deckURLText.addEventListener('input', (e) => {
+    cardManager.resetScroll();
     cardManager.updateCardListFromDecklistURL(e.target.value);
+  });
+
+  const navSelectors = document.querySelectorAll('button[data-bs-toggle="tab"]');
+  navSelectors.forEach((selector) => {
+    selector.addEventListener('shown.bs.tab', (e) => {
+      cardManager.resetScroll();
+      selectTab(e.target.innerText);
+    });
   });
 }
 
