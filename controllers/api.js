@@ -16,6 +16,7 @@ export const getOptions = async (req, res) => {
     } else {
       cardTitleDB[tkey] = {
         codes: [entry.code],
+        title: entry.card.title,
       };
     }
 
