@@ -6,6 +6,7 @@ let cardListTextArea;
 let setSelection;
 let deckURLText;
 let cardManager;
+let settings;
 // let selectedTab;
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
@@ -25,41 +26,53 @@ async function fetchJson(url) {
   return response.json();
 }
 
-// TODO move this function to Card class, so it can be aware of it's current source
-function getCardImgs(code) {
-  const card = cardCodeDB[code];
-  const sourcePriority = ['pt', 'lm', 'de']; // temporary, should be loaded from settings/cookie
-  let source;
-  for (let i = 0; i < sourcePriority.length; i += 1) {
-    const s = sourcePriority[i];
-    if (card.availableSources.includes(s)) {
-      source = `${s}Preview`;
-      break;
+function getCookie(name) {
+  const cookies = document.cookie.split(';');
+  let result = null;
+  cookies.forEach((cookie) => {
+    const [cookieName, cookieValue] = cookie.split('=');
+    if (cookieName.trim() === name) {
+      result = decodeURIComponent(cookieValue);
     }
-  }
-  // TODO if current code isn't available, try another code of the same image, if available...
-  return [card[source].front, card[source].back];
+  });
+  return result;
+}
+
+function setCookie(name, value) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; max-age=315360000`;
 }
 
 class Card {
   constructor(code) {
+    const card = cardCodeDB[code];
     this.code = code;
-    this.title = cardCodeDB[code].title;
+    this.title = card.title;
     this.allCodes = cardTitleDB[t2key(this.title)].codes;
-    // this.scanSource
+    const sourcePriority = ['pt', 'lm', 'de']; // temporary, should be loaded from settings/cookie
+    let prevSourceKey;
+    for (let i = 0; i < sourcePriority.length; i += 1) {
+      const s = sourcePriority[i];
+      if (card.availableSources.includes(s)) {
+        this.scanSource = s;
+        prevSourceKey = `${s}Preview`;
+        break;
+      }
+    }
+    this.frontPrev = card[prevSourceKey].front;
+    this.backPrev = card[prevSourceKey].back;
     // get pack codes for each code in allCodes
+    // TODO if current code isn't available, try another code of the same image, if available...
   }
 
   getPreviewHTML() {
     let newHtml = '';
-    const [frontImg, backImg] = getCardImgs(this.code);
-    const frontImgURL = `${IMAGE_BASE_DIR}${frontImg}`;
+    const frontImgURL = `${IMAGE_BASE_DIR}${this.frontPrev}`;
     newHtml += `<a href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
     newHtml += `<img class="card" id="prev${this.code}" src="${frontImgURL}" alt="${this.code}" />`;
     newHtml += `<span class="label">${this.code} ${this.title}</span>`;
     newHtml += '</a>';
-    if (backImg !== '') {
-      const backImgURL = `${IMAGE_BASE_DIR}${backImg}`;
+    if (this.backPrev !== '') {
+      const backImgURL = `${IMAGE_BASE_DIR}${this.backPrev}`;
       newHtml += `<a class="backImgPreview" id="prev${this.code}backLink" style="display: none;" href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
       newHtml += `<img class="card" id="prev${this.code}backImg" src=${backImgURL} alt=${this.code}back"/>`;
       newHtml += `<span class="label">${this.code} ${this.title}</span>`;
@@ -290,6 +303,30 @@ function assignEvents() {
   });
 }
 
+function loadSettings() {
+  const cookieDefaults = {
+    scanSourcePriority: 'pt',
+    includeCardBacks: true,
+    PdfPageSize: 'letter',
+    fullCutLines: false,
+    LmMpcPlacement: 'fit',
+  };
+
+  const savedCookies = Object.fromEntries(Object.keys(cookieDefaults)
+    .map((name) => [name, getCookie(name)]));
+  const anyCookiesMissing = Object.values(savedCookies).some((value) => (value == null));
+
+  if (anyCookiesMissing) {
+    Object.entries(cookieDefaults).forEach(([name, value]) => (setCookie(name, value)));
+    settings = cookieDefaults;
+    // eslint-disable-next-line no-undef
+    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'), {});
+    welcomeModal.show();
+  } else {
+    settings = savedCookies;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   cardManager = new CardManager();
   cardListTextArea = document.querySelector('#cardListTextArea');
@@ -298,4 +335,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   assignEvents();
   loadOptions();
+  loadSettings();
 });
