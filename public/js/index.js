@@ -1,4 +1,6 @@
-// eslint-disable-next-line max-classes-per-file
+// eslint-disable-next-line max-classes-per-file,import/extensions
+import { loadSettings } from './helpers.js';
+
 let cardTitleDB;
 let cardCodeDB;
 let packList;
@@ -24,22 +26,6 @@ async function fetchJson(url) {
     throw new Error(message);
   }
   return response.json();
-}
-
-function getCookie(name) {
-  const cookies = document.cookie.split(';');
-  let result = null;
-  cookies.forEach((cookie) => {
-    const [cookieName, cookieValue] = cookie.split('=');
-    if (cookieName.trim() === name) {
-      result = decodeURIComponent(cookieValue);
-    }
-  });
-  return result;
-}
-
-function setCookie(name, value) {
-  document.cookie = `${name}=${encodeURIComponent(value)}; max-age=315360000`;
 }
 
 class Card {
@@ -303,30 +289,6 @@ function assignEvents() {
   });
 }
 
-function loadSettings() {
-  const cookieDefaults = {
-    scanSourcePriority: 'pt',
-    includeCardBacks: true,
-    PdfPageSize: 'letter',
-    fullCutLines: false,
-    LmMpcPlacement: 'fit',
-  };
-
-  const savedCookies = Object.fromEntries(Object.keys(cookieDefaults)
-    .map((name) => [name, getCookie(name)]));
-  const anyCookiesMissing = Object.values(savedCookies).some((value) => (value == null));
-
-  if (anyCookiesMissing) {
-    Object.entries(cookieDefaults).forEach(([name, value]) => (setCookie(name, value)));
-    settings = cookieDefaults;
-    // eslint-disable-next-line no-undef
-    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'), {});
-    welcomeModal.show();
-  } else {
-    settings = savedCookies;
-  }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   cardManager = new CardManager();
   cardListTextArea = document.querySelector('#cardListTextArea');
@@ -335,5 +297,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   assignEvents();
   loadOptions();
-  loadSettings();
+  settings = loadSettings(() => {
+    // eslint-disable-next-line no-undef
+    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'), {});
+    welcomeModal.show();
+  });
+  console.log(settings);
 });
