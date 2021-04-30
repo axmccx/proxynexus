@@ -100,5 +100,6 @@ export const getCompletedRequest = async (req, res) => {
 };
 
 export const generate = async (req, res) => {
-  return successResponse(req, res, 'generate!');
+  console.log(req.body);
+  return successResponse(req, res);
 };
