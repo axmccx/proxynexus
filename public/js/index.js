@@ -28,16 +28,37 @@ async function fetchJson(url) {
   return response.json();
 }
 
+async function postData(url, data) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const message = `An error has occurred fetching from ${url}: ${response.status}`;
+    throw new Error(message);
+  }
+  return response.json();
+}
+
 class Card {
   constructor(code) {
     const card = cardCodeDB[code];
     this.code = code;
     this.title = card.title;
     this.allCodes = cardTitleDB[t2key(this.title)].codes;
-    const sourcePriority = ['pt', 'lm', 'de']; // temporary, should be loaded from settings/cookie
+    const scanSourcePrioritiesLists = {
+      pt: ['pt', 'lm', 'de'],
+      lm: ['lm', 'pt', 'de'],
+      de: ['de', 'pt', 'lm'],
+    };
+    const sourcePriorities = scanSourcePrioritiesLists[settings.scanSourcePriority];
     let prevSourceKey;
-    for (let i = 0; i < sourcePriority.length; i += 1) {
-      const s = sourcePriority[i];
+    for (let i = 0; i < sourcePriorities.length; i += 1) {
+      const s = sourcePriorities[i];
       if (card.availableSources.includes(s)) {
         this.scanSource = s;
         prevSourceKey = `${s}Preview`;
@@ -160,8 +181,12 @@ class CardManager {
     this.buildCardPreviewHTML();
   }
 
+  getCardList() {
+    return this.cardList.map((card) => ({ code: card.code, source: card.scanSource }));
+  }
+
   updateCardListFromSetSelection(packCode) {
-    fetchJson(`${window.location.origin}/api/getPack/${packCode}`)
+    fetchJson(`/api/getPack/${packCode}`)
       .then((res) => {
         // TODO use full set selection and card type to control quantity
         this.setCardList(res.data);
@@ -228,7 +253,7 @@ function loadOptions() {
     localStorage.removeItem('cardCodeDB');
     localStorage.removeItem('packList');
     cardManager.setCardPreviewHTML('<span class="text-muted" data-loading>LOADING CARDS...</span>');
-    fetchJson(`${window.location.origin}/api/getOptions`)
+    fetchJson('/api/getOptions')
       .then((resJson) => {
         cardTitleDB = resJson.data.cardTitleDB;
         cardCodeDB = resJson.data.cardCodeDB;
@@ -287,6 +312,23 @@ function assignEvents() {
       selectTab(e.target.innerText);
     });
   });
+
+  document.getElementById('generateBtn')
+    .addEventListener('click', () => {
+      const generateSettings = {
+        cardList: cardManager.getCardList(),
+        generateType: document.querySelector('input[name="generationType"]:checked').value,
+        ...settings,
+      };
+      postData('/api/generate', generateSettings)
+        .then((res) => {
+          console.log('proxy generation requests...');
+          // TODO Show spinner and generation console
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -295,12 +337,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setSelection = document.querySelector('#setSelection');
   deckURLText = document.querySelector('#deckURLText');
 
-  assignEvents();
-  loadOptions();
   settings = loadSettings(() => {
     // eslint-disable-next-line no-undef
     const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'), {});
     welcomeModal.show();
   });
-  console.log(settings);
+  assignEvents();
+  loadOptions();
 });
