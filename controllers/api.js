@@ -1,6 +1,7 @@
+// eslint-disable-next-line camelcase
 import { card, card_file, card_printing, pack } from '../database/models';
 import { successResponse, errorResponse, t2key } from '../helpers';
-import {where} from "sequelize";
+import { generatePdf, generateMpc } from '../generators';
 
 export const getOptions = async (req, res) => {
   const allEntries = await card_printing.findAll(
@@ -100,6 +101,19 @@ export const getCompletedRequest = async (req, res) => {
 };
 
 export const generate = async (req, res) => {
-  console.log(req.body);
+  const {
+    cardList,
+    generateType,
+    includeCardBacks,
+    PdfPageSize,
+    fullCutLines,
+    LmMpcPlacement,
+  } = req.body;
+
+  if (generateType === 'pdf') {
+    generatePdf(cardList, includeCardBacks, PdfPageSize, fullCutLines);
+  } else if (generateType === 'mpc') {
+    generateMpc(cardList, includeCardBacks, LmMpcPlacement);
+  }
   return successResponse(req, res);
 };

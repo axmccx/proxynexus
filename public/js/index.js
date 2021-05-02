@@ -322,7 +322,7 @@ function assignEvents() {
       };
       postData('/api/generate', generateSettings)
         .then((res) => {
-          console.log('proxy generation requests...');
+          // pass
           // TODO Show spinner and generation console
         })
         .catch((err) => {
