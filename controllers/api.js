@@ -104,30 +104,7 @@ export const getCompletedRequest = async (req, res) => {
 };
 
 export const generate = async (req, res) => {
-  const {
-    cardList,
-    generateType,
-    includeCardBacks,
-    PdfPageSize,
-    fullCutLines,
-    LmMpcPlacement,
-  } = req.body;
-
-  const jobParams = {
-    cardList,
-    generateType,
-    includeCardBacks,
-    PdfPageSize,
-    fullCutLines,
-    LmMpcPlacement,
-    cardsPerPage: 9,
-    pagesPerPdf: 16,
-    playSetSelection: 'single',
-    desklistUrl: '',
-  };
-
   // TODO maybe save the entry to the stats DB now
-
-  const job = await workQueue.add(jobParams);
+  const job = await workQueue.add(req.body);
   return successResponse(req, res, { id: job.id });
 };
