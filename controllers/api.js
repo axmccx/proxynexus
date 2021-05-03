@@ -1,7 +1,10 @@
+import Queue from 'bull';
 // eslint-disable-next-line camelcase
-import { card, card_file, card_printing, pack } from '../database/models';
+import { card, card_printing, pack } from '../database/models';
 import { successResponse, errorResponse, t2key } from '../helpers';
-import { generatePdf, generateMpc } from '../generators';
+
+const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const workQueue = new Queue('work', REDIS_URL);
 
 export const getOptions = async (req, res) => {
   const allEntries = await card_printing.findAll(
@@ -110,10 +113,21 @@ export const generate = async (req, res) => {
     LmMpcPlacement,
   } = req.body;
 
-  if (generateType === 'pdf') {
-    generatePdf(cardList, includeCardBacks, PdfPageSize, fullCutLines);
-  } else if (generateType === 'mpc') {
-    generateMpc(cardList, includeCardBacks, LmMpcPlacement);
-  }
-  return successResponse(req, res);
+  const jobParams = {
+    cardList,
+    generateType,
+    includeCardBacks,
+    PdfPageSize,
+    fullCutLines,
+    LmMpcPlacement,
+    cardsPerPage: 9,
+    pagesPerPdf: 16,
+    playSetSelection: 'single',
+    desklistUrl: '',
+  };
+
+  // TODO maybe save the entry to the stats DB now
+
+  const job = await workQueue.add(jobParams);
+  return successResponse(req, res, { id: job.id });
 };
