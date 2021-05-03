@@ -9,7 +9,8 @@ let setSelection;
 let deckURLText;
 let cardManager;
 let settings;
-// let selectedTab;
+let playsetSelection = 'Single Set';
+let selectedTab = 'Card List';
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 const NRDB_API_DIR = 'https://netrunnerdb.com/api/2.0/public/';
@@ -186,10 +187,45 @@ class CardManager {
   }
 
   updateCardListFromSetSelection(packCode) {
+    console.log(packCode);
+    let isCoreSet = false;
+    packList.forEach((pack) => {
+      if (pack.pack_code === packCode && pack.is_core) {
+        isCoreSet = true;
+      }
+    });
+
+    const playsetDisplay = document.getElementById('playsetDisplay');
+    if (isCoreSet) {
+      playsetDisplay.style.display = 'block';
+    } else {
+      playsetDisplay.style.display = 'none';
+    }
+
     fetchJson(`/api/getPack/${packCode}`)
       .then((res) => {
-        // TODO use full set selection and card type to control quantity
-        this.setCardList(res.data);
+        // eslint-disable-next-line default-case
+        switch (playsetSelection) {
+          case 'Single Set': {
+            this.setCardList(res.data);
+            break;
+          }
+          case 'Playset': {
+            const cardList = res.data.map((card) => ({ code: card.code, quantity: 3 }));
+            this.setCardList(cardList);
+            break;
+          }
+          case 'Playset Limit IDs': {
+            const cardList = res.data.map((card) => {
+              if (card.card.type === 'identity') {
+                return { code: card.code, quantity: 1 };
+              }
+              return { code: card.code, quantity: 3 };
+            });
+            this.setCardList(cardList);
+            break;
+          }
+        }
       });
   }
 
@@ -291,7 +327,7 @@ function loadOptions() {
 }
 
 function selectTab(tabLabel) {
-  // selectedTab = tabLabel;
+  selectedTab = tabLabel;
   switch (tabLabel) {
     case 'Card List':
       cardManager.updateCardListFromTextArea(cardListTextArea.value);
@@ -330,15 +366,30 @@ function assignEvents() {
     selector.addEventListener('shown.bs.tab', (e) => {
       cardManager.resetScroll();
       selectTab(e.target.innerText);
+      selectedTab = e.target.innerText;
+    });
+  });
+
+  const playsetButtons = document.getElementsByClassName('playset-btn');
+  Array.from(playsetButtons).forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      playsetSelection = e.target.value;
+      cardManager.updateCardListFromSetSelection(setSelection.value);
     });
   });
 
   document.getElementById('generateBtn')
     .addEventListener('click', () => {
       const generateSettings = {
-        cardList: cardManager.getCardList(),
+        selectedTab,
+        cardListTextArea: cardListTextArea.value,
+        selectedSet: setSelection.value,
+        playsetSelection,
+        deckURLText,
         generateType: document.querySelector('input[name="generationType"]:checked').value,
-        ...settings,
+        cardList: cardManager.getCardList(),
+        PdfPageSize: settings.PdfPageSize,
+        LmMpcPlacement: settings.LmMpcPlacement,
         fullCutLines: (settings.fullCutLines === 'true'),
         includeCardBacks: (settings.includeCardBacks === 'true'),
       };
