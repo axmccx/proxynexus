@@ -220,17 +220,28 @@ class CardManager {
   }
 }
 
-function loadThreeCards() {
-  const chosenCards = [];
-  for (let i = 0; i < 3; i += 1) {
-    const randIndex = Math.floor(Math.random() * Object.keys(cardTitleDB).length);
-    const cardTitleList = Object.keys(cardTitleDB);
-    const cardTitle = cardTitleList[randIndex];
-    const cardCode = cardTitleDB[cardTitle].codes[0];
-    chosenCards.push(cardCodeDB[cardCode].title);
+function loadStoredSelections() {
+  const storedCardList = localStorage.getItem('cardList');
+  if (storedCardList) {
+    cardListTextArea.value = storedCardList;
+  } else {
+    const chosenCards = [];
+    for (let i = 0; i < 3; i += 1) {
+      const randIndex = Math.floor(Math.random() * Object.keys(cardTitleDB).length);
+      const cardTitleList = Object.keys(cardTitleDB);
+      const cardTitle = cardTitleList[randIndex];
+      const cardCode = cardTitleDB[cardTitle].codes[0];
+      chosenCards.push(cardCodeDB[cardCode].title);
+    }
+    cardListTextArea.value = `${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`;
+    localStorage.setItem('cardList', cardListTextArea.value);
   }
-  cardListTextArea.value = `${chosenCards[0]}\n${chosenCards[1]}\n${chosenCards[2]}\n`;
   cardManager.updateCardListFromTextArea(cardListTextArea.value);
+
+  const storedDeckURLText = localStorage.getItem('deckURLText');
+  if (storedDeckURLText) {
+    deckURLText.value = storedDeckURLText;
+  }
 }
 
 function populateSetSelection() {
@@ -240,7 +251,13 @@ function populateSetSelection() {
     option.innerHTML = pack.name;
     setSelection.appendChild(option);
   });
-  setSelection.value = packList[0].pack_code;
+
+  const storedSetSelection = localStorage.getItem('setSelection');
+  if (storedSetSelection) {
+    setSelection.value = storedSetSelection;
+  } else {
+    setSelection.value = packList[0].pack_code;
+  }
 }
 
 function loadOptions() {
@@ -248,7 +265,10 @@ function loadOptions() {
   cardCodeDB = JSON.parse(localStorage.getItem('cardCodeDB'));
   packList = JSON.parse(localStorage.getItem('packList'));
 
-  if (!cardTitleDB) {
+  if (cardTitleDB) {
+    loadStoredSelections();
+    populateSetSelection();
+  } else {
     localStorage.removeItem('cardTitleDB');
     localStorage.removeItem('cardCodeDB');
     localStorage.removeItem('packList');
@@ -261,15 +281,12 @@ function loadOptions() {
         localStorage.setItem('cardTitleDB', JSON.stringify(cardTitleDB));
         localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
         localStorage.setItem('packList', JSON.stringify(packList));
-        loadThreeCards();
+        loadStoredSelections();
         populateSetSelection();
       })
       .catch((err) => {
         console.log(err.message);
       });
-  } else {
-    loadThreeCards();
-    populateSetSelection();
   }
 }
 
@@ -293,16 +310,19 @@ function selectTab(tabLabel) {
 function assignEvents() {
   cardListTextArea.addEventListener('input', (e) => {
     cardManager.updateCardListFromTextArea(e.target.value);
+    localStorage.setItem('cardList', e.target.value);
   });
 
   setSelection.addEventListener('input', (e) => {
     cardManager.resetScroll();
     cardManager.updateCardListFromSetSelection(e.target.value);
+    localStorage.setItem('setSelection', e.target.value);
   });
 
   deckURLText.addEventListener('input', (e) => {
     cardManager.resetScroll();
     cardManager.updateCardListFromDecklistURL(e.target.value);
+    localStorage.setItem('deckURLText', e.target.value);
   });
 
   const navSelectors = document.querySelectorAll('button[data-bs-toggle="tab"]');
