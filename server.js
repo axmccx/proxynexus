@@ -18,7 +18,7 @@ const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const workQueue = new Queue('work', REDIS_URL);
 
 workQueue.on('global:completed', (jobId, result) => {
-  console.log(`Job completed with result ${result}`);
+  console.log(`Job ID ${jobId} completed with result ${result}`);
 });
 
 app.listen(PORT, () => {

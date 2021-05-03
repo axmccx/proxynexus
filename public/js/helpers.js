@@ -18,7 +18,7 @@ export function loadSettings(callback) {
   const cookieDefaults = {
     scanSourcePriority: 'pt',
     includeCardBacks: 'true',
-    PdfPageSize: 'letter',
+    PdfPageSize: 'Letter',
     fullCutLines: 'false',
     LmMpcPlacement: 'fit',
   };

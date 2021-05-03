@@ -319,10 +319,12 @@ function assignEvents() {
         cardList: cardManager.getCardList(),
         generateType: document.querySelector('input[name="generationType"]:checked').value,
         ...settings,
+        fullCutLines: (settings.fullCutLines === 'true'),
+        includeCardBacks: (settings.includeCardBacks === 'true'),
       };
       postData('/api/generate', generateSettings)
         .then((res) => {
-          // pass
+          console.log(res.data.id);
           // TODO Show spinner and generation console
         })
         .catch((err) => {
