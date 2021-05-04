@@ -9,6 +9,7 @@ let setSelection;
 let deckURLText;
 let cardManager;
 let settings;
+let sessionID = 0;
 let playsetSelection = 'Single Set';
 let selectedTab = 'Card List';
 
@@ -381,6 +382,7 @@ function assignEvents() {
   document.getElementById('generateBtn')
     .addEventListener('click', () => {
       const generateSettings = {
+        sessionID,
         selectedTab,
         cardListTextArea: cardListTextArea.value,
         selectedSet: setSelection.value,
@@ -395,13 +397,40 @@ function assignEvents() {
       };
       postData('/api/generate', generateSettings)
         .then((res) => {
-          console.log(res.data.id);
+          // pass
+          // console.log(res.data.id);
           // TODO Show spinner and generation console
         })
         .catch((err) => {
           console.log(err.message);
         });
     });
+
+  const eventSource = new EventSource('/api/getGenStatus');
+  eventSource.addEventListener('message', (e) => {
+    if (sessionID === 0) {
+      sessionID = e.data;
+      console.log(`Received sessionID: ${e.data}`);
+    } else {
+      console.log(e.data);
+    }
+  }, false);
+
+  eventSource.addEventListener('open', () => {
+    console.log('Connected');
+  }, false);
+
+  eventSource.addEventListener('error', (e) => {
+    sessionID = 0;
+    if (e.eventPhase === EventSource.CLOSED) {
+      eventSource.close();
+    }
+    if (e.target.readyState === EventSource.CLOSED) {
+      console.log('Disconnected');
+    } else if (e.target.readyState === EventSource.CONNECTING) {
+      console.log('Connecting...');
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

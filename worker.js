@@ -8,29 +8,13 @@ const maxJobsPerWorker = 1;
 
 function start() {
   const workQueue = new Queue('work', REDIS_URL);
-
   workQueue.process(maxJobsPerWorker, async (job) => {
-    const {
-      cardList,
-      generateType,
-      includeCardBacks,
-      PdfPageSize,
-      fullCutLines,
-      LmMpcPlacement,
-      cardsPerPage,
-      pagesPerPdf,
-      playSetSelection,
-      desklistUrl,
-    } = job.data;
-
-    console.log(job.data);
-
-    if (generateType === 'pdf') {
-      generatePdf(cardList, includeCardBacks, PdfPageSize, fullCutLines);
-    } else if (generateType === 'mpc') {
-      generateMpc(cardList, includeCardBacks, LmMpcPlacement);
+    if (job.data.generateType === 'pdf') {
+      await generatePdf(job);
+    } else if (job.data.generateType === 'mpc') {
+      await generateMpc(job);
     }
-    return { value: 'Worker Test' };
+    return { value: 'Worker result goes here' };
   });
 }
 

@@ -6,6 +6,31 @@ import { successResponse, errorResponse, t2key } from '../helpers';
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const workQueue = new Queue('work', REDIS_URL);
 
+let sessionID = 0;
+const connections = {};
+
+function writeToClient(jobId, msg) {
+  console.log(msg);
+  workQueue.getJob(jobId).then((job) => {
+    const clientRes = connections[job.data.sessionID];
+    if (clientRes !== undefined) {
+      clientRes.write(`data: ${msg}\n\n`);
+    }
+  });
+}
+
+workQueue.on('waiting', (jobId) => {
+  writeToClient(jobId, `Job ID ${jobId} is waiting...`);
+});
+
+workQueue.on('global:progress', (jobId, progress) => {
+  writeToClient(jobId, `Job ${jobId} is at ${progress}%!`);
+});
+
+workQueue.on('global:completed', (jobId, result) => {
+  writeToClient(jobId, `Job ID ${jobId} completed with result ${result}`);
+});
+
 export const getOptions = async (req, res) => {
   const allEntries = await card_printing.findAll(
     { include: [card, 'lm_card_file', 'pt_card_file', 'de_card_file'] },
@@ -99,12 +124,26 @@ export const getPack = async (req, res) => {
   return successResponse(req, res, cardsInPack);
 };
 
-export const getCompletedRequest = async (req, res) => {
-  return successResponse(req, res, 'getCompletedRequest!');
+export const getCompletedRequest = async (req, res) => (
+  successResponse(req, res, 'getCompletedRequest!')
+);
+
+export const getJobStatus = async (req, res) => {
+  const headers = {
+    'Content-Type': 'text/event-stream',
+    Connection: 'keep-alive',
+    'Cache-Control': 'no-cache',
+  };
+  res.writeHead(200, headers);
+  sessionID += 1;
+  res.write(`data: ${sessionID}\n\n`);
+  connections[sessionID] = res;
 };
 
 export const generate = async (req, res) => {
-  // TODO maybe save the entry to the stats DB now
-  const job = await workQueue.add(req.body);
-  return successResponse(req, res, { id: job.id });
+  // TODO save the entry to the stats DB here
+  // const requestedJob = await workQueue.add(req.body);
+  // return successResponse(req, res, { id: requestedJob.id });
+  await workQueue.add(req.body);
+  return successResponse(req, res);
 };
