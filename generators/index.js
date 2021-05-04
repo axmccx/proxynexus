@@ -21,7 +21,7 @@ function fileDoesNotExists(path, onExistsMsg) {
     if (!fs.existsSync(path)) {
       return true;
     }
-    console.error(onExistsMsg);
+    // console.error(onExistsMsg);
   } catch (err) {
     console.error(err);
   }
@@ -78,7 +78,7 @@ async function downloadFiles(fileNames) {
         if (!res.ok) {
           throw new Error(`Error downloading: ${fileName}`);
         }
-        console.log(`Downloaded ${fileName}`);
+        // console.log(`Downloaded ${fileName}`);
         return res;
       });
     const fileStream = fs.createWriteStream(filePath);
@@ -223,7 +223,14 @@ function addImages(lst, doc, leftMargin, topMargin, fullCutLines) {
   });
 }
 
-async function generatePdf(cardList, includeCardBacks, PdfPageSize, fullCutLines) {
+async function generatePdf(job) {
+  const {
+    cardList,
+    includeCardBacks,
+    PdfPageSize,
+    fullCutLines,
+  } = job.data;
+
   const fileNames = await getFileNames(cardList, includeCardBacks);
   const uniqueFileNames = [...new Set(fileNames)];
   const fileNamesToDownload = uniqueFileNames.filter((fileName) => {
@@ -231,7 +238,9 @@ async function generatePdf(cardList, includeCardBacks, PdfPageSize, fullCutLines
     const onExistsMsg = `Found cached copy of ${fileName}, don't download`;
     return fileDoesNotExists(filePath, onExistsMsg);
   });
-  await downloadFiles(fileNamesToDownload); // TODO put this in a try catch
+  job.progress(10);
+  await downloadFiles(fileNamesToDownload, job); // TODO put this in a try catch
+  job.progress(40);
 
   let leftMargin;
   let topMargin;
@@ -256,12 +265,14 @@ async function generatePdf(cardList, includeCardBacks, PdfPageSize, fullCutLines
 
   doc.pipe(fs.createWriteStream(pdfPath));
   makeFrontPage(doc);
+  job.progress(80);
   addImages(fileNames, doc, leftMargin, topMargin, fullCutLines);
   doc.end();
+  job.progress(90);
 }
 
-function generateMpc(cardList, includeCardBacks, LmMpcPlacement) {
-  console.log(cardList, includeCardBacks, LmMpcPlacement);
+async function generateMpc(job) {
+  console.log(job.data);
 }
 
 module.exports.generatePdf = generatePdf;
