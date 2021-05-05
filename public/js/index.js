@@ -199,7 +199,6 @@ class CardManager {
   }
 
   updateCardListFromSetSelection(packCode) {
-    console.log(packCode);
     let isCoreSet = false;
     packList.forEach((pack) => {
       if (pack.pack_code === packCode && pack.is_core) {
@@ -421,8 +420,6 @@ function assignEvents() {
   const eventSource = new EventSource('/api/getGenStatus');
   eventSource.addEventListener('message', (e) => {
     const data = JSON.parse(e.data);
-    console.log(data);
-    // eslint-disable-next-line default-case
     switch (data.status) {
       case 'init connection': {
         if (sessionID === 0) {
@@ -449,23 +446,22 @@ function assignEvents() {
         downloadFile(data.msg); // TODO replace this with request ID, and use it to download
         break;
       }
+      default:
+        break;
     }
   }, false);
 
   eventSource.addEventListener('open', () => {
     console.log('Connected');
+    document.getElementById('HeadMsg').innerHTML = '';
+    document.getElementById('generateBtn').disabled = false;
   }, false);
 
   eventSource.addEventListener('error', (e) => {
     sessionID = 0;
-    if (e.eventPhase === EventSource.CLOSED) {
-      eventSource.close();
-    }
-    if (e.target.readyState === EventSource.CLOSED) {
-      console.log('Disconnected');
-    } else if (e.target.readyState === EventSource.CONNECTING) {
-      console.log('Connecting...');
-    }
+    document.getElementById('HeadMsg').innerHTML = 'Lost connection to server, try freshing your browser';
+    document.getElementById('generateBtn').disabled = true;
+    console.log(e);
   });
 }
 
