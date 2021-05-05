@@ -446,7 +446,7 @@ function assignEvents() {
         document.getElementById('progressBar').innerHTML = '';
         document.getElementById('generateBtn').disabled = false;
         document.getElementById('progressStatus').innerHTML = '';
-        downloadFile(`/tmp/${data.msg}`);
+        downloadFile(data.msg); // TODO replace this with request ID, and use it to download
         break;
       }
     }
