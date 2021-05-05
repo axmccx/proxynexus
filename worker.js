@@ -9,13 +9,13 @@ const maxJobsPerWorker = 1;
 function start() {
   const workQueue = new Queue('work', REDIS_URL);
   workQueue.process(maxJobsPerWorker, async (job, done) => {
-    let filename;
+    let result;
     if (job.data.generateType === 'pdf') {
-      filename = await generatePdf(job);
+      result = await generatePdf(job);
     } else if (job.data.generateType === 'mpc') {
-      filename = await generateMpc(job);
+      result = await generateMpc(job);
     }
-    done(null, filename);
+    done(null, result);
   });
 }
 

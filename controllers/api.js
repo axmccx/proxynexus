@@ -1,7 +1,9 @@
 import Queue from 'bull';
-// eslint-disable-next-line camelcase
-import { card, card_printing, pack } from '../database/models';
-import { successResponse, errorResponse, t2key } from '../helpers';
+import {
+  // eslint-disable-next-line camelcase
+  card, card_printing, pack, request,
+} from '../database/models';
+import { successResponse, t2key } from '../helpers';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const workQueue = new Queue('work', REDIS_URL);
@@ -38,10 +40,17 @@ workQueue.on('global:progress', (jobId, progress) => {
 });
 
 workQueue.on('global:completed', (jobId, result) => {
-  writeToClient(jobId, {
-    status: 'completed',
-    progress: 100,
-    msg: JSON.parse(result),
+  const resultJSON = JSON.parse(result);
+  request.update(
+    { hash: resultJSON.hash, filepath: resultJSON.filepath, is_download_available: true },
+    { where: { id: resultJSON.requestID } },
+  ).then(() => {
+    writeToClient(jobId, {
+      status: 'completed',
+      progress: 100,
+      // TODO replace this with request ID, for client to use with unwritten download endpoint
+      msg: resultJSON.filepath,
+    });
   });
 });
 
@@ -160,7 +169,37 @@ export const getJobStatus = async (req, res) => {
 };
 
 export const generate = async (req, res) => {
-  // TODO save the entry to the stats DB here
-  await workQueue.add(req.body);
+  const {
+    generateType,
+    selectedTab,
+    cardList,
+  } = req.body;
+
+  let requestText;
+  switch (selectedTab) {
+    case 'Card List':
+      requestText = req.body.cardListTextArea;
+      break;
+    case 'Set':
+      requestText = req.body.selectedSet;
+      break;
+    case 'Decklist':
+      requestText = req.body.deckURLText;
+      break;
+    default:
+      break;
+  }
+
+  const newRequest = await request.create({
+    generate_type: generateType,
+    selected_tab: selectedTab,
+    request_text: requestText,
+    card_list: cardList.map((c) => (`${c.code}-${c.source}`)),
+    hash: '',
+    filepath: '',
+    is_download_available: false,
+  });
+
+  await workQueue.add({ ...req.body, requestID: newRequest.id });
   return successResponse(req, res);
 };

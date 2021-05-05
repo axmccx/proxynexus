@@ -244,6 +244,7 @@ async function generatePdf(job) {
     includeCardBacks,
     PdfPageSize,
     fullCutLines,
+    requestID,
   } = job.data;
 
   const dataToHash = { ...job.data };
@@ -294,7 +295,12 @@ async function generatePdf(job) {
   makeFrontPage(doc);
   addImages(fileNames, doc, leftMargin, topMargin, fullCutLines, job, progressIncrement);
   doc.end();
-  return pdfFileName;
+
+  return {
+    filepath: `/tmp/${pdfFileName}`,
+    hash,
+    requestID,
+  };
 }
 
 async function generateMpc(job) {
