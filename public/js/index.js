@@ -12,6 +12,7 @@ let settings;
 let sessionID = 0;
 let playsetSelection = 'Single Set';
 let selectedTab = 'Card List';
+let downloadState = false;
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 const NRDB_API_DIR = 'https://netrunnerdb.com/api/2.0/public/';
@@ -44,6 +45,16 @@ async function postData(url, data) {
     throw new Error(message);
   }
   return response.json();
+}
+
+function downloadFile(data) {
+  const a = document.createElement('a');
+  a.setAttribute('href', data);
+  a.setAttribute('target', '_blank');
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 class Card {
@@ -387,7 +398,7 @@ function assignEvents() {
         cardListTextArea: cardListTextArea.value,
         selectedSet: setSelection.value,
         playsetSelection,
-        deckURLText,
+        deckURLText: deckURLText.value,
         generateType: document.querySelector('input[name="generationType"]:checked').value,
         cardList: cardManager.getCardList(),
         PdfPageSize: settings.PdfPageSize,
@@ -396,10 +407,11 @@ function assignEvents() {
         includeCardBacks: (settings.includeCardBacks === 'true'),
       };
       postData('/api/generate', generateSettings)
-        .then((res) => {
-          // pass
-          // console.log(res.data.id);
-          // TODO Show spinner and generation console
+        .then(() => {
+          downloadState = true;
+          document.getElementById('progressBarDiv').style.opacity = '1';
+          document.getElementById('generateBtn').disabled = true;
+          document.getElementById('progressBar').display = 'block';
         })
         .catch((err) => {
           console.log(err.message);
@@ -408,11 +420,35 @@ function assignEvents() {
 
   const eventSource = new EventSource('/api/getGenStatus');
   eventSource.addEventListener('message', (e) => {
-    if (sessionID === 0) {
-      sessionID = e.data;
-      console.log(`Received sessionID: ${e.data}`);
-    } else {
-      console.log(e.data);
+    const data = JSON.parse(e.data);
+    console.log(data);
+    // eslint-disable-next-line default-case
+    switch (data.status) {
+      case 'init connection': {
+        if (sessionID === 0) {
+          sessionID = data.msg;
+        }
+        break;
+      }
+      case 'waiting':
+      case 'in progress': {
+        if (downloadState) {
+          document.getElementById('progressBar').style.width = `${data.progress}%`;
+          document.getElementById('progressBar').innerHTML = `${Math.round(data.progress)}%`;
+          document.getElementById('progressStatus').innerHTML = data.msg;
+        }
+        break;
+      }
+      case 'completed': {
+        downloadState = false;
+        document.getElementById('progressBarDiv').style.opacity = '0';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('progressBar').innerHTML = '';
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('progressStatus').innerHTML = '';
+        downloadFile(`/tmp/${data.msg}`);
+        break;
+      }
     }
   }, false);
 

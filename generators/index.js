@@ -1,10 +1,12 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
+const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
 // eslint-disable-next-line camelcase
 const { card_file, card_printing } = require('../database/models');
 
-const TEMP_IMG_PATH = './public/tmp/images/';
+const TEMP_PATH = './public/tmp/';
+const TEMP_IMG_PATH = `${TEMP_PATH}images/`;
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 
 function cmToPt(cm) {
@@ -15,13 +17,17 @@ const cardWidth = 6.299;
 const cardHeight = 8.788;
 const cardWidthPt = cmToPt(cardWidth);
 const cardHeightPt = cmToPt(cardHeight);
+let progress;
 
-function fileDoesNotExists(path, onExistsMsg) {
+function fileDoesNotExists(path, onExistsMsg, job, progressIncrementUnique) {
   try {
     if (!fs.existsSync(path)) {
       return true;
     }
-    // console.error(onExistsMsg);
+    console.error(onExistsMsg);
+    // job.log(onExistsMsg);
+    progress += progressIncrementUnique;
+    job.progress(progress);
   } catch (err) {
     console.error(err);
   }
@@ -68,7 +74,7 @@ async function getFileNames(cardList, includeCardBacks) {
     .filter((filename) => (filename !== ''));
 }
 
-async function downloadFiles(fileNames) {
+async function downloadFiles(fileNames, job, progressIncrementUnique) {
   if (!fs.existsSync(TEMP_IMG_PATH)) { fs.mkdirSync(TEMP_IMG_PATH); }
   const promises = fileNames.map(async (fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
@@ -78,7 +84,10 @@ async function downloadFiles(fileNames) {
         if (!res.ok) {
           throw new Error(`Error downloading: ${fileName}`);
         }
-        // console.log(`Downloaded ${fileName}`);
+        console.log(`Downloaded ${fileName}`);
+        // job.log(`Downloaded ${fileName}`);
+        progress += progressIncrementUnique;
+        job.progress(progress);
         return res;
       });
     const fileStream = fs.createWriteStream(filePath);
@@ -188,17 +197,23 @@ function makeFrontPage(doc) {
   doc.addPage();
 }
 
-function addImages(lst, doc, leftMargin, topMargin, fullCutLines) {
+function addImages(lst, doc, leftMargin, topMargin, fullCutLines, job, progressIncrement) {
   let rowCount = 0;
   let colCount = 0;
 
-  lst.forEach((code, i) => {
+  for (let i = 0, n = lst.length; i < n; i += 1) {
+    const code = lst[i];
     const x = rowCount * cardWidthPt + leftMargin;
     const y = colCount * cardHeightPt + topMargin;
     const imgPath = TEMP_IMG_PATH + code;
 
     doc.image(imgPath, x, y, { width: cardWidthPt, height: cardHeightPt });
     rowCount += 1;
+
+    console.log(`Added ${code} to PDF`);
+    // job.log(`Added ${code} to PDF`);
+    progress += progressIncrement;
+    job.progress(progress);
 
     if (rowCount > 2) {
       rowCount = 0;
@@ -220,7 +235,7 @@ function addImages(lst, doc, leftMargin, topMargin, fullCutLines) {
       }
       doc.addPage();
     }
-  });
+  }
 }
 
 async function generatePdf(job) {
@@ -231,16 +246,29 @@ async function generatePdf(job) {
     fullCutLines,
   } = job.data;
 
+  const dataToHash = { ...job.data };
+  delete dataToHash.sessionID;
+  const hash = crypto
+    .createHash('sha1')
+    .update(JSON.stringify(dataToHash))
+    .digest('hex');
+  const pdfFileName = `${hash}.pdf`;
+
+  progress = 0;
   const fileNames = await getFileNames(cardList, includeCardBacks);
   const uniqueFileNames = [...new Set(fileNames)];
+  const progressIncrement = 50 / fileNames.length;
+  const progressIncrementUnique = 50 / uniqueFileNames.length;
   const fileNamesToDownload = uniqueFileNames.filter((fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
     const onExistsMsg = `Found cached copy of ${fileName}, don't download`;
-    return fileDoesNotExists(filePath, onExistsMsg);
+    return fileDoesNotExists(filePath, onExistsMsg, job, progressIncrementUnique);
   });
-  job.progress(10);
-  await downloadFiles(fileNamesToDownload, job); // TODO put this in a try catch
-  job.progress(40);
+
+  // TODO put this in a try catch
+  job.log('Fetching images...');
+  await downloadFiles(fileNamesToDownload, job, progressIncrementUnique);
+  job.log('Adding images to pdf...');
 
   let leftMargin;
   let topMargin;
@@ -251,8 +279,7 @@ async function generatePdf(job) {
     leftMargin = 36;
     topMargin = 21;
   }
-  const pdfPath = `${TEMP_IMG_PATH}test.pdf`;
-
+  const pdfPath = `${TEMP_PATH}${pdfFileName}`;
   const doc = new PDFDocument({
     size: 'Letter',
     margins: {
@@ -265,10 +292,9 @@ async function generatePdf(job) {
 
   doc.pipe(fs.createWriteStream(pdfPath));
   makeFrontPage(doc);
-  job.progress(80);
-  addImages(fileNames, doc, leftMargin, topMargin, fullCutLines);
+  addImages(fileNames, doc, leftMargin, topMargin, fullCutLines, job, progressIncrement);
   doc.end();
-  job.progress(90);
+  return pdfFileName;
 }
 
 async function generateMpc(job) {

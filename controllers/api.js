@@ -9,26 +9,40 @@ const workQueue = new Queue('work', REDIS_URL);
 let sessionID = 0;
 const connections = {};
 
-function writeToClient(jobId, msg) {
-  console.log(msg);
+function writeToClient(jobId, data) {
   workQueue.getJob(jobId).then((job) => {
     const clientRes = connections[job.data.sessionID];
     if (clientRes !== undefined) {
-      clientRes.write(`data: ${msg}\n\n`);
+      clientRes.write(`data: ${JSON.stringify(data)}\n\n`);
     }
   });
 }
 
 workQueue.on('waiting', (jobId) => {
-  writeToClient(jobId, `Job ID ${jobId} is waiting...`);
+  writeToClient(jobId, {
+    status: 'waiting',
+    progress: 0,
+    msg: 'Waiting in queue...',
+  });
 });
 
 workQueue.on('global:progress', (jobId, progress) => {
-  writeToClient(jobId, `Job ${jobId} is at ${progress}%!`);
+  workQueue.getJobLogs(jobId).then((e) => {
+    const msg = e.logs.pop();
+    writeToClient(jobId, {
+      status: 'in progress',
+      progress,
+      msg,
+    });
+  });
 });
 
 workQueue.on('global:completed', (jobId, result) => {
-  writeToClient(jobId, `Job ID ${jobId} completed with result ${result}`);
+  writeToClient(jobId, {
+    status: 'completed',
+    progress: 100,
+    msg: JSON.parse(result),
+  });
 });
 
 export const getOptions = async (req, res) => {
@@ -136,14 +150,17 @@ export const getJobStatus = async (req, res) => {
   };
   res.writeHead(200, headers);
   sessionID += 1;
-  res.write(`data: ${sessionID}\n\n`);
+  const data = {
+    status: 'init connection',
+    progress: 0,
+    msg: sessionID,
+  };
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
   connections[sessionID] = res;
 };
 
 export const generate = async (req, res) => {
   // TODO save the entry to the stats DB here
-  // const requestedJob = await workQueue.add(req.body);
-  // return successResponse(req, res, { id: requestedJob.id });
   await workQueue.add(req.body);
   return successResponse(req, res);
 };
