@@ -443,7 +443,7 @@ function assignEvents() {
         document.getElementById('progressBar').innerHTML = '';
         document.getElementById('generateBtn').disabled = false;
         document.getElementById('progressStatus').innerHTML = '';
-        downloadFile(data.msg); // TODO replace this with request ID, and use it to download
+        window.open(`/api/getFile/${data.msg}`, '_blank');
         break;
       }
       default:
@@ -457,11 +457,10 @@ function assignEvents() {
     document.getElementById('generateBtn').disabled = false;
   }, false);
 
-  eventSource.addEventListener('error', (e) => {
+  eventSource.addEventListener('error', () => {
     sessionID = 0;
-    document.getElementById('HeadMsg').innerHTML = 'Lost connection to server, try freshing your browser';
+    document.getElementById('HeadMsg').innerHTML = 'Lost connection to server, try refreshing your browser';
     document.getElementById('generateBtn').disabled = true;
-    console.log(e);
   });
 }
 

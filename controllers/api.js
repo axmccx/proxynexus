@@ -1,9 +1,10 @@
 import Queue from 'bull';
+import path from 'path';
 import {
   // eslint-disable-next-line camelcase
   card, card_printing, pack, request,
 } from '../database/models';
-import { successResponse, t2key } from '../helpers';
+import { successResponse, errorResponse, t2key } from '../helpers';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const workQueue = new Queue('work', REDIS_URL);
@@ -23,7 +24,6 @@ function writeToClient(jobId, data) {
 workQueue.on('waiting', (jobId) => {
   writeToClient(jobId, {
     status: 'waiting',
-    progress: 0,
     msg: 'Waiting in queue...',
   });
 });
@@ -47,9 +47,7 @@ workQueue.on('global:completed', (jobId, result) => {
   ).then(() => {
     writeToClient(jobId, {
       status: 'completed',
-      progress: 100,
-      // TODO replace this with request ID, for client to use with unwritten download endpoint
-      msg: resultJSON.filepath,
+      msg: resultJSON.requestID,
     });
   });
 });
@@ -147,10 +145,6 @@ export const getPack = async (req, res) => {
   return successResponse(req, res, cardsInPack);
 };
 
-export const getCompletedRequest = async (req, res) => (
-  successResponse(req, res, 'getCompletedRequest!')
-);
-
 export const getJobStatus = async (req, res) => {
   const headers = {
     'Content-Type': 'text/event-stream',
@@ -166,6 +160,20 @@ export const getJobStatus = async (req, res) => {
   };
   res.write(`data: ${JSON.stringify(data)}\n\n`);
   connections[sessionID] = res;
+};
+
+// eslint-disable-next-line consistent-return
+export const getFile = async (req, res) => {
+  let filepath;
+  try {
+    const requestRow = await request.findOne({ where: { id: req.params.id } });
+    filepath = requestRow.filepath;
+  } catch (err) {
+    const msg = 'File ID not found!';
+    console.error(msg);
+    return errorResponse(req, res, msg);
+  }
+  res.download(path.join(global.dirname, 'public', filepath));
 };
 
 export const generate = async (req, res) => {
