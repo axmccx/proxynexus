@@ -1,5 +1,6 @@
 import Queue from 'bull';
 import path from 'path';
+import Sequelize from 'sequelize';
 import {
   // eslint-disable-next-line camelcase
   card, card_printing, pack, request,
@@ -174,6 +175,32 @@ export const getFile = async (req, res) => {
     return errorResponse(req, res, msg);
   }
   res.download(path.join(global.dirname, 'public', filepath));
+};
+
+export const getStats = async (req, res) => {
+  const downloadsCount = await request.findAll({
+    attributes: [
+      [Sequelize.cast(Sequelize.col('created_at'), 'date'), 'createdOn'],
+      [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
+    ],
+    group: [Sequelize.cast(Sequelize.col('created_at'), 'date'), 'createdOn'],
+    order: [[Sequelize.col('createdOn')]],
+    limit: 14,
+  });
+  const allPacks = await pack.findAll();
+  const allPacksByCode = allPacks.reduce((acc, entry) => (
+    { ...acc, [entry.pack_code]: entry.name }), {});
+  const recentDownloadsQuery = await request.findAll({ order: [['created_at', 'DESC']], limit: 50 });
+  const recentDownloads = recentDownloadsQuery.map((entry) => ({
+    id: entry.id,
+    date: entry.createdAt,
+    type: entry.generate_type,
+    selection: entry.selected_tab,
+    request: ((entry.request_text in allPacksByCode)
+      ? allPacksByCode[entry.request_text] : entry.request_text),
+    is_download_available: entry.is_download_available,
+  }));
+  return successResponse(req, res, { downloadsCount, recentDownloads });
 };
 
 export const generate = async (req, res) => {
