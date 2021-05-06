@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file,import/extensions
-import { loadSettings } from './helpers.js';
+import { loadSettings, fetchJson } from './helpers.js';
 
 let cardTitleDB;
 let cardCodeDB;
@@ -22,21 +22,11 @@ function t2key(t) {
   return t.trim().toLowerCase().replace(/:/g, '').replace(new RegExp(' ', 'g'), '__');
 }
 
-async function fetchJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    const message = `An error has occurred fetching from ${url}: ${response.status}`;
-    throw new Error(message);
-  }
-  return response.json();
-}
-
 async function postData(url, data) {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // 'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: JSON.stringify(data),
   });
@@ -45,16 +35,6 @@ async function postData(url, data) {
     throw new Error(message);
   }
   return response.json();
-}
-
-function downloadFile(data) {
-  const a = document.createElement('a');
-  a.setAttribute('href', data);
-  a.setAttribute('target', '_blank');
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 }
 
 class Card {

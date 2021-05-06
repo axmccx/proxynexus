@@ -15,7 +15,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       request_text: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
       },
       card_list: {
         type: Sequelize.ARRAY(Sequelize.STRING),

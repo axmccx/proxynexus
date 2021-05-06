@@ -7,5 +7,6 @@ router.get('/getOptions', apiController.getOptions);
 router.get('/getPack/:pack', apiController.getPack);
 router.get('/getGenStatus/', apiController.getJobStatus);
 router.get('/getFile/:id', apiController.getFile);
+router.get('/getStats', apiController.getStats);
 router.post('/generate', apiController.generate);
 module.exports = router;

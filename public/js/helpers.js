@@ -38,3 +38,12 @@ export function loadSettings(callback) {
 export function saveSettings(settings) {
   Object.entries(settings).forEach(([name, value]) => (setCookie(name, value)));
 }
+
+export async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const message = `An error has occurred fetching from ${url}: ${response.status}`;
+    throw new Error(message);
+  }
+  return response.json();
+}
