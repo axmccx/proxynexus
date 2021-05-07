@@ -28,6 +28,7 @@ workQueue.on('waiting', (jobId) => {
     status: 'waiting',
     msg: 'Waiting in queue...',
   });
+  console.log('Request placed in queue');
 });
 
 workQueue.on('global:progress', (jobId, progress) => {
@@ -55,6 +56,7 @@ workQueue.on('global:completed', (jobId, result) => {
       status: 'completed',
       msg: resultJSON.requestID,
     });
+    console.log('Completed!');
   });
 });
 
