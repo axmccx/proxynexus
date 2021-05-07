@@ -25,6 +25,7 @@
     "@babel/register": "^7.4.4",
     "@babel/runtime": "^7.4.5",
     "archiver": "^5.3.0",
+    "azure-storage": "^2.10.3",
     "babel-loader": "^8.0.0-beta.0",
     "body-parser": "^1.19.0",
     "bull": "^3.22.4",

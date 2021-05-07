@@ -10,8 +10,6 @@ process.on('uncaughtException', (uncaughtExc) => {
   process.exit(1);
 });
 
-global.dirname = __dirname;
-
 dotenv.config({ path: '.env' });
 const PORT = process.env.PORT || 3000;
 
