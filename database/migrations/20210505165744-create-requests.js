@@ -23,7 +23,7 @@ module.exports = {
       hash: {
         type: Sequelize.STRING,
       },
-      filepath: {
+      filename: {
         type: Sequelize.STRING,
       },
       is_download_available: {

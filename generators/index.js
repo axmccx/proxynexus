@@ -5,9 +5,9 @@ const PDFDocument = require('pdfkit');
 // eslint-disable-next-line camelcase
 const { card_file, card_printing } = require('../database/models');
 
-const TEMP_PATH = './public/tmp/';
+const TEMP_PATH = './tmp/';
 const TEMP_IMG_PATH = `${TEMP_PATH}images/`;
-const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
+const IMAGE_BASE_DIR = `${process.env.AZURE_BASE_BLOB_URL}/${process.env.AZURE_IMAGES_CONTAINER_NAME}/`;
 
 function cmToPt(cm) {
   return cm * 28.3464566929134;
@@ -75,7 +75,7 @@ async function getFileNames(cardList, includeCardBacks) {
 }
 
 async function downloadFiles(fileNames, job, progressIncrementUnique) {
-  if (!fs.existsSync(TEMP_IMG_PATH)) { fs.mkdirSync(TEMP_IMG_PATH); }
+  if (!fs.existsSync(TEMP_IMG_PATH)) { fs.mkdirSync(TEMP_IMG_PATH, { recursive: true }); }
   const promises = fileNames.map(async (fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
     const url = IMAGE_BASE_DIR + fileName;
@@ -249,6 +249,7 @@ async function generatePdf(job) {
 
   const dataToHash = { ...job.data };
   delete dataToHash.sessionID;
+  delete dataToHash.requestID;
   const hash = crypto
     .createHash('sha1')
     .update(JSON.stringify(dataToHash))
@@ -258,8 +259,8 @@ async function generatePdf(job) {
   progress = 0;
   const fileNames = await getFileNames(cardList, includeCardBacks);
   const uniqueFileNames = [...new Set(fileNames)];
-  const progressIncrement = 50 / fileNames.length;
   const progressIncrementUnique = 50 / uniqueFileNames.length;
+  const progressIncrement = 45 / fileNames.length;
   const fileNamesToDownload = uniqueFileNames.filter((fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
     const onExistsMsg = `Found cached copy of ${fileName}, don't download`;
@@ -270,6 +271,7 @@ async function generatePdf(job) {
   job.log('Fetching images...');
   await downloadFiles(fileNamesToDownload, job, progressIncrementUnique);
   job.log('Adding images to pdf...');
+  job.progress(50);
 
   let leftMargin;
   let topMargin;
@@ -291,13 +293,24 @@ async function generatePdf(job) {
     },
   });
 
-  doc.pipe(fs.createWriteStream(pdfPath));
-  makeFrontPage(doc);
+  const writeStream = fs.createWriteStream(pdfPath);
+  doc.pipe(writeStream);
+  try {
+    makeFrontPage(doc);
+  } catch (e) {
+    console.log(e);
+  }
   addImages(fileNames, doc, leftMargin, topMargin, fullCutLines, job, progressIncrement);
   doc.end();
 
+  await new Promise((resolve) => {
+    writeStream.on('finish', () => {
+      resolve();
+    });
+  });
+
   return {
-    filepath: `/tmp/${pdfFileName}`,
+    filepath: pdfPath,
     hash,
     requestID,
   };

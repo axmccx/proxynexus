@@ -9,6 +9,7 @@ import { successResponse, errorResponse, t2key } from '../helpers';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const workQueue = new Queue('work', REDIS_URL);
+const RESULTS_BASE_DIR = `${process.env.AZURE_BASE_BLOB_URL}/${process.env.AZURE_RESULTS_CONTAINER_NAME}/`;
 
 let sessionID = 0;
 const connections = {};
@@ -43,7 +44,11 @@ workQueue.on('global:progress', (jobId, progress) => {
 workQueue.on('global:completed', (jobId, result) => {
   const resultJSON = JSON.parse(result);
   request.update(
-    { hash: resultJSON.hash, filepath: resultJSON.filepath, is_download_available: true },
+    {
+      hash: resultJSON.hash,
+      filename: path.basename(resultJSON.filepath),
+      is_download_available: true,
+    },
     { where: { id: resultJSON.requestID } },
   ).then(() => {
     writeToClient(jobId, {
@@ -165,16 +170,17 @@ export const getJobStatus = async (req, res) => {
 
 // eslint-disable-next-line consistent-return
 export const getFile = async (req, res) => {
-  let filepath;
+  let fileUrl;
   try {
     const requestRow = await request.findOne({ where: { id: req.params.id } });
-    filepath = requestRow.filepath;
+    const { filename } = requestRow;
+    fileUrl = `${RESULTS_BASE_DIR}${filename}`;
   } catch (err) {
     const msg = 'File ID not found!';
     console.error(msg);
     return errorResponse(req, res, msg);
   }
-  res.download(path.join(global.dirname, 'public', filepath));
+  res.status(301).redirect(fileUrl);
 };
 
 export const getStats = async (req, res) => {
