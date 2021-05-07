@@ -1,12 +1,10 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
-const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
 // eslint-disable-next-line camelcase
 const { card_file, card_printing } = require('../database/models');
 
-const TEMP_PATH = './tmp/';
-const TEMP_IMG_PATH = `${TEMP_PATH}images/`;
+const TEMP_IMG_PATH = './tmp/images/';
 const IMAGE_BASE_DIR = `${process.env.AZURE_BASE_BLOB_URL}/${process.env.AZURE_IMAGES_CONTAINER_NAME}/`;
 
 function cmToPt(cm) {
@@ -238,7 +236,7 @@ function addImages(lst, doc, leftMargin, topMargin, fullCutLines, job, progressI
   }
 }
 
-async function generatePdf(job) {
+async function generatePdf(job, hash) {
   const {
     cardList,
     includeCardBacks,
@@ -246,14 +244,6 @@ async function generatePdf(job) {
     fullCutLines,
     requestID,
   } = job.data;
-
-  const dataToHash = { ...job.data };
-  delete dataToHash.sessionID;
-  delete dataToHash.requestID;
-  const hash = crypto
-    .createHash('sha1')
-    .update(JSON.stringify(dataToHash))
-    .digest('hex');
   const pdfFileName = `${hash}.pdf`;
 
   progress = 0;
@@ -267,9 +257,13 @@ async function generatePdf(job) {
     return fileDoesNotExists(filePath, onExistsMsg, job, progressIncrementUnique);
   });
 
-  // TODO put this in a try catch
   job.log('Fetching images...');
-  await downloadFiles(fileNamesToDownload, job, progressIncrementUnique);
+  try {
+    await downloadFiles(fileNamesToDownload, job, progressIncrementUnique);
+  } catch (err) {
+    console.error(err);
+  }
+
   job.log('Adding images to pdf...');
   job.progress(50);
 
@@ -282,7 +276,7 @@ async function generatePdf(job) {
     leftMargin = 36;
     topMargin = 21;
   }
-  const pdfPath = `${TEMP_PATH}${pdfFileName}`;
+  const pdfPath = `./tmp/${pdfFileName}`;
   const doc = new PDFDocument({
     size: 'Letter',
     margins: {
@@ -316,8 +310,9 @@ async function generatePdf(job) {
   };
 }
 
-async function generateMpc(job) {
+async function generateMpc(job, hash) {
   console.log(job.data);
+  console.log(hash);
 }
 
 module.exports.generatePdf = generatePdf;
