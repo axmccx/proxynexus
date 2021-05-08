@@ -38,17 +38,28 @@ async function postData(url, data) {
 }
 
 class Card {
-  constructor(code) {
+  constructor(code, id) {
     this.code = code;
-    const card = cardCodeDB[code];
+    this.id = id;
+    const card = cardCodeDB[this.code];
+
+    // these shouldn't ever change
     this.title = card.title;
+    this.side = card.side;
     this.allCodes = cardTitleDB[t2key(this.title)].codes;
+    this.setPreviews();
+    // TODO if current code isn't available, try another code of the same image, if available...
+  }
+
+  setPreviews() {
     const scanSourcePrioritiesLists = {
       pt: ['pt', 'lm', 'de'],
       lm: ['lm', 'pt', 'de'],
       de: ['de', 'pt', 'lm'],
     };
     const sourcePriorities = scanSourcePrioritiesLists[settings.scanSourcePriority];
+    const card = cardCodeDB[this.code];
+
     let previewSourceKey;
     for (let i = 0; i < sourcePriorities.length; i += 1) {
       const s = sourcePriorities[i];
@@ -60,59 +71,82 @@ class Card {
     }
     this.frontPrev = card[previewSourceKey].front;
     this.backPrev = card[previewSourceKey].back;
-    // get pack codes for each code in allCodes
-    // TODO if current code isn't available, try another code of the same image, if available...
   }
 
   cycleAltArt(forward = true) {
     const codeIndex = this.allCodes.indexOf(this.code);
     const newIndex = (codeIndex + this.allCodes.length + (forward ? 1 : -1)) % this.allCodes.length;
     const newCode = this.allCodes[newIndex];
+    document.getElementById(`altArtSelect${this.id}`).value = newCode;
     this.setCode(newCode);
   }
 
   setCode(code) {
     this.code = code;
-    console.log(`Set new code to ${code}`);
+    this.setPreviews();
+    document.getElementById(`previewCard${this.id}`).src = `${IMAGE_BASE_DIR}${this.frontPrev}`;
+
+    if (this.backPrev !== '') {
+      document.getElementById(`previewCardBack${this.id}`).style.display = '';
+      document.getElementById(`previewCardBackImg${this.id}`).src = `${IMAGE_BASE_DIR}${this.backPrev}`;
+    } else {
+      document.getElementById(`previewCardBack${this.id}`).style.display = 'none';
+      document.getElementById(`previewCardBackImg${this.id}`).src = '';
+    }
   }
 
   getPreviewHTML() {
     let newHtml = '';
     const frontImgURL = `${IMAGE_BASE_DIR}${this.frontPrev}`;
     newHtml += `<a href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
-    newHtml += `<img class="card" id="prev${this.code}" src="${frontImgURL}" alt="${this.code}" />`;
+    newHtml += `<img class="card" id="previewCard${this.id}" src="${frontImgURL}" alt="${this.code}" />`;
     newHtml += `<span class="label">${this.code} ${this.title}</span>`;
     newHtml += '</a>';
+    let backImgURL = '';
+    let backImgStyle = 'display: none;';
     if (this.backPrev !== '') {
-      const backImgURL = `${IMAGE_BASE_DIR}${this.backPrev}`;
-      newHtml += `<a class="backImgPreview" id="prev${this.code}backLink" style="display: none;" href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
-      newHtml += `<img class="card" id="prev${this.code}backImg" src=${backImgURL} alt=${this.code}back"/>`;
-      newHtml += `<span class="label">${this.code} ${this.title}</span>`;
-      newHtml += '</a>';
+      backImgURL = `${IMAGE_BASE_DIR}${this.backPrev}`;
+      backImgStyle = '';
     }
+
+    newHtml += `<a id="previewCardBack${this.id}" style="${backImgStyle}" href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
+    newHtml += `<img class="card" id="previewCardBackImg${this.id}" src="${backImgURL}" alt="${this.code}back"/>`;
+    newHtml += `<span class="label">${this.code} ${this.title}</span>`;
+    newHtml += '</a>';
     return newHtml;
   }
 
   getAltArtSelectorHTML() {
-    let selectorHtml = '<li class="list-group-item">';
-    selectorHtml += '<div class="row">';
-    selectorHtml += '<button type="button" class="btn btn-default btn-sm" onclick="">';
+    if (this.allCodes.length === 1) {
+      return '';
+    }
+    let selectorHtml = '<li class="list-group-item d-flex justify-content-between align-items-start">';
+    selectorHtml += '<div class="me-2">';
+    selectorHtml += `<button id="cycleLeft${this.id}" type="button" class="btn btn-default btn-sm">`;
     selectorHtml += '<span class="fas fa-chevron-left"></span>';
-    selectorHtml += '</button>';
-    selectorHtml += '<select id="" class="form-control form-control-sm" onchange="" style="width:auto;">';
+    selectorHtml += '</button></div>';
+    selectorHtml += `<select id="altArtSelect${this.id}" class="form-select form-select-sm">`;
 
     for (let i = 0; i < this.allCodes.length; i += 1) {
       const altCode = this.allCodes[i];
-      // const title = _cardDB_keyID[altCode].title;
-      selectorHtml += `<option value="${altCode}">${altCode}</option>`;
+      const altCard = cardCodeDB[altCode];
+      const selected = (altCode === this.code) ? 'selected' : '';
+      selectorHtml += `<option ${selected} value="${altCode}">${altCard.pack}</option>`;
     }
     selectorHtml += '</select>';
-    selectorHtml += '<button type="button" class="btn btn-default btn-sm" onclick="">';
+    selectorHtml += '<div class="ms-2">';
+    selectorHtml += `<button id="cycleRight${this.id}" type="button" class="btn btn-default btn-sm">`;
     selectorHtml += '<span class="fas fa-chevron-right"></span>';
-    selectorHtml += '</button>';
-    selectorHtml += '</div></li>';
-
+    selectorHtml += '</button></div></li>';
     return selectorHtml;
+  }
+
+  getAltArtSelectorEvents() {
+    return {
+      right: () => cardManager.cycleCardAltArt(this.id),
+      left: () => cardManager.cycleCardAltArt(this.id, false),
+      select: (e) => cardManager.setCardCode(this.id, e.target.value),
+    };
   }
 }
 
@@ -139,6 +173,14 @@ class CardManager {
     this.cardIdOrder.splice(i, 0, this.maxCardId.toString());
   }
 
+  cycleCardAltArt(id, forward = true) {
+    this.cards[id].cycleAltArt(forward);
+  }
+
+  setCardCode(id, code) {
+    this.cards[id].setCode(code);
+  }
+
   setCardPreviewHTML(html) {
     this.cardPreview.innerHTML = html;
   }
@@ -152,7 +194,19 @@ class CardManager {
       altArtSelectorHtml += card.getAltArtSelectorHTML();
     });
     this.setCardPreviewHTML(previewHtml);
+    if (altArtSelectorHtml !== '') {
+      altArtSelectorHtml = `<h6>Alt Arts</h6>${altArtSelectorHtml}`;
+    }
     this.altArtSelector.innerHTML = altArtSelectorHtml;
+    this.cardIdOrder.forEach((id) => {
+      const card = this.cards[id];
+      if (card.allCodes.length > 1) {
+        const events = card.getAltArtSelectorEvents();
+        document.getElementById(`cycleLeft${card.id}`).addEventListener('click', events.left);
+        document.getElementById(`cycleRight${card.id}`).addEventListener('click', events.right);
+        document.getElementById(`altArtSelect${card.id}`).addEventListener('input', events.select);
+      }
+    });
   }
 
   setCardList(newCards) {
@@ -289,7 +343,8 @@ class CardManager {
   }
 
   getCardList() {
-    return this.cardList.map((card) => ({ code: card.code, source: card.scanSource }));
+    return this.cardIdOrder.map((id) => (
+      { code: this.cards[id].code, source: this.cards[id].scanSource }));
   }
 }
 
@@ -494,9 +549,9 @@ function assignEvents() {
 
 document.addEventListener('DOMContentLoaded', () => {
   cardManager = new CardManager();
-  cardListTextArea = document.querySelector('#cardListTextArea');
-  setSelection = document.querySelector('#setSelection');
-  deckURLText = document.querySelector('#deckURLText');
+  cardListTextArea = document.getElementById('cardListTextArea');
+  setSelection = document.getElementById('setSelection');
+  deckURLText = document.getElementById('deckURLText');
 
   settings = loadSettings(() => {
     // eslint-disable-next-line no-undef
