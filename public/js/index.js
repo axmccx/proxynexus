@@ -12,7 +12,7 @@ let settings;
 let sessionID = 0;
 let playsetSelection = 'Single Set';
 let selectedTab = 'Card List';
-let downloadState = false;
+let isGeneratingProxies = false;
 
 const IMAGE_BASE_DIR = 'https://proxynexus.blob.core.windows.net/version2/';
 const NRDB_API_DIR = 'https://netrunnerdb.com/api/2.0/public/';
@@ -39,8 +39,8 @@ async function postData(url, data) {
 
 class Card {
   constructor(code) {
-    const card = cardCodeDB[code];
     this.code = code;
+    const card = cardCodeDB[code];
     this.title = card.title;
     this.allCodes = cardTitleDB[t2key(this.title)].codes;
     const scanSourcePrioritiesLists = {
@@ -49,19 +49,31 @@ class Card {
       de: ['de', 'pt', 'lm'],
     };
     const sourcePriorities = scanSourcePrioritiesLists[settings.scanSourcePriority];
-    let prevSourceKey;
+    let previewSourceKey;
     for (let i = 0; i < sourcePriorities.length; i += 1) {
       const s = sourcePriorities[i];
       if (card.availableSources.includes(s)) {
         this.scanSource = s;
-        prevSourceKey = `${s}Preview`;
+        previewSourceKey = `${s}Preview`;
         break;
       }
     }
-    this.frontPrev = card[prevSourceKey].front;
-    this.backPrev = card[prevSourceKey].back;
+    this.frontPrev = card[previewSourceKey].front;
+    this.backPrev = card[previewSourceKey].back;
     // get pack codes for each code in allCodes
     // TODO if current code isn't available, try another code of the same image, if available...
+  }
+
+  cycleAltArt(forward = true) {
+    const codeIndex = this.allCodes.indexOf(this.code);
+    const newIndex = (codeIndex + this.allCodes.length + (forward ? 1 : -1)) % this.allCodes.length;
+    const newCode = this.allCodes[newIndex];
+    this.setCode(newCode);
+  }
+
+  setCode(code) {
+    this.code = code;
+    console.log(`Set new code to ${code}`);
   }
 
   getPreviewHTML() {
@@ -80,15 +92,37 @@ class Card {
     }
     return newHtml;
   }
-  // make alt art selector html
-  // alt art change methods
+
+  getAltArtSelectorHTML() {
+    let selectorHtml = '<li class="list-group-item">';
+    selectorHtml += '<div class="row">';
+    selectorHtml += '<button type="button" class="btn btn-default btn-sm" onclick="">';
+    selectorHtml += '<span class="fas fa-chevron-left"></span>';
+    selectorHtml += '</button>';
+    selectorHtml += '<select id="" class="form-control form-control-sm" onchange="" style="width:auto;">';
+
+    for (let i = 0; i < this.allCodes.length; i += 1) {
+      const altCode = this.allCodes[i];
+      // const title = _cardDB_keyID[altCode].title;
+      selectorHtml += `<option value="${altCode}">${altCode}</option>`;
+    }
+    selectorHtml += '</select>';
+    selectorHtml += '<button type="button" class="btn btn-default btn-sm" onclick="">';
+    selectorHtml += '<span class="fas fa-chevron-right"></span>';
+    selectorHtml += '</button>';
+    selectorHtml += '</div></li>';
+
+    return selectorHtml;
+  }
 }
 
 class CardManager {
   constructor() {
-    this.cardPreview = document.querySelector('#cardPreview');
-    this.cardList = [];
-    // all art component
+    this.cardPreview = document.getElementById('cardPreview');
+    this.altArtSelector = document.getElementById('altArtSelector');
+    this.maxCardId = 0;
+    this.cards = {};
+    this.cardIdOrder = [];
   }
 
   resetScroll() {
@@ -99,22 +133,45 @@ class CardManager {
     // scroll alt art selector
   }
 
+  addCard(code, i) {
+    this.maxCardId += 1;
+    this.cards[this.maxCardId] = new Card(code, this.maxCardId);
+    this.cardIdOrder.splice(i, 0, this.maxCardId.toString());
+  }
+
   setCardPreviewHTML(html) {
     this.cardPreview.innerHTML = html;
   }
 
-  buildCardPreviewHTML() {
-    let newHtml = '';
-    this.cardList.forEach((card) => {
-      newHtml += card.getPreviewHTML();
+  buildCardHTML() {
+    let previewHtml = '';
+    let altArtSelectorHtml = '';
+    this.cardIdOrder.forEach((id) => {
+      const card = this.cards[id];
+      previewHtml += card.getPreviewHTML();
+      altArtSelectorHtml += card.getAltArtSelectorHTML();
     });
-    this.setCardPreviewHTML(newHtml);
+    this.setCardPreviewHTML(previewHtml);
+    this.altArtSelector.innerHTML = altArtSelectorHtml;
+  }
+
+  setCardList(newCards) {
+    this.cards = {};
+    this.cardIdOrder = [];
+    let count = 0;
+    newCards.forEach((card) => {
+      for (let j = 0; j < card.quantity; j += 1) {
+        this.addCard(card.code, count);
+        count += 1;
+      }
+    });
+    this.buildCardHTML();
   }
 
   updateCardListFromTextArea(cardListText) {
     const input = cardListText.split(/\n/);
     const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
-    const cardTitles = this.cardList.map((c) => c.title);
+    const cardTitles = Object.values(this.cards).map((c) => c.title);
     const newCardTitles = [];
 
     input.forEach((entry) => {
@@ -130,19 +187,20 @@ class CardManager {
       }
     });
 
-    const indicesOfCardsToRemove = [];
+    const IDsOfCardsToRemove = [];
     const temp = [...newCardTitles];
-    cardTitles.forEach((title, i) => {
-      if (temp.includes(title)) {
-        temp.splice(temp.indexOf(title), 1);
+    Object.entries(this.cards).forEach(([id, card]) => {
+      if (temp.includes(card.title)) {
+        temp.splice(temp.indexOf(card.title), 1);
       } else {
-        indicesOfCardsToRemove.push(i);
+        IDsOfCardsToRemove.push(id);
       }
     });
 
-    for (let i = indicesOfCardsToRemove.length - 1; i >= 0; i -= 1) {
-      this.cardList.splice(indicesOfCardsToRemove[i], 1);
-    }
+    IDsOfCardsToRemove.forEach((id) => {
+      delete this.cards[id];
+      this.cardIdOrder.splice(this.cardIdOrder.indexOf(id), 1);
+    });
 
     const cardsToCreate = [];
     const temp2 = [...cardTitles];
@@ -156,26 +214,10 @@ class CardManager {
 
     cardsToCreate.forEach(({ title, i }) => {
       const [code] = cardTitleDB[t2key(title)].codes;
-      this.cardList.splice(i, 0, new Card(code));
+      this.addCard(code, i);
     });
 
-    this.buildCardPreviewHTML();
-  }
-
-  // method to make entire alt art selector html
-
-  setCardList(newCards) {
-    this.cardList = [];
-    newCards.forEach((card) => {
-      for (let i = 0; i < card.quantity; i += 1) {
-        this.cardList.push(new Card(card.code));
-      }
-    });
-    this.buildCardPreviewHTML();
-  }
-
-  getCardList() {
-    return this.cardList.map((card) => ({ code: card.code, source: card.scanSource }));
+    this.buildCardHTML();
   }
 
   updateCardListFromSetSelection(packCode) {
@@ -244,6 +286,10 @@ class CardManager {
           this.setCardList(newCards);
         });
     }
+  }
+
+  getCardList() {
+    return this.cardList.map((card) => ({ code: card.code, source: card.scanSource }));
   }
 }
 
@@ -321,6 +367,8 @@ function selectTab(tabLabel) {
   selectedTab = tabLabel;
   switch (tabLabel) {
     case 'Card List':
+      cardManager.cards = {};
+      cardManager.cardIdOrder = [];
       cardManager.updateCardListFromTextArea(cardListTextArea.value);
       break;
     case 'Set':
@@ -387,7 +435,7 @@ function assignEvents() {
       };
       postData('/api/generate', generateSettings)
         .then(() => {
-          downloadState = true;
+          isGeneratingProxies = true;
           document.getElementById('progressBarDiv').style.opacity = '1';
           document.getElementById('generateBtn').disabled = true;
           document.getElementById('progressBar').display = 'block';
@@ -409,7 +457,7 @@ function assignEvents() {
       }
       case 'waiting':
       case 'in progress': {
-        if (downloadState) {
+        if (isGeneratingProxies) {
           document.getElementById('progressBar').style.width = `${data.progress}%`;
           document.getElementById('progressBar').innerHTML = `${Math.round(data.progress)}%`;
           document.getElementById('progressStatus').innerHTML = data.msg;
@@ -417,7 +465,7 @@ function assignEvents() {
         break;
       }
       case 'completed': {
-        downloadState = false;
+        isGeneratingProxies = false;
         document.getElementById('progressBarDiv').style.opacity = '0';
         document.getElementById('progressBar').style.width = '0%';
         document.getElementById('progressBar').innerHTML = '';
