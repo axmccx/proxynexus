@@ -42,8 +42,6 @@ class Card {
     this.code = code;
     this.id = id;
     const card = cardCodeDB[this.code];
-
-    // these shouldn't ever change
     this.title = card.title;
     this.side = card.side;
     this.allCodes = cardTitleDB[t2key(this.title)].codes;
@@ -164,7 +162,10 @@ class CardManager {
       top: 0,
       behavior: 'auto',
     });
-    // scroll alt art selector
+    this.altArtSelector.scroll({
+      top: 0,
+      behavior: 'auto',
+    });
   }
 
   addCard(code, i) {
