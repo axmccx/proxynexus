@@ -1,6 +1,8 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
 const PDFDocument = require('pdfkit');
+const sharp = require('sharp');
+const archiver = require('archiver');
 // eslint-disable-next-line camelcase
 const { card_file, card_printing } = require('../database/models');
 
@@ -32,43 +34,40 @@ function fileDoesNotExists(path, onExistsMsg, job, progressIncrementUnique) {
   return false;
 }
 
-async function getFileNames(cardList, includeCardBacks) {
+async function getFileNames(cardList, includeCardBacks, generateType, lmPlacementType = 'fit') {
   const cardFiles = cardList.map(async (card) => {
     let sourceCol;
-    // eslint-disable-next-line default-case
-    switch (card.source) {
-      case 'lm':
-        sourceCol = 'lm_card_file';
-        break;
-      case 'pt':
-        sourceCol = 'pt_card_file';
-        break;
-      case 'de':
-        sourceCol = 'de_card_file';
-        break;
+    if (card.source === 'lm') { sourceCol = 'lm_card_file'; }
+    if (card.source === 'pt') { sourceCol = 'pt_card_file'; }
+    if (card.source === 'de') { sourceCol = 'de_card_file'; }
+    let attributes;
+    if (generateType === 'pdf') { attributes = ['pdf', 'pdf_back']; }
+    if (generateType === 'mpc') {
+      if (lmPlacementType === 'fit') { attributes = ['mpc_fitted', 'mpc_fitted_back']; }
+      if (lmPlacementType === 'scale') { attributes = ['mpc_scaled', 'mpc_scaled_back']; }
     }
     const filenames = await card_printing.findOne({
       attributes: [],
       include: [{
         model: card_file,
         as: sourceCol,
-        attributes: ['pdf', 'pdf_back'],
+        attributes,
       }],
       where: { code: card.code },
     });
     return {
-      pdf: filenames[sourceCol].pdf,
-      pdf_back: filenames[sourceCol].pdf_back,
+      front: filenames[sourceCol][attributes[0]],
+      back: filenames[sourceCol][attributes[1]],
     };
   });
   const filenames = await Promise.all(cardFiles);
   if (includeCardBacks) {
     return filenames
-      .reduce((acc, filename) => (acc.concat([filename.pdf, filename.pdf_back])), [])
+      .reduce((acc, filename) => (acc.concat([filename.front, filename.back])), [])
       .filter((filename) => (filename !== ''));
   }
   return filenames
-    .map((filename) => (filename.pdf))
+    .map((filename) => (filename.front))
     .filter((filename) => (filename !== ''));
 }
 
@@ -247,7 +246,7 @@ async function generatePdf(job, hash) {
   const pdfFileName = `${hash}.pdf`;
 
   progress = 0;
-  const fileNames = await getFileNames(cardList, includeCardBacks);
+  const fileNames = await getFileNames(cardList, includeCardBacks, 'pdf');
   const uniqueFileNames = [...new Set(fileNames)];
   const progressIncrementUnique = 50 / uniqueFileNames.length;
   const progressIncrement = 45 / fileNames.length;
@@ -262,6 +261,7 @@ async function generatePdf(job, hash) {
     await downloadFiles(fileNamesToDownload, job, progressIncrementUnique);
   } catch (err) {
     console.error(err);
+    // TODO cancel job, inform client
   }
 
   job.log('Adding images to pdf...');
@@ -310,9 +310,151 @@ async function generatePdf(job, hash) {
   };
 }
 
+async function setRedPixel(originalPath, dupPath, index, completeMsg) {
+  return new Promise((resolve, reject) => {
+    sharp(originalPath)
+      // TODO may need to fetch redDot.png from within worker process
+      .composite([{
+        input: './misc/redDot.png', blend: 'over', top: index, left: 0,
+      }])
+      .toFile(dupPath)
+      .then(() => {
+        console.log(completeMsg);
+        resolve();
+      })
+      .catch((err) => {
+        console.log(err);
+        reject();
+      });
+  });
+}
+
 async function generateMpc(job, hash) {
-  console.log(job.data);
-  console.log(hash);
+  const {
+    cardList,
+    includeCardBacks,
+    LmMpcPlacement,
+    requestID,
+  } = job.data;
+  const zipFileName = `${hash}.zip`;
+  const zipPath = `./tmp/${zipFileName}`;
+  const zipDir = `./tmp/${hash}/`;
+
+  if (!fs.existsSync(zipDir)) {
+    fs.mkdirSync(zipDir, { recursive: true });
+    fs.mkdirSync(`${zipDir}runner/`);
+    fs.mkdirSync(`${zipDir}corp/`);
+  }
+
+  progress = 0;
+  const cardListRunner = cardList.filter((card) => (card.side === 'runner'));
+  const cardListCorp = cardList.filter((card) => (card.side === 'corp'));
+
+  const fileNamesRunner = await getFileNames(cardListRunner, includeCardBacks, 'mpc', LmMpcPlacement);
+  const fileNamesCorp = await getFileNames(cardListCorp, includeCardBacks, 'mpc', LmMpcPlacement);
+
+  const imgCounts = {};
+  fileNamesRunner.forEach((fileName) => {
+    if (fileName in imgCounts) {
+      if (imgCounts[fileName].count < 99) {
+        imgCounts[fileName].count += 1;
+      }
+    } else {
+      imgCounts[fileName] = { count: 1, side: 'runner' };
+    }
+  });
+  fileNamesCorp.forEach((fileName) => {
+    if (fileName in imgCounts) {
+      if (imgCounts[fileName].count < 99) {
+        imgCounts[fileName].count += 1;
+      }
+    } else {
+      imgCounts[fileName] = { count: 1, side: 'corp' };
+    }
+  });
+
+  const fileNamesToDownload = Object.keys(imgCounts).filter((fileName) => {
+    const filePath = TEMP_IMG_PATH + fileName;
+    const onExistsMsg = `Found cached copy of ${fileName}, don't download`;
+    return fileDoesNotExists(filePath, onExistsMsg, job, 0.01);
+  });
+
+  job.log('Fetching images...');
+  try {
+    await downloadFiles(fileNamesToDownload, job, 0.01);
+  } catch (err) {
+    console.error(err);
+    // TODO cancel job, inform client
+  }
+
+  // TODO download card backs
+
+  const dupRunnerFiles = [];
+  const dupCorpFiles = [];
+  const processedRedPixels = [];
+  job.log('Preparing images...');
+  console.log('Creating duplicate copies...');
+  for (let i = 0; i < Object.keys(imgCounts).length; i += 1) {
+    const fileName = Object.keys(imgCounts)[i];
+    const { count } = imgCounts[fileName];
+    const splitName = fileName.split('.');
+    for (let j = 1; j < count; j += 1) {
+      const dupName = `${splitName[0]}-${j}.${splitName[1]}`;
+      const imgPath = TEMP_IMG_PATH + dupName;
+      const onExistsMsg = `Found ${dupName}, a cached copy of ${fileName}, don't duplicate`;
+      if (imgCounts[fileName].side === 'runner') {
+        dupRunnerFiles.push(dupName);
+      }
+      if (imgCounts[fileName].side === 'corp') {
+        dupCorpFiles.push(dupName);
+      }
+      // if duplicate missing, make a copy and set the red pixel to make it unique for MPC
+      if (fileDoesNotExists(imgPath, onExistsMsg, job, 0.01)) {
+        const originalImg = TEMP_IMG_PATH + fileName;
+        const msg = `${fileName} being copied to ${dupName}`;
+        processedRedPixels.push(setRedPixel(originalImg, imgPath, j, msg));
+      }
+    }
+  }
+  await Promise.all(processedRedPixels);
+  job.log('Duplicates Ready');
+  console.log('Duplicates Ready');
+
+  const allRunnerFiles = fileNamesRunner.concat(dupRunnerFiles);
+  allRunnerFiles.forEach((fileName) => {
+    fs.copyFileSync(`${TEMP_IMG_PATH}${fileName}`, `${zipDir}runner/${fileName}`);
+  });
+  const allCorpFiles = fileNamesCorp.concat(dupCorpFiles);
+  allCorpFiles.forEach((fileName) => {
+    fs.copyFileSync(`${TEMP_IMG_PATH}${fileName}`, `${zipDir}corp/${fileName}`);
+  });
+  job.log('Adding images to zip file...');
+  console.log('Adding images to zip file...');
+
+  const zipFileStream = fs.createWriteStream(zipPath);
+  const archive = archiver('zip', { lib: { level: 0 } });
+
+  await new Promise((resolve) => {
+    archive.pipe(zipFileStream);
+    archive.directory(zipDir, false);
+    archive.on('error', (err) => { console.log(err); });
+    archive.finalize();
+    zipFileStream.on('close', () => {
+      console.log(`Zip file ready, ${archive.pointer()} total bytes`);
+      job.log(`Zip file ready, ${archive.pointer()} total bytes`);
+      job.progress(95);
+      resolve();
+    });
+  });
+  // cardBacks.forEach(file => {
+  //   archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: file });
+  // });
+  // archive.file(__dirname + "/misc/README.txt", { name: "README.txt" });
+  return {
+    filepath: zipPath,
+    hash,
+    requestID,
+  };
 }
 
 module.exports.generatePdf = generatePdf;

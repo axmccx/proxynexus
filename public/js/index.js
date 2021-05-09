@@ -344,8 +344,11 @@ class CardManager {
   }
 
   getCardList() {
-    return this.cardIdOrder.map((id) => (
-      { code: this.cards[id].code, source: this.cards[id].scanSource }));
+    return this.cardIdOrder.map((id) => ({
+      code: this.cards[id].code,
+      source: this.cards[id].scanSource,
+      side: this.cards[id].side,
+    }));
   }
 }
 
