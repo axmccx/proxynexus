@@ -67,6 +67,7 @@ class Card {
         break;
       }
     }
+    this.usingPrimarySource = this.scanSource === sourcePriorities[0];
     this.frontPrev = card[previewSourceKey].front;
     this.backPrev = card[previewSourceKey].back;
   }
@@ -95,9 +96,10 @@ class Card {
 
   getPreviewHTML() {
     let newHtml = '';
+    const imgClass = (this.usingPrimarySource) ? 'card' : 'cardFallback';
     const frontImgURL = `${IMAGE_BASE_DIR}${this.frontPrev}`;
     newHtml += `<a href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
-    newHtml += `<img class="card" id="previewCard${this.id}" src="${frontImgURL}" alt="${this.code}" />`;
+    newHtml += `<img class="${imgClass}" id="previewCard${this.id}" src="${frontImgURL}" alt="${this.code}" />`;
     newHtml += `<span class="label">${this.code} ${this.title}</span>`;
     newHtml += '</a>';
     let backImgURL = '';

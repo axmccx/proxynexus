@@ -58,6 +58,13 @@ img.card{
   vertical-align: top;
 }
 
+img.cardFallback{
+  width: 5.715cm;
+  height: 7.92cm;
+  vertical-align: top;
+  border: 2px solid #ff0000;
+}
+
 .errorMsg {
   color: red;
   font-weight: bold;
