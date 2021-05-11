@@ -19,14 +19,14 @@ const cardWidthPt = cmToPt(cardWidth);
 const cardHeightPt = cmToPt(cardHeight);
 let progress;
 
-function fileDoesNotExists(path, onExistsMsg, job, progressIncrementUnique) {
+function fileDoesNotExists(path, onExistsMsg, job, progressIncrement) {
   try {
     if (!fs.existsSync(path)) {
       return true;
     }
     console.error(onExistsMsg);
     // job.log(onExistsMsg);
-    progress += progressIncrementUnique;
+    progress += progressIncrement;
     job.progress(progress);
   } catch (err) {
     console.error(err);
@@ -71,7 +71,7 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
     .filter((filename) => (filename !== ''));
 }
 
-async function downloadFiles(fileNames, job, progressIncrementUnique) {
+async function downloadFiles(fileNames, job, progressIncrement) {
   if (!fs.existsSync(TEMP_IMG_PATH)) { fs.mkdirSync(TEMP_IMG_PATH, { recursive: true }); }
   const promises = fileNames.map(async (fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
@@ -83,7 +83,7 @@ async function downloadFiles(fileNames, job, progressIncrementUnique) {
         }
         console.log(`Downloaded ${fileName}`);
         // job.log(`Downloaded ${fileName}`);
-        progress += progressIncrementUnique;
+        progress += progressIncrement;
         job.progress(progress);
         return res;
       });
@@ -310,16 +310,17 @@ async function generatePdf(job, hash) {
   };
 }
 
-async function setRedPixel(originalPath, dupPath, index, completeMsg) {
+async function setRedPixel(originalPath, dupPath, index, completeMsg, job, progressIncrement) {
   return new Promise((resolve, reject) => {
     sharp(originalPath)
-      // TODO may need to fetch redDot.png from within worker process
       .composite([{
-        input: './misc/redDot.png', blend: 'over', top: index, left: 0,
+        input: './tmp/images/red_dot.png', blend: 'over', top: index, left: 0,
       }])
       .toFile(dupPath)
       .then(() => {
         console.log(completeMsg);
+        progress += progressIncrement;
+        job.progress(progress);
         resolve();
       })
       .catch((err) => {
@@ -347,6 +348,7 @@ async function generateMpc(job, hash) {
   }
 
   progress = 0;
+  job.log('Fetching images...');
   const cardListRunner = cardList.filter((card) => (card.side === 'runner'));
   const cardListCorp = cardList.filter((card) => (card.side === 'corp'));
 
@@ -373,21 +375,40 @@ async function generateMpc(job, hash) {
     }
   });
 
+  const downloadCount = Object.keys(imgCounts).length;
+  const downloadProgressIncrement = 50 / (downloadCount + 4);
+  const duplicateCount = Object.values(imgCounts).reduce((acc, val) => (acc + (val.count - 1)), 0);
+  const duplicateProgressIncrement = 20 / duplicateCount;
+  const zippingCount = Object.values(imgCounts).reduce((acc, val) => (acc + val.count), 0) + 5;
+  const zippingProgressIncrement = 25 / zippingCount;
+
+  const extraFiles = ['corp_back.png', 'runner_back.png', 'red_dot.png', 'README.txt'];
+  const extraFilesToFetch = extraFiles.filter((fileName) => {
+    const filePath = TEMP_IMG_PATH + fileName;
+    const onExistsMsg = `Found cached copy of ${fileName}, don't download`;
+    return fileDoesNotExists(filePath, onExistsMsg, job, downloadProgressIncrement);
+  });
+  if (extraFilesToFetch.length > 0) {
+    try {
+      await downloadFiles(extraFilesToFetch, job, downloadProgressIncrement);
+    } catch (err) {
+      console.log('Error fetching extra files!');
+      console.error(err);
+    }
+  }
+
   const fileNamesToDownload = Object.keys(imgCounts).filter((fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
     const onExistsMsg = `Found cached copy of ${fileName}, don't download`;
-    return fileDoesNotExists(filePath, onExistsMsg, job, 0.01);
+    return fileDoesNotExists(filePath, onExistsMsg, job, downloadProgressIncrement);
   });
 
-  job.log('Fetching images...');
   try {
-    await downloadFiles(fileNamesToDownload, job, 0.01);
+    await downloadFiles(fileNamesToDownload, job, downloadProgressIncrement);
   } catch (err) {
+    console.log('Error fetching images!');
     console.error(err);
-    // TODO cancel job, inform client
   }
-
-  // TODO download card backs
 
   const dupRunnerFiles = [];
   const dupCorpFiles = [];
@@ -408,16 +429,16 @@ async function generateMpc(job, hash) {
       if (imgCounts[fileName].side === 'corp') {
         dupCorpFiles.push(dupName);
       }
-      // if duplicate missing, make a copy and set the red pixel to make it unique for MPC
-      if (fileDoesNotExists(imgPath, onExistsMsg, job, 0.01)) {
+      if (fileDoesNotExists(imgPath, onExistsMsg, job, duplicateProgressIncrement)) {
         const originalImg = TEMP_IMG_PATH + fileName;
-        const msg = `${fileName} being copied to ${dupName}`;
-        processedRedPixels.push(setRedPixel(originalImg, imgPath, j, msg));
+        const msg = `Duplicating ${fileName} to ${dupName}`;
+        processedRedPixels.push(
+          setRedPixel(originalImg, imgPath, j, msg, job, duplicateProgressIncrement),
+        );
       }
     }
   }
   await Promise.all(processedRedPixels);
-  job.log('Duplicates Ready');
   console.log('Duplicates Ready');
 
   const allRunnerFiles = fileNamesRunner.concat(dupRunnerFiles);
@@ -436,20 +457,22 @@ async function generateMpc(job, hash) {
 
   await new Promise((resolve) => {
     archive.pipe(zipFileStream);
-    archive.directory(zipDir, false);
     archive.on('error', (err) => { console.log(err); });
+    archive.on('progress', () => {
+      progress += zippingProgressIncrement;
+      job.progress(progress);
+    });
+    archive.directory(zipDir, false);
+    archive.file(`${TEMP_IMG_PATH}runner_back.png`, { name: 'runner_back.png' });
+    archive.file(`${TEMP_IMG_PATH}corp_back.png`, { name: 'corp_back.png' });
+    archive.file(`${TEMP_IMG_PATH}README.txt`, { name: 'README.txt' });
+
     archive.finalize();
     zipFileStream.on('close', () => {
-      console.log(`Zip file ready, ${archive.pointer()} total bytes`);
       job.log(`Zip file ready, ${archive.pointer()} total bytes`);
-      job.progress(95);
       resolve();
     });
   });
-  // cardBacks.forEach(file => {
-  //   archive.file(__dirname + "/static/tmp/zip-cache/" + file, { name: file });
-  // });
-  // archive.file(__dirname + "/misc/README.txt", { name: "README.txt" });
   return {
     filepath: zipPath,
     hash,
