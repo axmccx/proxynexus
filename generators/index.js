@@ -35,7 +35,20 @@ function fileDoesNotExists(path, onExistsMsg, job, progressIncrement) {
 }
 
 async function getFileNames(cardList, includeCardBacks, generateType, lmPlacementType = 'fit') {
-  const cardFiles = cardList.map(async (card) => {
+  // ugly hard coded file names for Jinteki Biotech: Life Imagined
+  const biotechFileNames = {
+    lm_card_file: {
+      pdf_back: ['08012b_lm_pdf.jpg', '08012c_lm_pdf.jpg'],
+      mpc_fitted_back: ['08012b_lm_fitted.jpg', '08012c_lm_fitted.jpg'],
+      mpc_scaled_back: ['08012b_lm_scaled.jpg', '08012c_lm_scaled.jpg'],
+    },
+    pt_card_file: {
+      pdf_back: [],
+      mpc_fitted_back: [],
+      mpc_scaled_back: [],
+    },
+  };
+  const cardFiles = await cardList.reduce(async (acc, card) => {
     let sourceCol;
     if (card.source === 'lm') { sourceCol = 'lm_card_file'; }
     if (card.source === 'pt') { sourceCol = 'pt_card_file'; }
@@ -55,18 +68,28 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
       }],
       where: { code: card.code },
     });
-    return {
+    acc.push({
       front: filenames[sourceCol][attributes[0]],
       back: filenames[sourceCol][attributes[1]],
-    };
-  });
-  const filenames = await Promise.all(cardFiles);
+    });
+    if (card.code === '08012' && includeCardBacks) {
+      const extraBacks = biotechFileNames[sourceCol][attributes[1]];
+      extraBacks.forEach((backFileName) => {
+        acc.push({
+          front: filenames[sourceCol][attributes[0]],
+          back: backFileName,
+        });
+      });
+    }
+    console.log(acc);
+    return acc;
+  }, []);
   if (includeCardBacks) {
-    return filenames
+    return cardFiles
       .reduce((acc, filename) => (acc.concat([filename.front, filename.back])), [])
       .filter((filename) => (filename !== ''));
   }
-  return filenames
+  return cardFiles
     .map((filename) => (filename.front))
     .filter((filename) => (filename !== ''));
 }

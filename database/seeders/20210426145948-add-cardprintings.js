@@ -7289,7 +7289,7 @@ module.exports = {
         id: 663,
         code: '08012',
         position: 12,
-        quantity: 3,
+        quantity: 1,
         card_id: 663,
         pack_id: 25,
         lm_card_file_id: 835,
