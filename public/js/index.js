@@ -104,15 +104,31 @@ class Card {
     newHtml += '</a>';
     let backImgURL = '';
     let backImgStyle = 'display: none;';
-    if (this.backPrev !== '') {
+    if (this.backPrev !== '' && settings.includeCardBacks === 'true') {
       backImgURL = `${IMAGE_BASE_DIR}${this.backPrev}`;
       backImgStyle = '';
     }
 
     newHtml += `<a id="previewCardBack${this.id}" style="${backImgStyle}" href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
-    newHtml += `<img class="card" id="previewCardBackImg${this.id}" src="${backImgURL}" alt="${this.code}back"/>`;
+    newHtml += `<img class="${imgClass}" id="previewCardBackImg${this.id}" src="${backImgURL}" alt="${this.code}back"/>`;
     newHtml += `<span class="label">${this.code} ${this.title}</span>`;
     newHtml += '</a>';
+
+    if (this.code === '08012' && settings.includeCardBacks === 'true') { // ugly hard coded case for Jinteki Biotech: Life Imagined
+      // TODO Use scan source to make this URLs list...
+      const biotechBackUrls = [`${IMAGE_BASE_DIR}08012b_lm_prev.jpg`, `${IMAGE_BASE_DIR}08012c_lm_prev.jpg`];
+      for (let i = 0; i < 2; i += 1) {
+        newHtml += `<a href="${NRDB_CARD_DIR}08012" title="" target="NetrunnerCard">`;
+        newHtml += `<img class="${imgClass}" id="previewCard${this.id}-${i}" src="${frontImgURL}" alt="${this.code}" />`;
+        newHtml += `<span class="label">${this.code} ${this.title}</span>`;
+        newHtml += '</a>';
+
+        newHtml += `<a id="previewCardBack${this.id}" style="${backImgStyle}" href="${NRDB_CARD_DIR}${this.code}" title="" target="NetrunnerCard">`;
+        newHtml += `<img class="${imgClass}" id="previewCardBackImg${this.id}-${i}" src="${biotechBackUrls[i]}" alt="${this.code}back"/>`;
+        newHtml += `<span class="label">${this.code} ${this.title}</span>`;
+        newHtml += '</a>';
+      }
+    }
     return newHtml;
   }
 
@@ -451,6 +467,7 @@ function assignEvents() {
 
   setSelection.addEventListener('input', (e) => {
     cardManager.resetScroll();
+    playsetSelection = 'Single Set';
     cardManager.updateCardListFromSetSelection(e.target.value);
     localStorage.setItem('setSelection', e.target.value);
   });
