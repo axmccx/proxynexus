@@ -204,7 +204,7 @@ class CardManager {
     this.cardPreview.innerHTML = html;
   }
 
-  buildCardHTML() {
+  buildCardHTML(unfoundCount = 0, unfoundCards = []) {
     let previewHtml = '';
     let altArtSelectorHtml = '';
     this.cardIdOrder.forEach((id) => {
@@ -212,6 +212,16 @@ class CardManager {
       previewHtml += card.getPreviewHTML();
       altArtSelectorHtml += card.getAltArtSelectorHTML();
     });
+
+    if (unfoundCount > 0) {
+      let unfoundHtml = '<div><p>Entries not found:</p><ul>';
+      unfoundCards.forEach((entry) => {
+        unfoundHtml += `<li>${entry}</li>`;
+      });
+      unfoundHtml += '</ul></div>';
+      previewHtml += unfoundHtml;
+    }
+
     this.setCardPreviewHTML(previewHtml);
     if (altArtSelectorHtml !== '') {
       altArtSelectorHtml = `<h6>Alt Arts</h6>${altArtSelectorHtml}`;
@@ -229,21 +239,26 @@ class CardManager {
   }
 
   updateCardListFromTextArea(cardListText) {
-    const input = cardListText.split(/\n/);
+    const input = cardListText.split(/\n/).filter((e) => (e !== ''));
     const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
     const cardTitles = Object.values(this.cards).map((c) => c.title);
     const newCardTitles = [];
+    const unfoundCards = [];
+    let unfoundCount = 0;
 
     input.forEach((entry) => {
       const match = cardInputRegex.exec(entry);
       const count = (match[1] === undefined) ? 1 : parseInt(match[1], 10);
       const cardKey = t2key(match[2]);
 
-      if (cardKey !== '' && cardKey in cardTitleDB) {
+      if (cardKey in cardTitleDB) {
         for (let i = 0; i < count; i += 1) {
           const cardTitle = cardTitleDB[cardKey].title;
           newCardTitles.push(cardTitle);
         }
+      } else {
+        unfoundCards.push(entry);
+        unfoundCount += 1;
       }
     });
 
@@ -287,7 +302,7 @@ class CardManager {
       this.addCard(code, i);
     });
 
-    this.buildCardHTML();
+    this.buildCardHTML(unfoundCount, unfoundCards);
   }
 
   setCardList(newCards) {
