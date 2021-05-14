@@ -39,8 +39,12 @@ body{
 .playset-btn {
   background-color: inherit;
   border: 1px solid #ccc;
-  outline: none;
-  cursor: pointer;
+  transition: 0.3s;
+}
+
+.playset-btn.selected {
+  background-color: #ddd;
+  border: 1px solid #ccc;
   transition: 0.3s;
 }
 
@@ -49,7 +53,7 @@ body{
 }
 
 .playset-btn:focus {
-  background-color: #ccc;
+  background-color: #ddd;
 }
 
 img.card{

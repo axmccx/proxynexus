@@ -48,7 +48,8 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
       mpc_scaled_back: [],
     },
   };
-  const cardFiles = await cardList.reduce(async (acc, card) => {
+  const cardFiles = await cardList.reduce(async (prev, card) => {
+    const acc = await prev;
     let sourceCol;
     if (card.source === 'lm') { sourceCol = 'lm_card_file'; }
     if (card.source === 'pt') { sourceCol = 'pt_card_file'; }
@@ -81,9 +82,8 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
         });
       });
     }
-    console.log(acc);
     return acc;
-  }, []);
+  }, Promise.resolve([]));
   if (includeCardBacks) {
     return cardFiles
       .reduce((acc, filename) => (acc.concat([filename.front, filename.back])), [])
