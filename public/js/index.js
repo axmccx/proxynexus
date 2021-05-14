@@ -137,10 +137,12 @@ class Card {
       return '';
     }
     let selectorHtml = '<li class="list-group-item d-flex justify-content-between align-items-start">';
-    selectorHtml += '<div class="me-2">';
-    selectorHtml += `<button id="cycleLeft${this.id}" type="button" class="btn btn-default btn-sm">`;
+    selectorHtml += '<div class="me-2 mt-auto">';
+    selectorHtml += `<button id="cycleLeft${this.id}" type="button" class="btn btn-light btn-sm">`;
     selectorHtml += '<span class="fas fa-chevron-left"></span>';
     selectorHtml += '</button></div>';
+    selectorHtml += '<div style="width: 100%">';
+    selectorHtml += this.title;
     selectorHtml += `<select id="altArtSelect${this.id}" class="form-select form-select-sm">`;
 
     for (let i = 0; i < this.allCodes.length; i += 1) {
@@ -149,9 +151,9 @@ class Card {
       const selected = (altCode === this.code) ? 'selected' : '';
       selectorHtml += `<option ${selected} value="${altCode}">${altCard.pack}</option>`;
     }
-    selectorHtml += '</select>';
-    selectorHtml += '<div class="ms-2">';
-    selectorHtml += `<button id="cycleRight${this.id}" type="button" class="btn btn-default btn-sm">`;
+    selectorHtml += '</select></div>';
+    selectorHtml += '<div class="ms-2 mt-auto">';
+    selectorHtml += `<button id="cycleRight${this.id}" type="button" class="btn btn-light btn-sm">`;
     selectorHtml += '<span class="fas fa-chevron-right"></span>';
     selectorHtml += '</button></div></li>';
     return selectorHtml;
@@ -212,7 +214,6 @@ class CardManager {
       previewHtml += card.getPreviewHTML();
       altArtSelectorHtml += card.getAltArtSelectorHTML();
     });
-
     if (unfoundCount > 0) {
       let unfoundHtml = '<div><p>Entries not found:</p><ul>';
       unfoundCards.forEach((entry) => {
@@ -221,7 +222,6 @@ class CardManager {
       unfoundHtml += '</ul></div>';
       previewHtml += unfoundHtml;
     }
-
     this.setCardPreviewHTML(previewHtml);
     if (altArtSelectorHtml !== '') {
       altArtSelectorHtml = `<h6>Alt Arts</h6>${altArtSelectorHtml}`;
