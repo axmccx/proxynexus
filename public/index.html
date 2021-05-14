@@ -179,24 +179,37 @@
                 </div>
                 <ul class="list-group show mt-3" id="altArtSelector"></ul>
                 <br>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="generationType" id="pdfRadio" value="pdf" checked="checked">
-                    <label class="form-check-label" for="pdfRadio">PDF</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="generationType" id="mpcRadio" value="mpc">
-                    <label class="form-check-label" for="mpcRadio">MakePlayingCards</label>
-                </div>
-                <div class="row pt-1">
-                    <form>
-                        <div class="d-flex align-items-center">
-                            <div class="col-auto my-1">
-                                <input type="button" id="generateBtn" class="btn btn-danger" value="Generate Proxies"/>
-                            </div>
+                <div class="card border-light">
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="basicActionCardCheckbox">
+                            <label class="form-check-label" for="basicActionCardCheckbox">
+                                Include Basic Action Cards
+                            </label>
                         </div>
-                    </form>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="clickTrackerCardCheckbox">
+                            <label class="form-check-label" for="clickTrackerCardCheckbox">
+                                Include Click Tracker Cards
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="bd-example">
+                <div class="card border-light">
+                    <div class="card-body">
+                        <div class="form-check form-check">
+                            <input class="form-check-input" type="radio" name="generationType" id="pdfRadio" value="pdf" checked="checked">
+                            <label class="form-check-label" for="pdfRadio">PDF</label>
+                        </div>
+                        <div class="form-check form-check">
+                            <input class="form-check-input" type="radio" name="generationType" id="mpcRadio" value="mpc">
+                            <label class="form-check-label" for="mpcRadio">MakePlayingCards</label>
+                        </div>
+                        <br>
+                        <a id="generateBtn" class="btn btn-danger">Generate Proxies</a>
+                    </div>
+                </div>
+                <div>
                     <div class="progress" id="progressBarDiv" style="opacity: 0;">
                         <div class="progress-bar" role="progressbar" id="progressBar" style="width: 0%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>

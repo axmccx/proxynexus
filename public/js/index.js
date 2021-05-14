@@ -247,6 +247,16 @@ class CardManager {
       }
     });
 
+    if (document.getElementById('basicActionCardCheckbox').checked) {
+      newCardTitles.push('Corp Basic Actions');
+      newCardTitles.push('Runner Basic Actions');
+    }
+
+    if (document.getElementById('clickTrackerCardCheckbox').checked) {
+      newCardTitles.push('Corp Click Tracker');
+      newCardTitles.push('Runner Click Tracker');
+    }
+
     const IDsOfCardsToRemove = [];
     const temp = [...newCardTitles];
     Object.entries(this.cards).forEach(([id, card]) => {
@@ -290,6 +300,21 @@ class CardManager {
         count += 1;
       }
     });
+
+    if (document.getElementById('basicActionCardCheckbox').checked) {
+      this.addCard('00001', count);
+      count += 1;
+      this.addCard('00002', count);
+      count += 1;
+    }
+
+    if (document.getElementById('clickTrackerCardCheckbox').checked) {
+      this.addCard('00003', count);
+      count += 1;
+      this.addCard('00004', count);
+      count += 1;
+    }
+
     this.buildCardHTML();
   }
 
@@ -444,8 +469,6 @@ function selectTab(tabLabel) {
   selectedTab = tabLabel;
   switch (tabLabel) {
     case 'Card List':
-      cardManager.cards = {};
-      cardManager.cardIdOrder = [];
       cardManager.updateCardListFromTextArea(cardListTextArea.value);
       break;
     case 'Set':
@@ -484,6 +507,8 @@ function assignEvents() {
   navSelectors.forEach((selector) => {
     selector.addEventListener('shown.bs.tab', (e) => {
       cardManager.resetScroll();
+      cardManager.cards = {};
+      cardManager.cardIdOrder = [];
       selectTab(e.target.innerText);
       selectedTab = e.target.innerText;
     });
@@ -497,6 +522,16 @@ function assignEvents() {
       playsetSelection.classList.add('selected');
       cardManager.updateCardListFromSetSelection(setSelection.value);
     });
+  });
+
+  const basicActionCardCheckbox = document.getElementById('basicActionCardCheckbox');
+  basicActionCardCheckbox.addEventListener('change', () => {
+    selectTab(selectedTab);
+  });
+
+  const clickTrackerCardCheckbox = document.getElementById('clickTrackerCardCheckbox');
+  clickTrackerCardCheckbox.addEventListener('change', () => {
+    selectTab(selectedTab);
   });
 
   document.getElementById('generateBtn')
