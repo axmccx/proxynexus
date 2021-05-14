@@ -10,7 +10,7 @@ let deckURLText;
 let cardManager;
 let settings;
 let sessionID = 0;
-let playsetSelection = 'Single Set';
+let playsetSelection;
 let selectedTab = 'Card List';
 let isGeneratingProxies = false;
 
@@ -228,19 +228,6 @@ class CardManager {
     });
   }
 
-  setCardList(newCards) {
-    this.cards = {};
-    this.cardIdOrder = [];
-    let count = 0;
-    newCards.forEach((card) => {
-      for (let j = 0; j < card.quantity; j += 1) {
-        this.addCard(card.code, count);
-        count += 1;
-      }
-    });
-    this.buildCardHTML();
-  }
-
   updateCardListFromTextArea(cardListText) {
     const input = cardListText.split(/\n/);
     const cardInputRegex = /([0-9] |[0-9]x )?(.*)/;
@@ -293,6 +280,19 @@ class CardManager {
     this.buildCardHTML();
   }
 
+  setCardList(newCards) {
+    this.cards = {};
+    this.cardIdOrder = [];
+    let count = 0;
+    newCards.forEach((card) => {
+      for (let j = 0; j < card.quantity; j += 1) {
+        this.addCard(card.code, count);
+        count += 1;
+      }
+    });
+    this.buildCardHTML();
+  }
+
   updateCardListFromSetSelection(packCode) {
     let isCoreSet = false;
     packList.forEach((pack) => {
@@ -311,7 +311,7 @@ class CardManager {
     fetchJson(`/api/getPack/${packCode}`)
       .then((res) => {
         // eslint-disable-next-line default-case
-        switch (playsetSelection) {
+        switch (playsetSelection.value) {
           case 'Single Set': {
             this.setCardList(res.data);
             break;
@@ -467,7 +467,9 @@ function assignEvents() {
 
   setSelection.addEventListener('input', (e) => {
     cardManager.resetScroll();
-    playsetSelection = 'Single Set';
+    playsetSelection.classList.remove('selected');
+    playsetSelection = document.getElementById('playset-btn-single-set');
+    playsetSelection.classList.add('selected');
     cardManager.updateCardListFromSetSelection(e.target.value);
     localStorage.setItem('setSelection', e.target.value);
   });
@@ -490,7 +492,9 @@ function assignEvents() {
   const playsetButtons = document.getElementsByClassName('playset-btn');
   Array.from(playsetButtons).forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      playsetSelection = e.target.value;
+      playsetSelection.classList.remove('selected');
+      playsetSelection = e.target;
+      playsetSelection.classList.add('selected');
       cardManager.updateCardListFromSetSelection(setSelection.value);
     });
   });
@@ -502,7 +506,7 @@ function assignEvents() {
         selectedTab,
         cardListTextArea: cardListTextArea.value,
         selectedSet: setSelection.value,
-        playsetSelection,
+        playsetSelection: playsetSelection.value,
         deckURLText: deckURLText.value,
         generateType: document.querySelector('input[name="generationType"]:checked').value,
         cardList: cardManager.getCardList(),
@@ -575,6 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cardListTextArea = document.getElementById('cardListTextArea');
   setSelection = document.getElementById('setSelection');
   deckURLText = document.getElementById('deckURLText');
+  playsetSelection = document.getElementById('playset-btn-single-set');
 
   settings = loadSettings(() => {
     // eslint-disable-next-line no-undef
