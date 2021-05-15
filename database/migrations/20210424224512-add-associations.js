@@ -61,20 +61,24 @@ module.exports = {
         onDelete: 'SET NULL',
       },
     )),
-  down: (queryInterface, _) => queryInterface.removeColumn(
+  // eslint-disable-next-line no-unused-vars
+  down: (queryInterface, Sequelize) => queryInterface.removeColumn(
     'card_printings',
     'card_id',
-  ).then(() => queryInterface.removeColumn(
-    'card_printings',
-    'pack_id',
-  )).then(() => queryInterface.removeColumn(
-    'card_printings',
-    'lm_card_file_id',
-  )).then(() => queryInterface.removeColumn(
-    'card_printings',
-    'pt_card_file_id',
-  )).then(() => queryInterface.removeColumn(
-    'card_printings',
-    'de_card_file_id',
-  )),
+  )
+    .then(() => queryInterface.removeColumn(
+      'card_printings',
+      'pack_id',
+    ))
+    .then(() => queryInterface.removeColumn(
+      'card_printings',
+      'lm_card_file_id',
+    )).then(() => queryInterface.removeColumn(
+      'card_printings',
+      'pt_card_file_id',
+    ))
+    .then(() => queryInterface.removeColumn(
+      'card_printings',
+      'de_card_file_id',
+    )),
 };

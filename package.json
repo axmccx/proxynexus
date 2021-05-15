@@ -4,7 +4,8 @@
   "description": "Make high quality Netrunner proxies.",
   "main": "server.js",
   "scripts": {
-    "start": "nf start"
+    "start": "nf start",
+    "lint": "eslint --ignore-path .gitignore ."
   },
   "repository": {
     "type": "git",
