@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  return sequelize.define('request', {
+module.exports = (sequelize, DataTypes) => (
+  sequelize.define('request', {
     generate_type: DataTypes.STRING,
     selected_tab: DataTypes.STRING,
     request_text: DataTypes.TEXT,
@@ -9,5 +9,5 @@ module.exports = (sequelize, DataTypes) => {
     is_download_available: DataTypes.BOOLEAN,
   }, {
     underscored: true,
-  });
-};
+  })
+);

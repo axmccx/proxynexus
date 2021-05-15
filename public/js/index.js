@@ -46,7 +46,6 @@ class Card {
     this.side = card.side;
     this.allCodes = cardTitleDB[t2key(this.title)].codes;
     this.setPreviews();
-    // TODO if current code isn't available, try another code of the same image, if available...
   }
 
   setPreviews() {
@@ -115,7 +114,6 @@ class Card {
     newHtml += '</a>';
 
     if (this.code === '08012' && settings.includeCardBacks === 'true') { // ugly hard coded case for Jinteki Biotech: Life Imagined
-      // TODO Use scan source to make this URLs list...
       const biotechBackUrls = [`${IMAGE_BASE_DIR}08012b_${this.scanSource}_prev_back.jpg`, `${IMAGE_BASE_DIR}08012c_${this.scanSource}_prev_back.jpg`];
       for (let i = 0; i < 2; i += 1) {
         newHtml += `<a href="${NRDB_CARD_DIR}08012" title="" target="NetrunnerCard">`;
