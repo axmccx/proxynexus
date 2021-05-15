@@ -348,7 +348,6 @@ class CardManager {
 
     fetchJson(`/api/getPack/${packCode}`)
       .then((res) => {
-        // eslint-disable-next-line default-case
         switch (playsetSelection.value) {
           case 'Single Set': {
             this.setCardList(res.data);
@@ -369,6 +368,8 @@ class CardManager {
             this.setCardList(cardList);
             break;
           }
+          default:
+            break;
         }
       });
   }
