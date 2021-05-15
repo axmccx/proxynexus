@@ -38,9 +38,9 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
   // ugly hard coded file names for Jinteki Biotech: Life Imagined
   const biotechFileNames = {
     lm_card_file: {
-      pdf_back: ['08012b_lm_pdf.jpg', '08012c_lm_pdf.jpg'],
-      mpc_fitted_back: ['08012b_lm_fitted.jpg', '08012c_lm_fitted.jpg'],
-      mpc_scaled_back: ['08012b_lm_scaled.jpg', '08012c_lm_scaled.jpg'],
+      pdf_back: ['08012b_lm_pdf_back.jpg', '08012c_lm_pdf_back.jpg'],
+      mpc_fitted_back: ['08012b_lm_fitted_back.jpg', '08012c_lm_fitted_back.jpg'],
+      mpc_scaled_back: ['08012b_lm_scaled_back.jpg', '08012c_lm_scaled_back.jpg'],
     },
     pt_card_file: {
       pdf_back: [],

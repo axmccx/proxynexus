@@ -85,7 +85,7 @@ class Card {
     this.setPreviews();
     document.getElementById(`previewCard${this.id}`).src = `${IMAGE_BASE_DIR}${this.frontPrev}`;
 
-    if (this.backPrev !== '') {
+    if (this.backPrev !== '' && settings.includeCardBacks === 'true') {
       document.getElementById(`previewCardBack${this.id}`).style.display = '';
       document.getElementById(`previewCardBackImg${this.id}`).src = `${IMAGE_BASE_DIR}${this.backPrev}`;
     } else {
@@ -116,7 +116,7 @@ class Card {
 
     if (this.code === '08012' && settings.includeCardBacks === 'true') { // ugly hard coded case for Jinteki Biotech: Life Imagined
       // TODO Use scan source to make this URLs list...
-      const biotechBackUrls = [`${IMAGE_BASE_DIR}08012b_lm_prev.jpg`, `${IMAGE_BASE_DIR}08012c_lm_prev.jpg`];
+      const biotechBackUrls = [`${IMAGE_BASE_DIR}08012b_${this.scanSource}_prev_back.jpg`, `${IMAGE_BASE_DIR}08012c_${this.scanSource}_prev_back.jpg`];
       for (let i = 0; i < 2; i += 1) {
         newHtml += `<a href="${NRDB_CARD_DIR}08012" title="" target="NetrunnerCard">`;
         newHtml += `<img class="${imgClass}" id="previewCard${this.id}-${i}" src="${frontImgURL}" alt="${this.code}" />`;
