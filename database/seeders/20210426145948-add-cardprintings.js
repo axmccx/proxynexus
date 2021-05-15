@@ -1,6 +1,5 @@
 module.exports = {
-  // eslint-disable-next-line no-unused-vars
-  up: (queryInterface, Sequelize) => queryInterface.bulkInsert(
+  up: (queryInterface) => queryInterface.bulkInsert(
     'card_printings',
     [
       {
@@ -24998,6 +24997,5 @@ module.exports = {
     ],
     {},
   ),
-  // eslint-disable-next-line no-unused-vars
-  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('card_printings', null, {}),
+  down: (queryInterface) => queryInterface.bulkDelete('card_printings', null, {}),
 };

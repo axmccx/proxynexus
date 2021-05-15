@@ -1,5 +1,4 @@
 require('@babel/register');
-/* eslint-disable no-console */
 const dotenv = require('dotenv');
 const app = require('./app');
 

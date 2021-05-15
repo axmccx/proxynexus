@@ -61,8 +61,7 @@ module.exports = {
         onDelete: 'SET NULL',
       },
     )),
-  // eslint-disable-next-line no-unused-vars
-  down: (queryInterface, Sequelize) => queryInterface.removeColumn(
+  down: (queryInterface) => queryInterface.removeColumn(
     'card_printings',
     'card_id',
   )
