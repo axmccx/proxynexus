@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Proxy Nexus</title>
@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
     <link href="https://fonts.cdnfonts.com/css/sony-sketch-ef" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 <!--    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-137348308-1"></script>-->
 <!--    <script>-->
 <!--        window.dataLayer = window.dataLayer || [];-->
@@ -72,48 +72,82 @@
                 <a class="anchor" id="mpcInfo"></a>
                 <h4>Printed card from makeplayingcards.com</h4>
                 <p>
-                    These are actual cards produced by makeplayingcards.com (MPC), printed with a scaled or fitted scan of a Netrunner card. Proxy Nexus produces image files ready to submit to print at MPC. This option is less work, provides nice results, but is more expensive than paper proxies.
+                    These are cards produced by makeplayingcards.com (MPC). Proxy Nexus produces image files pre-formatted to print at MPC. This option is less work and produces great cards, but is more expensive than paper proxies.
                 </p>
+                <div>
+                    There are two caveats with this option.
+                    <ul>
+                        <li>
+                            Original netrunner cards are slightly narrower than the closest size card size MPC offers.
+                        </li>
+                        <li>
+                            MPC expects images files to have a bleed around the edge of the card, since the cutting process has an amount of tolerance. Scans of physical cards don't have a bleed, so one must be added.
+                        </li>
+                    </ul>
+                </div>
                 <p>
-                    The scanned Netrunner images used by Proxy Nexus all have varying pixel dimensions and some weren't completely upright when scanned. Also, Netrunner cards are narrower than the closest card size MPC offers. To work around this, Proxy Nexus offers two different versions of card image files to choose from, both with a black border to function as a bleed.
+                    Proxy Nexus now supports multiple scan sources, with different ways to mitigate these limitations. If you'd like to read up on the details, check out the sections below.
                 </p>
-                <h5>Scaled</h5>
-                <p>
-                    The shortest dimension of the original scans is resized and scaled by 1.5% past MPC's cut line. This should help minimize most black lines along the edge of cards but may result a small loss of the original graphic. Choose this option to help avoid any black lines/borders along the edge of the cards.
-                </p>
-                <h5>Fit</h5>
-                <p>
-                    Fits the scans within MPC's cut line. May result in black lines along the edges of the card. Choose this option to avoid any loss of the scanned image.
-                </p>
-                <p>
-                    For anyone interested in the technical details, the images were produced with this Python script: <a href="https://github.com/axmccx/proxynexus/tree/master/misc/borderGenerator.py" target="_blank" rel="noopener">borderGenerator.py</a>
-                </p>
+                <div class="accordion" id="accordionFlushExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                New Scans from /u/PopTartNZ
+                            </button>
+                        </h2>
+                        <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                Info on the dynamically generated border using opencv. &lt; PLACEHOLDER for more info... &gt;
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                                Legacy Scans from /u/LecpisMagna
+                            </button>
+                        </h2>
+                        <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                <p>
+                                    This is the original set of scans used by Proxy Nexus. MPC files have a simple black border added around the card to serve as a bleed. There are two different ways a border is added.
+                                </p>
+                                <h5>Scaled</h5>
+                                <p>
+                                    The shortest dimension of the original scans is resized and scaled by 1.5% past MPC's cut line. This should help minimize most black lines along the edge of cards but may result a small loss of the original graphic. Choose this option to help avoid any black lines/borders along the edge of the cards.
+                                </p>
+                                <h5>Fit</h5>
+                                <p>
+                                    Fits the scans within MPC's cut line. May result in black lines along the edges of the card. Choose this option to avoid any loss of the scanned image.
+                                </p>
+                                <p>
+                                    <strong>Fit is the default option,</strong> but can be changed on the settings page. For anyone interested in the technical details, the images were produced with this Python script: <a href="https://github.com/axmccx/proxynexus/tree/master/misc/v1/borderGenerator.py" target="_blank" rel="noopener">borderGenerator.py</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
                 <p>The zip file Proxy Nexus provides contains:</p>
                 <ul>
                     <li>Corp images</li>
                     <li>Runner images</li>
-                    <li>Card backs</li>
+                    <li>Card backs, designed and created by Spencer Wharton. (/u/SpencerDub)</li>
                 </ul>
                 <p>
-                    The included card backs have been designed and created by Spencer Wharton. (/u/SpencerDub)
-                </p>
-                <p>
-                    <strong>Note: Files that end in a letter are the back side art image for the file with the similar name. </strong> Eg. 04041-alt2a.jpg is the back side art image for 04041-alt2.jpg. For step 12 below, be sure to select "Different images" for the card backs, in order to include these images if desired.</strong>
-                </p>
-                <p>
-                    The files are separated by Corp and Runner to make it easy to design the MPC order, especially for large orders.
+                    <strong>Note: Files that end with 'back' are the back side art image for the file with the similar name. </strong> Eg. 09001_pt_pdf_back.jpg is the back side art image for 09001_pt_pdf.jpg. For step 12 below, be sure to select "Different images" for the card backs, in order to include these images if desired.
                 </p>
                 <h4>How to make an MPC order</h4>
                 <ol>
                     <li>Download the zip file from Proxy Nexus.</li>
                     <li>Extract the zip file.</li>
                     <li>Visit <a href="https://www.makeplayingcards.com/design/custom-blank-card.html" target="_blank" rel="noopener">Custom Game Cards (63 x 88mm)</a> page to get started with a new project.</li>
-                    <li>Choose the card stock, (I prefer 300gsm, but 330gsm works well too).</li>
+                    <li>Choose the card stock, either 300gsm or 330gsm works well. </li>
                     <li>Chose the deck size. <br /> <strong>Note:</strong> <i>Large orders, e.g. a single System Core 2019 Set, contains 255 cards. The MPC option that fits this size is 396, which costs $69.05 USD. It would be easier to setup and possibly cheaper to split the order into a Corp and Runner deck. (Hence why the files are separated in the zip file). The Corp deck would contain 144 cards, and the Runner deck would contain 111 cards. This would cost $27.90 USD + $24.95 USD = $52.85 USD.</i></li>
                     <li>Click the red "start you design" button.</li>
                     <li>Enter the exact card count for the deck and click the blue "Different images" button for the card fronts.</li>
                     <li>Click the red "Upload images" button near the top right and<strong> select all the images</strong> in either the corp or runner folder from the extracted zip file. If printing all the cards in one deck, repeat this step with the other folder from the zip file.</li>
-                    <li>Once all the images have finished uploading, <a href="https://i.imgur.com/CN5FStf.png" target="_blank" rel="noopener">click the "Help me autofill images!" button.</a> Or simply drag and drop all the images to the cards on the left. <u>If the deck is a mix of corp and runner cards,</u></If> take note of the <strong>Side</strong> (corp or runner) of each card number.</li>
+                    <li>Once all the images have finished uploading, <a href="https://i.imgur.com/CN5FStf.png" target="_blank" rel="noopener">click the "Help me autofill images!" button.</a> Or simply drag and drop all the images to the cards on the left. <u>If the deck is a mix of corp and runner cards,</u> take note of the <strong>Side</strong> (corp or runner) of each card number.</li>
                     <li>Once all the images have been placed, click the "Next Step" button at the top right of the screen.</li>
                     <li>Click "Next Step" again, since I assume you're not adding text to the front of the cards.</li>
                     <li>This step depends on whether the deck is entire one side, or a mix of the two. If the deck is a mix of the two, select "Different images" for the card backs. Otherwise, select "Same Image".</li>
