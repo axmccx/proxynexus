@@ -15,14 +15,11 @@
   z-index:1;
 }
 
-.demo-content.bg-alt{
-    padding: 15px;
-    background: #abb1b8;
-}
 .home-button{
     max-height:30px;
     padding: 1px;
 }
+
 body{
   padding-top: 80px;
 }
@@ -77,11 +74,6 @@ img.cardFallback{
 .statusMsg {
   color: blue;
   font-weight: bold;
-}
-
-.downloadBtn{
-  color: white; 
-  display: none;
 }
 
 .initHide{
