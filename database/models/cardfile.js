@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  const CardFile = sequelize.define('card_file', {
+module.exports = (sequelize, DataTypes) => (
+  sequelize.define('card_file', {
     pdf: DataTypes.STRING,
     pdf_back: DataTypes.STRING,
     mpc_fitted: DataTypes.STRING,
@@ -11,9 +11,5 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: false,
     underscored: true,
-  });
-  // CardFile.associate = (models) => {
-  //   CardFile.hasMany(models.card_printing);
-  // };
-  return CardFile;
-};
+  })
+);
