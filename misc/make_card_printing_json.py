@@ -54,7 +54,14 @@ for card in cards['data']:
         if cardfile_seed['pdf'].startswith(f"{card['code']}_de"):
             new_entry['de_card_file_id'] = cardfile_seed['id']
 
+        if cardfile_seed['pdf'].startswith(f"{card['code']}_os"):
+            new_entry['lm_card_file_id'] = cardfile_seed['id']
+            new_entry['pt_card_file_id'] = cardfile_seed['id']
+
     card_printings_json.append(new_entry)
+
+
+# Somehow Fix the pt cores, and lm and pt sc19, salvaged?...
 
 
 for altcard in altcards:

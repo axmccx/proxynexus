@@ -19,7 +19,7 @@ def load_images(path):
 
 def mass_resize(path):
     imgs, filenames = load_images(path)
-    scale_percent = 25
+    scale_percent = 50
 
     for img, filename in zip(imgs, filenames):
         width = int(img.shape[1] * scale_percent / 100)
@@ -28,7 +28,8 @@ def mass_resize(path):
         prev_img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
         filename, extension = os.path.splitext(filename)
         code = filename.split('_')[0]
-        cv2.imwrite(f"{path}/{code}_pt_prev{extension}", prev_img)
+        cv2.imwrite(f"{path}/{code}_os_prev{extension}", prev_img)
 
 
-mass_resize("C:\\Users\\alexm\\Downloads\\Netrunner\\version2")
+# mass_resize("C:\\Users\\alexm\\Downloads\\Netrunner\\version2")
+mass_resize("C:\\Users\\alexm\\Downloads\\proxynexus_images\\tofix\\24000")
