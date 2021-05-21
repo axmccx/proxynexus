@@ -11,6 +11,7 @@ count = 0
 found_lm_codes = []
 found_pt_codes = []
 found_de_codes = []
+found_os_codes = []
 
 
 for f in files_list:
@@ -26,6 +27,8 @@ for f in files_list:
         found_pt_codes.append(code)
     elif source == 'de' and code not in found_de_codes:
         found_de_codes.append(code)
+    elif source == 'os' and code not in found_os_codes:
+        found_os_codes.append(code)
 
 for code in found_lm_codes:
     count += 1
@@ -60,8 +63,8 @@ for code in found_pt_codes:
     }
     suffixes = ["pdf", "pdf_back", "mpc", "mpc_back", "prev", "prev_back"]
     for key, suffix in zip(new_entry.keys(), suffixes):
-        if f"{path}{code}_pt_{suffix}.png" in files_list:
-            new_entry[key] = f"{code}_pt_{suffix}.png"
+        if f"{path}{code}_pt_{suffix}.jpg" in files_list:
+            new_entry[key] = f"{code}_pt_{suffix}.jpg"
 
     new_entry["mpc_scaled"] = ""
     new_entry["mpc_scaled_back"] = ""
@@ -86,6 +89,26 @@ for code in found_de_codes:
         if f"{path}{code}_de_{suffix}.jpg" in files_list:
             new_entry[key] = f"{code}_de_{suffix}.jpg"
 
+    new_entry["id"] = count
+    store.append(new_entry)
+
+for code in found_os_codes:
+    count += 1
+    new_entry = {
+        "pdf": "",
+        "pdf_back": "",
+        "mpc_fitted": "",
+        "mpc_fitted_back": "",
+        "preview": "",
+        "preview_back": ""
+    }
+    suffixes = ["pdf", "pdf_back", "mpc", "mpc_back", "prev", "prev_back"]
+    for key, suffix in zip(new_entry.keys(), suffixes):
+        if f"{path}{code}_os_{suffix}.jpg" in files_list:
+            new_entry[key] = f"{code}_os_{suffix}.jpg"
+
+    new_entry["mpc_scaled"] = ""
+    new_entry["mpc_scaled_back"] = ""
     new_entry["id"] = count
     store.append(new_entry)
 

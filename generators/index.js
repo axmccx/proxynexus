@@ -43,9 +43,9 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
       mpc_scaled_back: ['08012b_lm_scaled_back.jpg', '08012c_lm_scaled_back.jpg'],
     },
     pt_card_file: {
-      pdf_back: [],
-      mpc_fitted_back: [],
-      mpc_scaled_back: [],
+      pdf_back: ['08012b_pt_pdf_back.jpg', '08012c_pt_pdf_back.jpg'],
+      mpc_fitted_back: ['08012b_pt_fitted_back.jpg', '08012c_pt_fitted_back.jpg'],
+      mpc_scaled_back: ['08012b_pt_scaled_back.jpg', '08012c_pt_scaled_back.jpg'],
     },
   };
   const cardFiles = await cardList.reduce(async (prev, card) => {

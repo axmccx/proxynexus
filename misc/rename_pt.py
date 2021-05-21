@@ -19,8 +19,18 @@ def rename_pt(path, count):
             count += 1
 
 
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\1. Core\\", 1001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\2. Genesis\\", 2001)
 # rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\3. Creation and Control\\", 3001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\4. Spin\\", 4001)
 # rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\5. Honor and Profit\\", 5001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\6. Lunar\\", 6001)
 # rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\7. Order and Chaos\\", 7001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\8. SanSan\\", 8001)
 # rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\9. Data and Destiny\\", 9001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\10. Mumgood\\", 10001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\11. Flashpoint\\", 11001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\12. Red Sand\\", 12001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\13. Terminal Directive\\", 13001)
+# rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\14. Kitara\\", 21001)
 rename_pt("C:\\Users\\alexm\\Downloads\\Netrunner\\15. Reign and Reverie\\", 22001)
