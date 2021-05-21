@@ -450,33 +450,33 @@ function populateSetSelection() {
 }
 
 function loadOptions() {
-  cardTitleDB = JSON.parse(localStorage.getItem('cardTitleDB'));
-  cardCodeDB = JSON.parse(localStorage.getItem('cardCodeDB'));
-  packList = JSON.parse(localStorage.getItem('packList'));
-
-  if (cardTitleDB) {
-    loadStoredSelections();
-    populateSetSelection();
-  } else {
-    localStorage.removeItem('cardTitleDB');
-    localStorage.removeItem('cardCodeDB');
-    localStorage.removeItem('packList');
-    cardManager.setCardPreviewHTML('<span class="text-muted" data-loading>LOADING CARDS...</span>');
-    fetchJson('/api/getOptions')
-      .then((resJson) => {
-        cardTitleDB = resJson.data.cardTitleDB;
-        cardCodeDB = resJson.data.cardCodeDB;
-        packList = resJson.data.packList;
-        localStorage.setItem('cardTitleDB', JSON.stringify(cardTitleDB));
-        localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
-        localStorage.setItem('packList', JSON.stringify(packList));
-        loadStoredSelections();
-        populateSetSelection();
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-  }
+  // cardTitleDB = JSON.parse(localStorage.getItem('cardTitleDB'));
+  // cardCodeDB = JSON.parse(localStorage.getItem('cardCodeDB'));
+  // packList = JSON.parse(localStorage.getItem('packList'));
+  //
+  // if (cardTitleDB) {
+  //   loadStoredSelections();
+  //   populateSetSelection();
+  // } else {
+  localStorage.removeItem('cardTitleDB');
+  localStorage.removeItem('cardCodeDB');
+  localStorage.removeItem('packList');
+  cardManager.setCardPreviewHTML('<span class="text-muted" data-loading>LOADING CARDS...</span>');
+  fetchJson('/api/getOptions')
+    .then((resJson) => {
+      cardTitleDB = resJson.data.cardTitleDB;
+      cardCodeDB = resJson.data.cardCodeDB;
+      packList = resJson.data.packList;
+      // localStorage.setItem('cardTitleDB', JSON.stringify(cardTitleDB));
+      // localStorage.setItem('cardCodeDB', JSON.stringify(cardCodeDB));
+      // localStorage.setItem('packList', JSON.stringify(packList));
+      loadStoredSelections();
+      populateSetSelection();
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+  // }
 }
 
 function selectTab(tabLabel) {
