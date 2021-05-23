@@ -41,46 +41,69 @@ class Card {
   constructor(code, id) {
     this.code = code;
     this.id = id;
-    const card = cardCodeDB[this.code];
-    this.title = card.title;
-    this.side = card.side;
-    this.allCodes = cardTitleDB[t2key(this.title)].codes;
-    this.setPreviews();
-  }
-
-  setPreviews() {
+    this.cardFromDB = cardCodeDB[this.code];
+    this.title = this.cardFromDB.title;
+    this.side = this.cardFromDB.side;
     const scanSourcePrioritiesLists = {
       pt: ['pt', 'lm', 'de'],
       lm: ['lm', 'pt', 'de'],
       de: ['de', 'pt', 'lm'],
     };
-    const sourcePriorities = scanSourcePrioritiesLists[settings.scanSourcePriority];
-    const card = cardCodeDB[this.code];
+    this.sourcePriorities = scanSourcePrioritiesLists[settings.scanSourcePriority];
+    const cardCodes = cardTitleDB[t2key(this.title)].codes;
+    this.altArts = this.sourcePriorities.reduce((acc, source) => {
+      cardCodes.forEach((altCode) => {
+        const altCard = cardCodeDB[altCode];
+        if (altCard.availableSources.includes(source)) {
+          acc.push({ code: altCode, source });
+        }
+      });
+      return acc;
+    }, []);
 
-    let previewSourceKey;
-    for (let i = 0; i < sourcePriorities.length; i += 1) {
-      const s = sourcePriorities[i];
-      if (card.availableSources.includes(s)) {
-        this.scanSource = s;
-        previewSourceKey = `${s}Preview`;
+    // Confirm that the current card code file is available for the primary scan source
+    let foundCard = false;
+    for (let i = 0; i < this.altArts.length; i += 1) {
+      const entry = this.altArts[i];
+      if (entry.code === this.code && entry.source === this.sourcePriorities[0]) {
+        foundCard = true;
+        [this.scanSource] = this.sourcePriorities;
         break;
       }
     }
-    this.usingPrimarySource = this.scanSource === sourcePriorities[0];
-    this.frontPrev = card[previewSourceKey].front;
-    this.backPrev = card[previewSourceKey].back;
+
+    // Use first alt art if current card code isn't found
+    if (!foundCard) {
+      this.code = this.altArts[0].code;
+      this.scanSource = this.altArts[0].source;
+      this.cardFromDB = cardCodeDB[this.code];
+    }
+
+    this.usingPrimarySource = this.scanSource === this.sourcePriorities[0];
+    this.setPreviews();
+  }
+
+  setPreviews() {
+    const previewSourceKey = `${this.scanSource}Preview`;
+    this.frontPrev = this.cardFromDB[previewSourceKey].front;
+    this.backPrev = this.cardFromDB[previewSourceKey].back;
   }
 
   cycleAltArt(forward = true) {
-    const codeIndex = this.allCodes.indexOf(this.code);
-    const newIndex = (codeIndex + this.allCodes.length + (forward ? 1 : -1)) % this.allCodes.length;
-    const newCode = this.allCodes[newIndex];
-    document.getElementById(`altArtSelect${this.id}`).value = newCode;
-    this.setCode(newCode);
+    const codeIndex = this.altArts.findIndex((altArt) => (
+      altArt.code === this.code && altArt.source === this.scanSource));
+    const newIndex = (codeIndex + this.altArts.length + (forward ? 1 : -1)) % this.altArts.length;
+    const newCode = this.altArts[newIndex].code;
+    const newSource = this.altArts[newIndex].source;
+    document.getElementById(`altArtSelect${this.id}`).value = `${newCode}-${newSource}`;
+    this.setCode(newCode, newSource);
   }
 
-  setCode(code) {
+  setCode(code, source) {
     this.code = code;
+    this.scanSource = source;
+    this.cardFromDB = cardCodeDB[this.code];
+    this.usingPrimarySource = this.scanSource === this.sourcePriorities[0];
     this.setPreviews();
     document.getElementById(`previewCard${this.id}`).src = `${IMAGE_BASE_DIR}${this.frontPrev}`;
 
@@ -131,9 +154,14 @@ class Card {
   }
 
   getAltArtSelectorHTML() {
-    if (this.allCodes.length === 1) {
+    if (this.altArts.length === 1) {
       return '';
     }
+    const sourceLabels = {
+      pt: '(New)',
+      lm: '(Legacy)',
+      de: '(German)',
+    };
     let selectorHtml = '<li class="list-group-item d-flex justify-content-between align-items-start">';
     selectorHtml += '<div class="me-2 mt-auto">';
     selectorHtml += `<button id="cycleLeft${this.id}" type="button" class="btn btn-light btn-sm">`;
@@ -142,13 +170,11 @@ class Card {
     selectorHtml += '<div style="width: 100%">';
     selectorHtml += this.title;
     selectorHtml += `<select id="altArtSelect${this.id}" class="form-select form-select-sm">`;
-
-    for (let i = 0; i < this.allCodes.length; i += 1) {
-      const altCode = this.allCodes[i];
-      const altCard = cardCodeDB[altCode];
-      const selected = (altCode === this.code) ? 'selected' : '';
-      selectorHtml += `<option ${selected} value="${altCode}">${altCard.pack}</option>`;
-    }
+    this.altArts.forEach((altArt) => {
+      const altCard = cardCodeDB[altArt.code];
+      const selected = (altCard.code === this.code) ? 'selected' : '';
+      selectorHtml += `<option ${selected} value="${altArt.code}-${altArt.source}">${altCard.pack} ${sourceLabels[altArt.source]}</option>`;
+    });
     selectorHtml += '</select></div>';
     selectorHtml += '<div class="ms-2 mt-auto">';
     selectorHtml += `<button id="cycleRight${this.id}" type="button" class="btn btn-light btn-sm">`;
@@ -196,8 +222,9 @@ class CardManager {
     this.cards[id].cycleAltArt(forward);
   }
 
-  setCardCode(id, code) {
-    this.cards[id].setCode(code);
+  setCardCode(id, value) {
+    const [code, source] = value.split('-');
+    this.cards[id].setCode(code, source);
   }
 
   setCardPreviewHTML(html) {
@@ -227,7 +254,7 @@ class CardManager {
     this.altArtSelector.innerHTML = altArtSelectorHtml;
     this.cardIdOrder.forEach((id) => {
       const card = this.cards[id];
-      if (card.allCodes.length > 1) {
+      if (card.altArts.length > 1) {
         const events = card.getAltArtSelectorEvents();
         document.getElementById(`cycleLeft${card.id}`).addEventListener('click', events.left);
         document.getElementById(`cycleRight${card.id}`).addEventListener('click', events.right);
