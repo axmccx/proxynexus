@@ -17,12 +17,44 @@ async function cachedCopyExists(hash) {
     .then((count) => (count !== 0));
 }
 
+function getHash(jobData) {
+  const dataToHash = { ...jobData };
+  delete dataToHash.sessionID;
+  delete dataToHash.requestID;
+
+  if (dataToHash.selectedTab === 'Card List') {
+    delete dataToHash.selectedSet;
+    delete dataToHash.playsetSelection;
+    delete dataToHash.deckURLText;
+  } else if (dataToHash.selectedTab === 'Set') {
+    delete dataToHash.cardListTextArea;
+    delete dataToHash.deckURLText;
+  } else if (dataToHash.selectedTab === 'Decklist') {
+    delete dataToHash.cardListTextArea;
+    delete dataToHash.selectedSet;
+    delete dataToHash.playsetSelection;
+  }
+
+  if (dataToHash.generateType === 'pdf') {
+    delete dataToHash.LmMpcPlacement;
+  } else if (dataToHash.generateType === 'mpc') {
+    delete dataToHash.PdfPageSize;
+    delete dataToHash.fullCutLines;
+  }
+
+  return crypto
+    .createHash('sha1')
+    .update(JSON.stringify(dataToHash))
+    .digest('hex');
+}
+
 function start() {
   const workQueue = new Queue('work', REDIS_URL);
   workQueue.process(maxJobsPerWorker, async (job, done) => {
     let result;
     let generateFunc;
     let fileExtension;
+    const hash = getHash(job.data);
 
     if (job.data.generateType === 'pdf') {
       generateFunc = generatePdf;
@@ -31,14 +63,6 @@ function start() {
       generateFunc = generateMpc;
       fileExtension = '.zip';
     }
-
-    const dataToHash = { ...job.data };
-    delete dataToHash.sessionID;
-    delete dataToHash.requestID;
-    const hash = crypto
-      .createHash('sha1')
-      .update(JSON.stringify(dataToHash))
-      .digest('hex');
 
     if (await cachedCopyExists(hash)) {
       console.log('Found cached copy!');
