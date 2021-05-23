@@ -315,6 +315,7 @@ async function generatePdf(job, hash) {
   try {
     makeFrontPage(doc);
   } catch (e) {
+    console.log('ERROR MAKING FRONT PAGE?!');
     console.log(e);
   }
   addImages(fileNames, doc, leftMargin, topMargin, fullCutLines, job, progressIncrement);
