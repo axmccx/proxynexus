@@ -62,7 +62,10 @@ workQueue.on('global:completed', (jobId, result) => {
 
 export const getOptions = async (req, res) => {
   const allEntries = await card_printing.findAll(
-    { include: [card, pack, 'lm_card_file', 'pt_card_file', 'de_card_file'] },
+    {
+      include: [card, pack, 'lm_card_file', 'pt_card_file', 'de_card_file'],
+      order: ['code'],
+    },
   );
   const cardTitleDB = {};
   const cardCodeDB = {};
