@@ -410,7 +410,7 @@
     "pack_code": "mo",
     "name": "Magnum Opus",
     "is_core": false,
-    "is_visible": false
+    "is_visible": true
   },
   {
     "id": 60,

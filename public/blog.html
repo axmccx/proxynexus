@@ -55,6 +55,38 @@
     <div class="container">
         <div class="row justify-content-md-center" >
             <div class="col-lg-12">
+                <a class="anchor" id="entry9"></a>
+                <div class="card">
+                    <div class="card-body">
+                        <h3>New Card Scans</h3>
+                        <h5>May 24, 2021</h5>
+                        <p>
+                            New card scan from reddit user PopTartNZ are now available on Proxy Nexus!
+                        </p>
+                        <p>
+                            To support these new scans, I've rebuilt about 80% of the website to support multiple scan sources, along with other changes I wanted to make. By default, the new scans will be used and the site now implements what I'm calling "scan source priority". This setting can be changed in the new settings page. Proxy Nexus will priority the selected scan source and fall back onto others if a card scan isn't available. Why? PopTartNZ didn't scan every card (it is a lot of work after all). If a selected card is missing, Proxy Nexus will first try to find another printing of the card with the same name. For example, if you pick the Core set, Mimic isn't available. However, it's available in the Revised Core set, so that version will be used. If a card is not available in the source, then it will use the version from another source. <strong>If Proxy Nexus uses a card scan from another source, it will have a red border around it in the card preview area. </strong>This change also makes is much easier to support cards with other languages. There are a few German scans available, but if anyone would like to contribute more non-English scans, or with translating the site, please let me know!
+                        </p>
+                        <p>
+                            The rebuild also includes a new Statistics page. It currently just shows the number of downloads per day, and a table of recent downloads. I may expand on this page in the future, to include things like "most downloaded card this month". Any suggestions welcome!
+                        </p>
+                        <p>
+                            This rebuild also allowed me to fix a bunch of quirky behavior. For example, you can now edit the Card List text, and it'll try its best to preserve the alt art selection. Also, NISEI cards will no longer be included in MPC requests, and will simply be filtered out. On the more technical side, the server now has it's own worker process and each request is queued one at a time.  I'm hoping this will help with server load.
+                        </p>
+                        <p>
+                            There is also a new Settings page, where a few settings have been moved from the home page. These are saved to browser cookies.
+                        </p>
+                        <p>
+                            For those who are interested, PopTartNZ and I will be adding some details on how the new scans were produced to the instructions page.
+                        </p>
+                        <p>
+                            I will also be updating the github repo with instructions on how to self-host the project, to make it easier for anyone to contribute.
+                        </p>
+                        <p>
+                            If you found this site useful, please consider <a href="https://www.paypal.me/proxynexus" target="_blank" rel="noopener">making a donation</a> to support this project.
+                        </p>
+                    </div>
+                </div>
+                <br/>
                 <a class="anchor" id="entry8"></a>
                 <div class="card">
                     <div class="card-body">

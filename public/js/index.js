@@ -52,12 +52,24 @@ class Card {
     this.sourcePriorities = scanSourcePrioritiesLists[settings.scanSourcePriority];
     const cardCodes = cardTitleDB[t2key(this.title)].codes;
     this.altArts = this.sourcePriorities.reduce((acc, source) => {
+      const tempAcc = [];
       cardCodes.forEach((altCode) => {
         const altCard = cardCodeDB[altCode];
         if (altCard.availableSources.includes(source)) {
-          acc.push({ code: altCode, source });
+          tempAcc.push({ code: altCode, source });
         }
       });
+      // move alt arts to the end of tempAcc
+      const cardsAcc = [];
+      const altAcc = [];
+      tempAcc.forEach((entry) => {
+        if (entry.code.includes('alt')) {
+          altAcc.push(entry);
+        } else {
+          cardsAcc.push(entry);
+        }
+      });
+      acc.push(...cardsAcc, ...altAcc);
       return acc;
     }, []);
 
