@@ -41,7 +41,7 @@ function getHash(jobData) {
     delete dataToHash.PdfPageSize;
     delete dataToHash.fullCutLines;
   }
-
+  console.log(`Hashing new request with data: ${JSON.stringify(dataToHash)}`);
   return crypto
     .createHash('sha1')
     .update(JSON.stringify(dataToHash))
@@ -55,6 +55,7 @@ function start() {
     let generateFunc;
     let fileExtension;
     const hash = getHash(job.data);
+    console.log(`Starting request with hash ${hash}`);
 
     if (job.data.generateType === 'pdf') {
       generateFunc = generatePdf;

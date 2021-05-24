@@ -301,7 +301,7 @@ async function generatePdf(job, hash) {
   }
   const pdfPath = `./tmp/${pdfFileName}`;
   const doc = new PDFDocument({
-    size: 'Letter',
+    size: PdfPageSize,
     margins: {
       top: topMargin,
       bottom: topMargin,
