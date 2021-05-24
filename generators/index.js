@@ -340,6 +340,7 @@ async function setRedPixel(originalPath, dupPath, index, completeMsg, job, progr
       .composite([{
         input: './tmp/images/red_dot.png', blend: 'over', top: index, left: 0,
       }])
+      .jpeg({ quality: 98 })
       .toFile(dupPath)
       .then(() => {
         console.log(completeMsg);
