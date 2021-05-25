@@ -535,6 +535,16 @@ function selectTab(tabLabel) {
   }
 }
 
+function containsNISEICards(cardList) {
+  for (let i = 0; i < cardList.length; i += 1) {
+    const entry = cardList[i];
+    if (parseInt(entry.code.substring(0, 2), 10) >= 26) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function assignEvents() {
   cardListTextArea.addEventListener('input', (e) => {
     cardManager.updateCardListFromTextArea(e.target.value);
@@ -609,6 +619,10 @@ function assignEvents() {
           document.getElementById('progressBarDiv').style.opacity = '1';
           document.getElementById('generateBtn').disabled = true;
           document.getElementById('progressBar').display = 'block';
+          document.getElementById('issueMsg').style.display = 'block';
+          if (containsNISEICards(generateSettings.cardList) && generateSettings.generateType === 'mpc') {
+            document.getElementById('niseiCardNotice').style.display = 'block';
+          }
         })
         .catch((err) => {
           console.log(err.message);
