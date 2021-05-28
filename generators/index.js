@@ -95,11 +95,38 @@ async function getFileNames(cardList, includeCardBacks, generateType, lmPlacemen
 }
 
 async function downloadFiles(fileNames, job, progressIncrement) {
+  const delay = (ms) => (
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    })
+  );
+
+  const retryFetch = (url, fetchOptions = {}, retries = 3, retryDelay = 1000) => (
+    new Promise((resolve, reject) => {
+      const wrapper = (n) => {
+        fetch(url, fetchOptions)
+          .then((res) => { resolve(res); })
+          .catch(async (err) => {
+            if (n > 0) {
+              console.log(`retry ${n} for ${url}`);
+              await delay(retryDelay);
+              wrapper(n - 1);
+            } else {
+              reject(err);
+            }
+          });
+      };
+      wrapper(retries);
+    })
+  );
+
   if (!fs.existsSync(TEMP_IMG_PATH)) { fs.mkdirSync(TEMP_IMG_PATH, { recursive: true }); }
   const promises = fileNames.map(async (fileName) => {
     const filePath = TEMP_IMG_PATH + fileName;
     const url = IMAGE_BASE_DIR + fileName;
-    const imgRes = await fetch(url)
+    const imgRes = await retryFetch(url)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Error downloading: ${fileName}`);
@@ -109,7 +136,8 @@ async function downloadFiles(fileNames, job, progressIncrement) {
         progress += progressIncrement;
         job.progress(progress);
         return res;
-      });
+      })
+      .catch(console.error);
     const fileStream = fs.createWriteStream(filePath);
     return new Promise((resolve, reject) => {
       imgRes.body.pipe(fileStream);
