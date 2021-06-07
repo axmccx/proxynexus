@@ -190,11 +190,13 @@ export const getFile = async (req, res) => {
 };
 
 export const getStats = async (req, res) => {
+  const threshold = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const downloadsCount = await request.findAll({
     attributes: [
       [Sequelize.cast(Sequelize.col('created_at'), 'date'), 'createdOn'],
       [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
     ],
+    where: { createdAt: { [Sequelize.Op.gt]: threshold } },
     group: [Sequelize.cast(Sequelize.col('created_at'), 'date'), 'createdOn'],
     order: [[Sequelize.col('createdOn')]],
     limit: 14,
@@ -237,15 +239,21 @@ export const generate = async (req, res) => {
       break;
   }
 
-  const newRequest = await request.create({
-    generate_type: generateType,
-    selected_tab: selectedTab,
-    request_text: requestText,
-    card_list: cardList.map((c) => (`${c.code}-${c.source}`)),
-    hash: '',
-    filepath: '',
-    is_download_available: false,
-  });
+  let newRequest;
+  try {
+    newRequest = await request.create({
+      generate_type: generateType,
+      selected_tab: selectedTab,
+      request_text: requestText,
+      card_list: cardList.map((c) => (`${c.code}-${c.source}`)),
+      hash: '',
+      filepath: '',
+      is_download_available: false,
+    });
+  } catch (err) {
+    console.log(err);
+    return errorResponse(req, res, 'Error creating request entry');
+  }
 
   await workQueue.add({ ...req.body, requestID: newRequest.id });
   return successResponse(req, res);
