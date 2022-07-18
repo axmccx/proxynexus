@@ -414,8 +414,8 @@ class CardManager {
   }
 
   updateCardListFromDecklistURL(url) {
-    const publishedDeckIDRegex = /(\/en\/decklist\/)(\d+)/;
-    const unpublishedDeckIDRegex = /(\/deck\/view\/)(\d+)/;
+    const publishedDeckIDRegex = /(\/en\/decklist\/)((?:\w|-)+)/;
+    const unpublishedDeckIDRegex = /(\/deck\/view\/)((?:\w|-)+)/;
     const publishedMatch = publishedDeckIDRegex.exec(url);
     const unpublishedMatch = unpublishedDeckIDRegex.exec(url);
     let deckId;
