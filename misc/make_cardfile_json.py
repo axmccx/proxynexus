@@ -1,9 +1,9 @@
 from os import listdir, rename
-from os.path import isfile, join, basename, splitext
+from os.path import isfile, join, basename, splitext, splitext
 import json
 
 
-path = "C:\\Users\\alexm\\Downloads\\proxynexus_images\\version2\\"
+path = "C:\\Users\\alexm\\Desktop\\proxynexus_images\\"
 files_list = [f"{path}{f}" for f in listdir(path) if isfile(join(path, f))]
 store = []
 
@@ -15,6 +15,9 @@ found_os_codes = []
 
 
 for f in files_list:
+    extension = splitext(f)[1]
+    if extension == '.txt':
+        continue
     base = basename(f)
     if base == 'runner_back.png' or base == 'corp_back.png':
         continue
@@ -50,7 +53,6 @@ for code in found_lm_codes:
     new_entry["id"] = count
     store.append(new_entry)
 
-
 for code in found_pt_codes:
     count += 1
     new_entry = {
@@ -70,7 +72,6 @@ for code in found_pt_codes:
     new_entry["mpc_scaled_back"] = ""
     new_entry["id"] = count
     store.append(new_entry)
-
 
 for code in found_de_codes:
     count += 1

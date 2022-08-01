@@ -43,7 +43,6 @@ for card in cards['data']:
         if pack_seed['pack_code'] == card['pack_code']:
             new_entry['pack_id'] = pack_seed['id']
 
-
     for cardfile_seed in cardfiles_seed:
         if cardfile_seed['pdf'].startswith(f"{card['code']}_lm"):
             new_entry['lm_card_file_id'] = cardfile_seed['id']
@@ -105,8 +104,5 @@ for altcard in altcards:
 
     card_printings_json.append(new_entry)
 
-
-
 with open('cardprintings.json', 'w') as f:
     json.dump(card_printings_json, f)
-

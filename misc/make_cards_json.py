@@ -4,16 +4,14 @@ with open('cards.json', encoding="utf-8") as f:
     cards = json.load(f)['data']
 
 card_seed = {}
-counter = 1
-for card in cards:
+for i, card in enumerate(cards, start=1):
     if card['title'] not in card_seed:
         card_seed[card['title']] = {
-            "id": counter,
+            "id": i,
             "title": card['title'],
             "side": card['side_code'],
             "type": card['type_code'],
         }
-        counter += 1
 
 card_seed = list(card_seed.values())
 
