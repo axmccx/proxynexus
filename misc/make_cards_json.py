@@ -15,5 +15,5 @@ for i, card in enumerate(cards, start=1):
 
 card_seed = list(card_seed.values())
 
-with open('card_seed.json', 'w') as f:
-    json.dump(card_seed, f)
+with open('card_seed.json', 'w', encoding='utf8') as f:
+    json.dump(card_seed, f, ensure_ascii=False)
