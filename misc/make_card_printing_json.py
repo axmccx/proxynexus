@@ -35,7 +35,10 @@ for card in cards['data']:
     id_count += 1
 
     for card_seed in cards_seed:
-        if card_seed['title'] == card['title']:
+        if card_seed['title'] == card.get('stripped_title', ""):
+            new_entry['card_id'] = card_seed['id']
+            break
+        elif card_seed['title'] == card['title']:
             new_entry['card_id'] = card_seed['id']
             break
 

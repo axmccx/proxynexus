@@ -18,8 +18,8 @@ def extract_images(filename, page_num):
             # Crop the image
             cropped_img = img.crop((left, upper, right, lower))
             image_count = 1 + j + (i*3) + ((page_num-1)*9)
-            cropped_img.save(f"C:\\Users\\alexm\\Desktop\\tai pages\\cropped\\{image_count}.jpg")
+            cropped_img.save(f"C:\\Users\\alexm\\Desktop\\rwr pages\\cropped\\{image_count}.jpg", subsampling=0, quality=100)
 
 
 for page_count in range(1, 9):
-    extract_images(f'C:\\Users\\alexm\\Desktop\\tai pages\\{page_count}.jpg', page_count)
+    extract_images(f'C:\\Users\\alexm\\Desktop\\rwr pages\\{page_count}.jpg', page_count)
