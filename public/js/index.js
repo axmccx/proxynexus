@@ -684,9 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
   playsetSelection = document.getElementById('playset-btn-single-set');
 
   settings = loadSettings(() => {
-    // eslint-disable-next-line no-undef
-    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'), {});
-    welcomeModal.show();
+    //
   });
   assignEvents();
   loadOptions();

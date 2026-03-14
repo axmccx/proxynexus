@@ -20,7 +20,7 @@
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
                 Proxy Nexus
@@ -55,6 +55,85 @@
     <div class="container">
         <div class="row justify-content-md-center" >
             <div class="col-lg-12">
+                <a class="anchor" id="entry10"></a>
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Rebuilding Proxy Nexus</h3>
+                        <h5>March 14, 2026</h5>
+                        <p>
+                            <b>TL;DR:</b> <i>I'm rebuilding Proxy Nexus so everything runs locally for better reliability,
+                            and adding a new collection system that lets people package and share Netrunner card scans.
+                            The new version works both in the browser and as a desktop app.</i>
+                        </p>
+                        <p>
+                            I started this website while at university about seven years ago, while procrastinating school work.
+                            It was also around the time that FFG canceled the game, so it felt like the perfect time to build it.
+                            I never liked the quality of the codebase and felt like I could do better.
+                        </p>
+                        <p>
+                            Right after graduating in 2021, before I started seriously applying for jobs, I spent 3 weeks rebuilding the
+                            site a second time. I felt so clever with the hosted server doing most of the work, with the
+                            file caching and the loading bar to show the progress. Now I can't stand looking at the codebase.
+                            There are so many things I'd do differently today. It might not be true,
+                            but I've always felt that the poor code quality has scared off anyone from making any large contributions.
+                        </p>
+                        <p>
+                            For the past couple of years, I've considered rebuilding it again a 3rd time, but never found the motivation.
+                            Over the last few months I've been learning Rust, and I've become completely obsessed.
+                            There's only so much I can study before I need a real project to dive into.
+                            With my obsession with learning Rust, and the fact that people are still using Proxy Nexus despite the lack of updates,
+                            I finally found the motivation to rebuild it. Now, the two main problems I want to fix:
+                        </p>
+                        <ol type="1">
+                            <li>
+                                <b>Proxy Nexus is unreliable</b> While the backend server design felt clever when I was building it,
+                                it's unreliable, costs money (though not much), and involves unnecessary complexity (like caching).
+                                There's only so much that automated reset scripts can do.
+                            </li>
+                            <li>
+                                <b>Adding new sets of cards is painfully tedious.</b> When I built the site, I never designed it with ease of update in mind.
+                                I expected people would use it to get FFG proxies, and then go to NSG for their print-and-play PDFs. I had added
+                                NSG cards for convenience, but the whole update process was an afterthought.
+                                Adding new sets requires me to completely rebuild the database seed files.
+                                Which requires running 4-5 python scripts on the image collection and is tedious to review.
+                            </li>
+                        </ol>
+                        <p>
+                            A bit over a month ago, I started building a command-line tool in Rust for making proxies. It's incredibly fast.
+                            Not only did I port over all existing functionality from Proxy Nexus, I started with a new core concept of "collections".
+                            As long as the card images follow a simple filename convention, the CLI can build a collection of scans
+                            and package them into a single file. These collection files can then be shared and imported by anyone.
+                            Not only does it greatly simplify management of scans, but I'm hoping it also powers the community
+                            to make and share their own collections of Netrunner proxies! I'll be releasing the file name spec soon.
+                        </p>
+                        <p>
+                            The second goal is to run everything in the browser. Other proxy sites appear to do this, it's a simpler design.
+                            However, I want to maintain the same high-quality card scans, instead of pulling images from NetrunnerDB.
+                            This is where the Rust UI framework <a href="https://dioxuslabs.com/" target="_blank" rel="noopener">Dioxus</a> comes in.
+                            Dioxus allows me to build both desktop and web apps from the same codebase. This means the entire pipeline,
+                            downloading images and generating PDFs or MPC zip files, runs in a browser or in a native desktop app.
+                        </p>
+                        <p>
+                            While the desktop version will enable you to build and manage your own collections, the web version has a static collection
+                            that I can more easily manage. If you want your collection added, or when a new NSG set comes out, it'll be easy for me to add it!
+                        </p>
+                        <p>
+                            While the CLI is mostly feature complete, the UI still needs work. The web version is live at
+                            <a href="https://rs.proxynexus.net" target="_blank" rel="noopener">rs.proxynexus.net</a>,
+                            and the GitHub repository is at
+                            <a href="https://github.com/axmccx/proxynexus-rs" target="_blank" rel="noopener">github.com/axmccx/proxynexus-rs</a>.
+                            I've also uploaded three sets of images to my
+                            <a href="https://drive.google.com/drive/folders/1d84k6Od5bSBK31-lQkJzRc71xGx6-zVS?usp=sharing" target="_blank" rel="noopener">Google Drive</a>.
+                            Try building collections, importing them, and generating proxies!
+                        </p>
+                        <p>
+                            Once the UI reaches feature parity and the bugs are ironed out, this new version will replace the current Proxy Nexus site.
+                            If you give it a try, I'd really appreciate your feedback. Bug reports and feature requests are welcome on GitHub.
+                            If you'd like to contribute to the codebase, collections or idea,  reach out and let's work together!
+                        </p>
+                    </div>
+                </div>
+                <br/>
                 <a class="anchor" id="entry9"></a>
                 <div class="card">
                     <div class="card-body">
