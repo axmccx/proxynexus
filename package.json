@@ -40,7 +40,7 @@
     "pdfkit": "^0.12.1",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.3",
-    "sequelize": "^5.15.1",
+    "sequelize": "^6.29.0",
     "sequelize-cli": "^5.4.0",
     "sharp": "^0.28.1",
     "throng": "^5.0.0"
